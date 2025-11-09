@@ -1,17 +1,10 @@
 package org.firstinspires.ftc.teamcode.commands
 
-import com.seattlesolvers.solverslib.command.CommandBase
+import com.seattlesolvers.solverslib.command.InstantCommand
+import com.seattlesolvers.solverslib.command.RunCommand
 import org.firstinspires.ftc.teamcode.subsystems.TestSubsystem
 
-class TestCommand(var angle: Double) : CommandBase() {
+fun testCommand(testSubsystem: TestSubsystem, testAngle: () -> Double) =
+    RunCommand({ testSubsystem.setServoAngle(testAngle()) }, testSubsystem)
 
-
-    override fun initialize() {
-
-    }
-
-    override fun execute() {
-
-        TestSubsystem.setServoAngle(angle)
-    }
-}
+fun printCommand(value: Double) = InstantCommand({ print(value) })
