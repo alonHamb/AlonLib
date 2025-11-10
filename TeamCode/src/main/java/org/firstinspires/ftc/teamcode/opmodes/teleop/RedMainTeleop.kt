@@ -10,8 +10,8 @@ import org.firstinspires.ftc.teamcode.commands.printCommand
 import org.firstinspires.ftc.teamcode.subsystems.ExampleSubsystem
 
 @TeleOp(name = "Blue Main Teleop", group = "Teleop")
-class BlueMainTeleop : CommandOpMode() {
-    var alliance: Alliance = Alliance.Blue
+class RedMainTeleop : CommandOpMode() {
+    var alliance: Alliance = Alliance.Red
     lateinit var controllerA: GamepadEx
     lateinit var controllerB: GamepadEx
     private lateinit var exampleSubsystem: ExampleSubsystem

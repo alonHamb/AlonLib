@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems
 
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.SubsystemBase
+import com.seattlesolvers.solverslib.geometry.Rotation2d
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 
@@ -15,7 +16,7 @@ class ExampleSubsystem(
         super.name = "TestSubsystem"
     }
 
-    fun setServoAngle(angle: Double) {
+    fun setServoAngle(angle: Rotation2d) {
         testServo.set(angle)
     }
 }
