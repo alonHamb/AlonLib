@@ -4,16 +4,16 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.seattlesolvers.solverslib.command.CommandOpMode
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys
+import org.firstinspires.ftc.teamcode.commands.exampleInstantCommand
 import org.firstinspires.ftc.teamcode.commands.printCommand
-import org.firstinspires.ftc.teamcode.commands.testCommand
-import org.firstinspires.ftc.teamcode.subsystems.TestSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.ExampleSubsystem
 
 @TeleOp(name = "Blue Main Teleop", group = "Teleop")
 class BlueMainTeleop : CommandOpMode() {
 
-    private lateinit var testSubsystem: TestSubsystem
     lateinit var controllerA: GamepadEx
     lateinit var controllerB: GamepadEx
+    private lateinit var exampleSubsystem: ExampleSubsystem
 
     override fun initialize() {
         telemetry.isAutoClear = true
@@ -39,11 +39,12 @@ class BlueMainTeleop : CommandOpMode() {
     }
 
     fun initSubsystems() {
-        testSubsystem = TestSubsystem(hardwareMap, telemetry)
+        exampleSubsystem = ExampleSubsystem(hardwareMap, telemetry)
     }
 
     fun setDefaultCommands() {
-        testSubsystem.defaultCommand = testCommand(testSubsystem, { controllerA.leftY })
+        exampleSubsystem.defaultCommand =
+            exampleInstantCommand(exampleSubsystem) { controllerA.leftY }
     }
 
     override fun run() {

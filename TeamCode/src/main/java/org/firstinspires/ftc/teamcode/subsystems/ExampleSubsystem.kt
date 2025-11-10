@@ -5,7 +5,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 
-class TestSubsystem(
+class ExampleSubsystem(
     hardwareMap: HardwareMap,
     val telemetry: Telemetry,
 ) : SubsystemBase() {
