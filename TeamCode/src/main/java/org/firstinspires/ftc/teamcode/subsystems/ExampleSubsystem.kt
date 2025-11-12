@@ -8,7 +8,7 @@ import com.seattlesolvers.solverslib.geometry.Rotation2d
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 
-class ExampleSubsystem(hardwareMap: HardwareMap, val telemetry: Telemetry) : SubsystemBase() {
+class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
     val testServo = HaServo(hardwareMap, "testServo").apply {
         this.minPosition = (-150.0).degrees
         this.maxPosition = 150.0.degrees
@@ -19,6 +19,7 @@ class ExampleSubsystem(hardwareMap: HardwareMap, val telemetry: Telemetry) : Sub
     }
 
     fun setServoAngle(angle: Rotation2d) {
+        telemetry
         testServo.set(angle.rotations.toDouble())
     }
 }
