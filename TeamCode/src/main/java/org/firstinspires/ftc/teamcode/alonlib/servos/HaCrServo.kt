@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
     CRServoEx(hardwareMap, id) {
 
-    var targetPosition = 0.degrees
+    var PositionSetpoint = 0.degrees
 
     init {
         setRunMode(runMode)
@@ -21,7 +21,14 @@ class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
 
 
     fun configPIDGains(gains: PIDGains) {
-        super.setPIDF(PIDFCoefficients(gains.kP, gains.kI, gains.kD,gains.kFF(targetPosition.degrees)))
+        super.setPIDF(
+            PIDFCoefficients(
+                gains.kP,
+                gains.kI,
+                gains.kD,
+                gains.kFF(PositionSetpoint.degrees)
+            )
+        )
     }
 
     fun setPrecentOutput(outPut: PercentOutput) {
@@ -42,8 +49,8 @@ class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
         }
     }
 
-    fun getPositionSetpoint(): Rotation2d{
-        return targetPosition
+    fun getPositionSetpoint(): Rotation2d {
+        return PositionSetpoint
     }
 
     fun getPosition(): Rotation2d {
