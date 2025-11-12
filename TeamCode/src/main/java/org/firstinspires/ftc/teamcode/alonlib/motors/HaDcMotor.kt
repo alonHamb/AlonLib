@@ -4,6 +4,7 @@ import com.hamosad1657.lib.math.PIDGains
 import com.hamosad1657.lib.units.AngularVelocity
 import com.hamosad1657.lib.units.degrees
 import com.hamosad1657.lib.units.rotations
+import com.hamosad1657.lib.units.rps
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx
@@ -83,4 +84,9 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
     fun getPositionSetPoint(): Rotation2d {
         return targetPosition
     }
+
+    fun getCurrentVelocity(): AngularVelocity {
+        return (velocity / cpr).rps
+    }
+
 }
