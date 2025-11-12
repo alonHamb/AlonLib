@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.alonlib
 
 fun robotPrint(message: Any?, printStackTrace: Boolean = false) =
-    print(message.toString())
+    print("ROBOT PRINT( $message )END ")
 
 fun robotPrintError(message: Any?) =
-    print(message.toString())
+    print("ROBOT ERROR: $message END")
 
 enum class Telemetry {
     Testing, Competition;

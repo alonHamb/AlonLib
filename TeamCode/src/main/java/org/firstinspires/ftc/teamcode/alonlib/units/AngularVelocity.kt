@@ -1,17 +1,8 @@
-package com.hamosad1657.lib.units
+package org.firstinspires.ftc.teamcode.alonlib.units
 
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
-import org.firstinspires.ftc.teamcode.alonlib.units.Length
-import org.firstinspires.ftc.teamcode.alonlib.units.degPsToRpm
-import org.firstinspires.ftc.teamcode.alonlib.units.mpsToRpm
-import org.firstinspires.ftc.teamcode.alonlib.units.radPsToRpm
-import org.firstinspires.ftc.teamcode.alonlib.units.rpmToDegPs
-import org.firstinspires.ftc.teamcode.alonlib.units.rpmToMps
-import org.firstinspires.ftc.teamcode.alonlib.units.rpmToRadPs
-import org.firstinspires.ftc.teamcode.alonlib.units.rpmToRps
-import org.firstinspires.ftc.teamcode.alonlib.units.rpsToRpm
 import kotlin.math.absoluteValue
-import com.hamosad1657.lib.units.AngularVelocity.Unit as AngularVelocityUnit
+import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity.Unit as AngularVelocityUnit
 
 /** Represents an angular velocity.
  *

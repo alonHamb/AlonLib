@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.alonlib.motors
 
 import com.hamosad1657.lib.math.PIDGains
-import com.hamosad1657.lib.units.AngularVelocity
 import com.hamosad1657.lib.units.degrees
 import com.hamosad1657.lib.units.rotations
 import com.hamosad1657.lib.units.rpm
@@ -11,6 +10,7 @@ import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx
 import org.firstinspires.ftc.teamcode.alonlib.math.clamp
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
+import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 
 class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
@@ -18,7 +18,7 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
     /** the current position setpoint of the motor **/
     var positionSetpoint: Rotation2d = 0.0.degrees
 
-    var velocitySetpoint: AngularVelocity = 0.0.rpm
+    var targetVelocity: AngularVelocity = 0.0.rpm
 
     /**
      * Software forward limit, ONLY for percent-output control.
@@ -81,7 +81,7 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
     }
 
     fun setVelocitySetpoint(setPoint: AngularVelocity) {
-        velocitySetpoint = setPoint
+        targetVelocity = setPoint
         velocity = setPoint.asRps / cpr
     }
 

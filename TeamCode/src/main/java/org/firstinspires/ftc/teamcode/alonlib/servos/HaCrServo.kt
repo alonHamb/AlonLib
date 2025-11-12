@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
     CRServoEx(hardwareMap, id) {
 
-    var PositionSetpoint = 0.degrees
+    var targetPosition = 0.degrees
 
     init {
         setRunMode(runMode)
@@ -26,7 +26,7 @@ class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
                 gains.kP,
                 gains.kI,
                 gains.kD,
-                gains.kFF(PositionSetpoint.degrees)
+                gains.kFF(targetPosition.degrees)
             )
         )
     }
@@ -50,7 +50,7 @@ class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
     }
 
     fun getPositionSetpoint(): Rotation2d {
-        return PositionSetpoint
+        return targetPosition
     }
 
     fun getPosition(): Rotation2d {
