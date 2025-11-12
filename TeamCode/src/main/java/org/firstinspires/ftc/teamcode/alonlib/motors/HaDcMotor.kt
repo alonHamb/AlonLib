@@ -4,6 +4,7 @@ import com.hamosad1657.lib.math.PIDGains
 import com.hamosad1657.lib.units.AngularVelocity
 import com.hamosad1657.lib.units.degrees
 import com.hamosad1657.lib.units.rotations
+import com.hamosad1657.lib.units.rpm
 import com.hamosad1657.lib.units.rps
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.geometry.Rotation2d
@@ -15,7 +16,9 @@ import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
     MotorEx(hardwareMap, id, type) {
     /** the current position setpoint of the motor **/
-    var targetPosition: Rotation2d = 0.0.degrees
+    var positionSetpoint: Rotation2d = 0.0.degrees
+
+    var velocitySetpoint: AngularVelocity = 0.0.rpm
 
     /**
      * Software forward limit, ONLY for percent-output control.
@@ -74,15 +77,16 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
 
     fun setPositionSetPoint(setPoint: Rotation2d) {
         setTargetPosition((setPoint.rotations.toDouble() / cpr).toInt())
-        targetPosition = setPoint
+        positionSetpoint = setPoint
     }
 
     fun setVelocitySetpoint(setPoint: AngularVelocity) {
+        velocitySetpoint = setPoint
         velocity = setPoint.asRps / cpr
     }
 
     fun getPositionSetPoint(): Rotation2d {
-        return targetPosition
+        return positionSetpoint
     }
 
     fun getCurrentVelocity(): AngularVelocity {
