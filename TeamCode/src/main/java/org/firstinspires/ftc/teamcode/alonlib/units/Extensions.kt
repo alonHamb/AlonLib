@@ -1,9 +1,8 @@
-package com.hamosad1657.lib.units
+package org.firstinspires.ftc.teamcode.alonlib.units
 
 import com.seattlesolvers.solverslib.geometry.Rotation2d
-import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
-import org.firstinspires.ftc.teamcode.alonlib.units.Length
 import kotlin.math.PI
+import kotlin.math.abs
 
 // --- Length ---
 
@@ -20,15 +19,15 @@ inline val Number.rps get() = AngularVelocity.fromRps(this.toDouble())
 inline val Number.radPs get() = AngularVelocity.fromRadPs(this.toDouble())
 inline val Number.degPs get() = AngularVelocity.fromDegPs(this.toDouble())
 
-// -- Rotation2d ---
+// --- Rotation2d ---
 
 inline val Number.degrees: Rotation2d get() = Rotation2d.fromDegrees(this.toDouble())
-inline val Number.radians: Rotation2d get() = Rotation2d.fromDegrees(this.toDouble() / (2.0 * PI))
+inline val Number.radians: Rotation2d get() = Rotation2d.fromDegrees(this.toDouble() * (180.0 / PI))
 inline val Number.rotations: Rotation2d get() = Rotation2d.fromDegrees(this.toDouble() * 360.0)
 
-inline val Rotation2d.absoluteValue: Rotation2d get() = Rotation2d.fromDegrees(this.degrees)
-inline val Rotation2d.rotations: Number get() = this.degrees * 360.0
+
+inline val Rotation2d.absoluteValue: Rotation2d get() = Rotation2d.fromDegrees(abs(this.degrees))
+inline val Rotation2d.rotations: Number get() = (this.degrees / 360.0)
 
 infix fun Rotation2d.plus(other: Rotation2d) = (this.degrees + other.degrees).degrees
 infix fun Rotation2d.minus(other: Rotation2d) = (this.degrees - other.degrees).degrees
-

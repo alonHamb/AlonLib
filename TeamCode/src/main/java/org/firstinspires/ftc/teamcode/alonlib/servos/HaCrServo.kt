@@ -1,14 +1,14 @@
 package org.firstinspires.ftc.teamcode.alonlib.servos
 
 import com.hamosad1657.lib.math.PIDGains
-import com.hamosad1657.lib.units.degrees
-import com.hamosad1657.lib.units.rotations
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
+import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 
 class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
     CRServoEx(hardwareMap, id) {

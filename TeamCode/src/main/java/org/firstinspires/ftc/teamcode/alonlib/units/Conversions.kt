@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.alonlib.units
 
-import com.hamosad1657.lib.units.degrees
 import com.seattlesolvers.solverslib.geometry.Pose2d
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 
