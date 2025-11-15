@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.commands.exampleInstantCommand
+import org.firstinspires.ftc.teamcode.subsystems.example.ExampleConstants.servoPosition
 import org.firstinspires.ftc.teamcode.subsystems.example.ExampleSubsystem
 
 class RobotContainer(
@@ -24,11 +24,9 @@ class RobotContainer(
     lateinit var exampleSubsystem: ExampleSubsystem
 
     init {
-        telemetry.addLine("Robot Container initializing")
         initializeSubsystems()
         configureButtonBindings()
         setDefaultCommands()
-        telemetry.addLine("Robot Container initialized")
     }
 
 
@@ -39,7 +37,7 @@ class RobotContainer(
     fun configureButtonBindings() {
         with(controllerA) {
             getGamepadButton(GamepadKeys.Button.A).whenPressed(
-                exampleSubsystem.exampleInstantCommand { 150.degrees }
+                exampleSubsystem.exampleInstantCommand { servoPosition }
             )
         }
 
