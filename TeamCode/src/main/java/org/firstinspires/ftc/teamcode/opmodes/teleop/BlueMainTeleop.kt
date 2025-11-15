@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop
 
 import com.acmerobotics.dashboard.FtcDashboard
-import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.seattlesolvers.solverslib.command.CommandOpMode
 import org.firstinspires.ftc.teamcode.RobotContainer
 
 @TeleOp(name = "Blue Main Teleop", group = "Teleop")
-@Config
 class BlueMainTeleop : CommandOpMode() {
     override fun initialize() {
         FtcDashboard.getInstance().telemetry.addLine("Robot initializing")
@@ -18,8 +16,8 @@ class BlueMainTeleop : CommandOpMode() {
     }
 
     override fun run() {
-        FtcDashboard.getInstance().telemetry.update()
         FtcDashboard.getInstance().telemetry.addLine("Robot is running")
         super.run()
+        FtcDashboard.getInstance().telemetry.update()
     }
 }

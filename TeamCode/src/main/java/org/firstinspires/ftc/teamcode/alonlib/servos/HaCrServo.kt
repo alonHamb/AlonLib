@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx
+import com.seattlesolvers.solverslib.util.MathUtils
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
@@ -13,7 +14,10 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 class HaCrServo(hardwareMap: HardwareMap, id: String, var runMode: RunMode) :
     CRServoEx(hardwareMap, id) {
 
-    var targetPosition = 0.degrees
+    var targetPosition = 0.0.degrees
+        set(value) {
+            MathUtils.normalizeDegrees(value.degrees, true)
+        }
 
     init {
         setRunMode(runMode)

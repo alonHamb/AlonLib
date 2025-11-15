@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.example
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.SubsystemBase
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import com.seattlesolvers.solverslib.util.MathUtils
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.RobotMap.ExampleSubsystem.EXAMPLE_SERVO_ID
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
@@ -16,11 +17,10 @@ class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         EXAMPLE_SERVO_ID,
         EXAMPLE_SERVO_MIN_POSITION,
         EXAMPLE_SERVO_MAX_POSITION
-    ).apply {
-        // state
-    }
+    )
 
     fun setServoAngle(angle: Rotation2d) {
+        telemetry.addLine("${MathUtils.normalizeDegrees(angle.degrees, true)} degrees")
         exampleServo.setPositionSetPoint(angle)
     }
 
