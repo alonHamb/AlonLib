@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.alonlib.servos
 
 import com.hamosad1657.lib.math.PIDGains
 import com.qualcomm.robotcore.hardware.HardwareMap
-import com.seattlesolvers.solverslib.controller.PIDController
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx
 import com.seattlesolvers.solverslib.hardware.motors.Motor.Direction.FORWARD
@@ -11,7 +10,6 @@ import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 import org.firstinspires.ftc.teamcode.alonlib.units.rps
 
@@ -43,9 +41,8 @@ class HaCrServo(hardwareMap: HardwareMap, var id: String, var runMode: RunMode) 
         }
 
     fun getCurrentVelocity(): AngularVelocity {
-        return (encoder.correctedVelocity/cpr).rps
+        return (encoder.correctedVelocity / cpr).rps
     }
-
 
 
     fun configPIDF(gains: PIDGains) {
@@ -77,16 +74,20 @@ class HaCrServo(hardwareMap: HardwareMap, var id: String, var runMode: RunMode) 
 
     }
 
-    fun setPositionSetPoint(setPoint: Rotation2d) {
+    fun setPositionSetPoint(setpoint: Rotation2d) {
         if (runMode == RunMode.OptimizedPositionalControl) {
-            setTargetPosition((setPoint.rotations.toDouble() / cpr).toInt())
-            positionSetpoint = setPoint
-        }else robotPrintError("servo ($id) is in raw power mode cannot set position setpoint")
+            positionSetpoint = setpoint
+            super.set(setpoint.degrees)
+        } else {
+            robotPrintError("you cant give raw power servo a position setpoint")
+            set(0.0)
+        }
     }
 
+
     fun setVelocitySetpoint(setPoint: AngularVelocity) {
-         velocitySetpoint= setPoint
-        super.veloController.setPoint = velocitySetpoint.asRps/cpr
+        velocitySetpoint = setPoint
+        super.veloController.setPoint = velocitySetpoint.asRps / cpr
 
 
     }
