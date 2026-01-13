@@ -55,10 +55,10 @@ dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    // SolversLib
-    implementation "org.solverslib:core:0.3.3" // core
-    implementation "org.solverslib:pedroPathing:0.3.3" // pedroPathing
+    
+    // SolversLib: Latest Stable Version
+    implementation "org.solverslib:core:SNAPSHOT-5a81a6b" // core
+    implementation "org.solverslib:pedroPathing:SNAPSHOT-5a81a6b" // pedroPathing
 
     implementation "com.acmerobotics.dashboard:dashboard:0.4.17" // FTC Dashboard
 
