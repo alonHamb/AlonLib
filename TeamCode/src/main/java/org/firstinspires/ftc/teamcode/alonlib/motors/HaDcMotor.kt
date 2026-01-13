@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.alonlib.motors
 import com.hamosad1657.lib.math.PIDGains
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import com.seattlesolvers.solverslib.hardware.motors.Motor.Direction.FORWARD
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx
 import org.firstinspires.ftc.teamcode.alonlib.math.clamp
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
@@ -15,29 +16,23 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rps
 
 class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
     MotorEx(hardwareMap, id, type) {
+
     /** the current position setpoint of the motor **/
     var positionSetpoint: Rotation2d = 0.0.degrees
-
+    var positionError: Rotation2d = 0.0.degrees
+    var direction: Direction = FORWARD
     var targetVelocity: AngularVelocity = 0.0.rpm
+    var velocityError: AngularVelocity = 0.0.rpm
 
     /**
      * Software forward limit, ONLY for percent-output control.
-     * WILL NOT work in closed-loop control onboard the motor controller, since that
-     * uses SparkMaxPIDController, which is package-private and cannot be extended by us.
-     *
-     * - If possible, use hardware limits by wiring switches to the data port.
      */
     var forwardLimit: () -> Boolean = { false }
 
     /**
      * Software forward limit, ONLY for percent-output control.
-     * WILL NOT work in closed-loop control onboard the motor controller, since that
-     * uses SparkMaxPIDController, which is package-private and cannot be extended by us.
-     *
-     * - If possible, use hardware limits by wiring switches to the data port.
      */
     var reverseLimit: () -> Boolean = { false }
-
     var minPercentOutput = -1.0
         set(value) {
             field = value.coerceAtLeast(-1.0)
@@ -49,11 +44,9 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
 
 
     fun configPID(gains: PIDGains) {
-        if (runmode == RunMode.PositionControl) {
-            positionCoefficient = (gains.kP)
-        } else if (runmode == RunMode.VelocityControl) {
-            setVeloCoefficients(gains.kP, gains.kI, gains.kD)
-        }
+        positionCoefficient = gains.kP
+        setVeloCoefficients(gains.kP, gains.kI, gains.kD)
+        setFeedforwardCoefficients(gains.kS, gains.KV, gains.Ka)
     }
 
     /**
@@ -63,7 +56,7 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
         if (maxPercentOutput <= minPercentOutput) {
             robotPrintError("maxPercentOutput is smaller or equal to minPercentOutput")
         } else {
-            super.set(clamp(output, minPercentOutput, maxPercentOutput))
+            super.set(clamp(output * direction.multiplier, minPercentOutput, maxPercentOutput))
         }
     }
 
@@ -71,7 +64,7 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
         if ((forwardLimit() && output > 0.0) || (reverseLimit() && output < 0.0)) {
             super.set(0.0)
         } else {
-            set(output)
+            set(output * direction.multiplier)
         }
     }
 
@@ -88,6 +81,7 @@ class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
     fun getPositionSetPoint(): Rotation2d {
         return positionSetpoint
     }
+
 
     fun getCurrentVelocity(): AngularVelocity {
         return (velocity / cpr).rps
