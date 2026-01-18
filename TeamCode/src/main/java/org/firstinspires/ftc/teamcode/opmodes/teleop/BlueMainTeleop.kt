@@ -11,6 +11,7 @@ class BlueMainTeleop : CommandOpMode() {
         FtcDashboard.getInstance().telemetry.addLine("Robot initializing")
         RobotContainer(hardwareMap, FtcDashboard.getInstance().telemetry, gamepad1, gamepad2)
         FtcDashboard.getInstance().telemetry.update()
+        updateTelemetry(telemetry)
 
 
     }
@@ -19,5 +20,6 @@ class BlueMainTeleop : CommandOpMode() {
         FtcDashboard.getInstance().telemetry.addLine("Robot is running")
         super.run()
         FtcDashboard.getInstance().telemetry.update()
+        updateTelemetry(telemetry)
     }
 }

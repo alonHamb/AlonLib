@@ -4,12 +4,7 @@ import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.rotations
-import org.firstinspires.ftc.teamcode.commands.exampleInstantCommand
-import org.firstinspires.ftc.teamcode.subsystems.example.ExampleSubsystem
 
 @Config
 
@@ -23,35 +18,28 @@ class RobotContainer(
     val controllerA = GamepadEx(gamepad1)
 
     val controllerB = GamepadEx(gamepad2)
-
     // --- Subsystem decleration
-    lateinit var exampleSubsystem: ExampleSubsystem
 
+    // --- init functions ---
     init {
         initializeSubsystems()
         configureButtonBindings()
         setDefaultCommands()
     }
 
-
     fun initializeSubsystems() {
-        exampleSubsystem = ExampleSubsystem(hardwareMap, telemetry)
     }
 
     fun configureButtonBindings() {
-        with(controllerA) {
-            getGamepadButton(GamepadKeys.Button.A).whenPressed(
-                exampleSubsystem.exampleInstantCommand { input.rotations }
-            )
-        }
+
 
     }
 
     fun setDefaultCommands() {
-        exampleSubsystem.defaultCommand =
-            exampleSubsystem.exampleInstantCommand { input.degrees }
+
     }
 
+    // --- FTC Dashboard variables ---
     companion object {
         @JvmField
         var input = 0.5
