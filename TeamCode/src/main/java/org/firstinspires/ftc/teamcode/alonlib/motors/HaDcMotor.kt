@@ -14,8 +14,9 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 import org.firstinspires.ftc.teamcode.alonlib.units.rps
 
-class HaDcMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA) :
-    MotorEx(hardwareMap, id, type) {
+class HaDcMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
+    MotorEx(hardwareMap, id, cpr, rpm) {
+    constructor(hardwareMap: HardwareMap, id: String, type: GoBILDA) : this(hardwareMap, id, type.cpr, type.rpm)
 
     /** the current position setpoint of the motor **/
     var positionSetpoint: Rotation2d = 0.0.degrees
