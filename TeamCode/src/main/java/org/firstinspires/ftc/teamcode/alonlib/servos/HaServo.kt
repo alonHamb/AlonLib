@@ -24,13 +24,12 @@ class HaServo(
 
 
     fun setPositionSetPoint(position: Rotation2d) {
-        val normalizedPosition = MathUtils.normalizeDegrees(position.degrees, true)
-        super.set(normalizedPosition)
+        super.set(MathUtils.normalizeDegrees(position.degrees, true))
 
     }
 
-    fun setRunningDirection(direction: Direction) {
-        if (direction == Direction.COUNTER_CLOCKWISE) {
+    fun setRunningDirection(direction: RunningDirection) {
+        if (direction == RunningDirection.REVERSE) {
             setInverted(true)
         } else {
             setInverted(false)
@@ -41,10 +40,10 @@ class HaServo(
         return (mapRange(rawPosition, 0.0, 1.0, minPosition, maxPosition)).degrees
     }
 
-    enum class Direction {
+    enum class RunningDirection {
 
-        CLOCKWISE,
-        COUNTER_CLOCKWISE
+        FORWARD,
+        REVERSE
 
     }
 

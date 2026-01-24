@@ -4,23 +4,15 @@ import com.hamosad1657.lib.math.PIDGains
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx
-import com.seattlesolvers.solverslib.hardware.motors.Motor.Direction.FORWARD
-import org.firstinspires.ftc.teamcode.alonlib.math.clamp
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
-import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.rpm
-import org.firstinspires.ftc.teamcode.alonlib.units.rps
 
-class HaCrServo(hardwareMap: HardwareMap, var id: String, var runMode: RunMode) :
+class HaCrServo(hardwareMap: HardwareMap, var id: String) :
     CRServoEx(hardwareMap, id) {
 
-    var positionSetpoint: Rotation2d = 0.0.degrees
-    var positionError: Rotation2d = 0.0.degrees
-    var direction: Direction = FORWARD
-    var velocitySetpoint: AngularVelocity = 0.0.rpm
-    var velocityError: AngularVelocity = 0.0.rpm
+    var runMode: RunMode = RunMode.RawPower
+
 
     /**
      * Software forward limit, ONLY for percent-output control.
@@ -31,6 +23,7 @@ class HaCrServo(hardwareMap: HardwareMap, var id: String, var runMode: RunMode) 
      * Software forward limit, ONLY for percent-output control.
      */
     var reverseLimit: () -> Boolean = { false }
+
     var minPercentOutput = -1.0
         set(value) {
             field = value.coerceAtLeast(-1.0)
@@ -40,60 +33,60 @@ class HaCrServo(hardwareMap: HardwareMap, var id: String, var runMode: RunMode) 
             field = value.coerceAtMost(1.0)
         }
 
-    fun getCurrentVelocity(): AngularVelocity {
-        return (encoder.correctedVelocity / cpr).rps
-    }
 
-
-    fun configPIDF(gains: PIDGains) {
+    fun configPID(gains: PIDGains) {
         positionCoefficient = gains.kP
-        setVeloCoefficients(gains.kP, gains.kI, gains.kD)
-        setFeedforwardCoefficients(gains.kS, gains.KV, gains.Ka)
+        veloController.setPIDF(gains.kP, gains.kI, gains.kD, gains.kFF)
     }
-
 
     /**
      * percentOutput is clamped between properties minPercentOutput and maxPercentOutput.
      */
-    override fun set(output: PercentOutput) {
-        if (maxPercentOutput <= minPercentOutput) {
-            robotPrintError("maxPercentOutput is smaller or equal to minPercentOutput")
+
+    fun setPrecentOutput(output: PercentOutput) {
+        if (runMode == RunMode.RawPower) {
+            if (inverted) {
+                set(output * -1)
+            } else {
+                set(output)
+            }
         } else {
-            super.set(clamp(output * direction.multiplier, minPercentOutput, maxPercentOutput))
+            robotPrintError("motor isn't in raw power mode $runMode")
         }
     }
 
-    fun setWithLimits(output: PercentOutput) {
+    fun setPrecentOutputWithLimits(output: PercentOutput) {
         if (runMode == RunMode.RawPower) {
             if ((forwardLimit() && output > 0.0) || (reverseLimit() && output < 0.0)) {
                 super.set(0.0)
+            } else if (inverted) {
+                set(output * -1)
             } else {
-                set(output * direction.multiplier)
+                set(output)
             }
-        } else robotPrintError("servo ($id) is set to position control cannot set raw power")
-
-    }
-
-    fun setPositionSetPoint(setpoint: Rotation2d) {
-        if (runMode == RunMode.OptimizedPositionalControl) {
-            positionSetpoint = setpoint
-            super.set(setpoint.degrees)
         } else {
-            robotPrintError("you cant give raw power servo a position setpoint")
-            set(0.0)
+            robotPrintError("motor isn't in raw power mode $runMode")
         }
     }
 
-
-    fun setVelocitySetpoint(setPoint: AngularVelocity) {
-        velocitySetpoint = setPoint
-        super.veloController.setPoint = velocitySetpoint.asRps / cpr
-
-
+    fun setPositionSetPoint(setPoint: Rotation2d) {
+        if (runMode == RunMode.OptimizedPositionalControl) {
+            positionController.setPoint = setPoint.degrees
+        } else {
+            robotPrintError("motor isn't in position control mode $runMode")
+        }
     }
+
+    override fun setRunMode(runMode: RunMode): CRServoEx {
+        super.setRunMode(runMode)
+        this.runMode = runMode
+        return this
+    }
+
 
     fun getPositionSetPoint(): Rotation2d {
-        return positionSetpoint
+        return positionController.setPoint.degrees
     }
+
 
 }
