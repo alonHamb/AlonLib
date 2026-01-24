@@ -5,12 +5,10 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.seattlesolvers.solverslib.command.CommandOpMode
 import org.firstinspires.ftc.teamcode.RobotContainer
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaDcMotor
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 
 @TeleOp(name = "Red Main Teleop", group = "Teleop")
 class RedMainTeleop : CommandOpMode() {
-    lateinit var motor = HaDcMotor(hardwareMap, "motor", 8192.0, 435.0)
     override fun initialize() {
         val alliance = Alliance.Red
         telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
