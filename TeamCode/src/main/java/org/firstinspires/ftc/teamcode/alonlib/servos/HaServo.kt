@@ -6,6 +6,7 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx
 import com.seattlesolvers.solverslib.util.MathUtils
 import org.firstinspires.ftc.teamcode.alonlib.math.mapRange
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.div
 
 class HaServo(
     hMap: HardwareMap?,
@@ -18,7 +19,10 @@ class HaServo(
     MathUtils.normalizeDegrees(minPosition.degrees, true),
     MathUtils.normalizeDegrees(maxPosition.degrees, true)
 ) {
+    constructor(hardwareMap: HardwareMap, id: String, range: Rotation2d) : this(hardwareMap, id, range / 2.0, -range / 2.0)
+    constructor(hardwareMap: HardwareMap, id: String) : this(hardwareMap, id, 0.degrees, 300.degrees)
 
+    val position get() = mapRange(super.rawPosition, 0.0, 1.0, minPosition, maxPosition)
     val minPosition = MathUtils.normalizeDegrees(minPosition.degrees, true)
     val maxPosition = MathUtils.normalizeDegrees(maxPosition.degrees, true)
 
