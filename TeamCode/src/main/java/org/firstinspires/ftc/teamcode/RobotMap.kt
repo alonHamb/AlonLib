@@ -8,9 +8,5 @@ object RobotMap {
      *  var DEVICE_NAME = "deviceId"
      */
 
-    object ExampleSubsystem {
-        const val EXAMPLE_MOTOR_ID = "example motor"
-        const val EXAMPLE_SERVO_ID = "example servo"
-    }
 
 }
