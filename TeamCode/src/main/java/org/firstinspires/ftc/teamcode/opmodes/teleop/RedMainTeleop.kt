@@ -21,7 +21,7 @@ class RedMainTeleop : CommandOpMode() {
 
     override fun run() {
         telemetry.addLine("Robot is running")
-        super.run()
         telemetry.update()
+        super.run()
     }
 }
