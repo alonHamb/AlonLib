@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
+import org.firstinspires.ftc.teamcode.commands.driveFieldCentricCommand
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
 
 @Config
 
@@ -22,6 +25,8 @@ class RobotContainer(
     val controllerB = GamepadEx(gamepad2)
 
     // --- Subsystem decleration
+    var shooterSubsystem = ShooterSubsystem(hardwareMap, telemetry)
+    var driveSubsystem = DriveSubsystem(hardwareMap, telemetry)
 
     // --- init functions ---
     init {
@@ -31,17 +36,23 @@ class RobotContainer(
     }
 
     fun initializeSubsystems() {
+        shooterSubsystem
+        driveSubsystem
+
 
     }
 
     fun configureButtonBindings() {
         with(controllerA) {
+
         }
 
 
     }
 
     fun setDefaultCommands() {
+        driveSubsystem.defaultCommand = driveSubsystem.driveFieldCentricCommand(controllerA.leftX, controllerA.leftY, controllerA.rightX)
+        shooterSubsystem.defaultCommand =
     }
 
 }
