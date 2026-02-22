@@ -2,9 +2,13 @@ package org.firstinspires.ftc.teamcode.subsystems.shooter
 
 import com.hamosad1657.lib.math.PIDGains
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
+import org.firstinspires.ftc.robotcore.external.navigation.Position
+import org.firstinspires.ftc.teamcode.alonlib.math.LinearInterpolationTable
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.meters
 import org.firstinspires.ftc.teamcode.alonlib.units.rangeTo
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
@@ -22,15 +26,53 @@ object ShooterConstants {
     val MAXIMUM_HEADING_ANGLE = 360.0.degrees
     val MINIMUM_HEADING_ANGLE = 0.0.degrees
 
+    // --- dynamic shooting ---
+    val MINIMUM_SHOOTING_ANGLE = 25.degrees
+
+    val MAXIMUM_SHOOTING_ANGLE = 45.degrees
+
+    val MINIMUM_SHOOTING_VELOCITY = 2100.rpm
+
+    val MAXIMUM_SHOOTING_VELOCITY = 2950.rpm
+    val MINIMUM_DYNAMIC_SHOOTING_DISTANCE = 0.60.meters
+
+    val MAXIMUM_DYNAMIC_SHOOTING_DISTANCE = 2.179.meters
+
     // --- PID parameters ---
     val VELOCITY_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
     val HEADING_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
+
+    // --- interpolation tables ---
+    val ANGLE_INTERPOLATION_TABLE = LinearInterpolationTable(
+        0.57566 to MINIMUM_SHOOTING_ANGLE.degrees,
+        1.0 to 31.7, //distance in metres, angle in degrees
+        1.2 to 34.1,
+        1.4 to 36.2,
+        1.6 to 38.0,
+        1.8 to 39.6,
+        2.0 to 41.0,
+        2.2 to 42.3,
+        2.4 to 43.4,
+        2.6 to 44.4,
+        2.728 to MAXIMUM_SHOOTING_ANGLE.degrees
+    )
+
+    val VELOCITY_INTERPOLATION_TABLE = LinearInterpolationTable(
+        0.57566 to MINIMUM_SHOOTING_VELOCITY.asRpm,
+        1.0 to 2600.0,
+        2.52 to MAXIMUM_SHOOTING_VELOCITY.asRpm
+
+    )
+
 
     // --- tolerances ---
     val HEADING_TOLERANCE = 1.degrees
     val VELOCITY_TOLERANCE = 100.rpm
 
     // --- tag positions ---
+
+    val BLUE_GOAL_SHOOTING_TARGET = Position(DistanceUnit.MM, -1.779, -1.782, 996.0, 0)
+    val RED_GOAL_SHOOTING_TARGET = Position(DistanceUnit.MM, -1.779, 1.782, 996.0, 0)
 
 
     class ShooterState(angle: Rotation2d, heading: Rotation2d, velocity: AngularVelocity) {
