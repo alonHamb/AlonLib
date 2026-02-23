@@ -113,10 +113,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
     }
 
     fun setHeadingMotorOutput(output: PercentOutput) {
-        if (output > 0.0 && isAtMaxHeading) {
-            headingMotor.precentOutput = 0.0
-        }
-        if (output < 0.0 && isAtMinHeading) {
+        if (output > 0.0 && isAtMaxHeading || output < 0.0 && isAtMinHeading) {
             headingMotor.precentOutput = 0.0
         }
         headingMotor.precentOutput = output
