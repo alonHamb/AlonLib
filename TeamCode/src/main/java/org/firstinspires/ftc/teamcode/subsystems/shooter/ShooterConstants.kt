@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.subsystems.shooter
 
 import com.hamosad1657.lib.math.PIDGains
 import com.seattlesolvers.solverslib.geometry.Rotation2d
-import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.math.LinearInterpolationTable
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
@@ -11,9 +10,6 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rangeTo
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 object ShooterConstants {
-    // --- hardware configuration ---
-    val FLYWHEEL_MOTOR_TYPE = Motor.GoBILDA.BARE
-    val HEADING_MOTOR_TYPE = Motor.GoBILDA.RPM_435
 
     // --- Ratios ---
     const val HEADING_RATIO = 11.0 / 140.0
@@ -72,9 +68,9 @@ object ShooterConstants {
 
 
     class ShooterState(angle: Rotation2d, heading: Rotation2d, velocity: AngularVelocity) {
-        val angle: Rotation2d
-        val velocity: AngularVelocity
-        val heading: Rotation2d
+        var angle: Rotation2d
+        var velocity: AngularVelocity
+        var heading: Rotation2d
 
         init {
             this.angle =

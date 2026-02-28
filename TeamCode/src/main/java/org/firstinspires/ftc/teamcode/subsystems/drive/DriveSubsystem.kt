@@ -7,12 +7,12 @@ import com.seattlesolvers.solverslib.drivebase.MecanumDrive
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.BACK_LEFT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.BACK_RIGHT_MOTOR_ID
+import org.firstinspires.ftc.teamcode.RobotMap.Drive.DRIVE_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_LEFT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_RIGHT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.PINPOINT_ID
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.DRIVE_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_X_OFFSET
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_Y_OFFSET
@@ -57,9 +57,8 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
 
 
     // --- all subsystem periodic functions ---
-
     fun updateLocalizer() {
-        if (limelight.isWithinLimelightAccuracyRange) {
+        if (limelight.isInLimelightAccuracyRange) {
             localizer.position = limelight.latestBotPose2D
             currentLocalizer = Limelight
         } else {
