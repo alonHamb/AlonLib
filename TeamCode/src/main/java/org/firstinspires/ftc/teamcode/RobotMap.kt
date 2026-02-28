@@ -36,7 +36,7 @@ object RobotMap {
 
     object Intake {
         const val INTAKE_MOTOR_ID = "intake motor"
-        val INTAKE_MOTOR = Motor.GoBILDA.RPM_1150
+        val INTAKE_MOTOR_TYPE = Motor.GoBILDA.RPM_1150
     }
 
     object Vision {

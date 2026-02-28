@@ -7,8 +7,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.meters
 
 object VisionConstants {
     val LIMELIGHT_ACCURACY_RANGE = 0.6.meters..3.5.meters
-
-    val DYNAMIC_SHOOTING_RANGE = 0.6.meters..2.179.meters
+    val FAR_SHOOTING_RANGE = 3.meters..5.meters
 
     val BLUE_GOAL_TAG_ID = 20
 

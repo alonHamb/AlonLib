@@ -15,14 +15,10 @@ import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
-import org.firstinspires.ftc.teamcode.alonlib.units.Length
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.alonlib.units.compareTo
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.div
-import org.firstinspires.ftc.teamcode.alonlib.units.horizontalAngleTo
-import org.firstinspires.ftc.teamcode.alonlib.units.horizontalDistanceTo
-import org.firstinspires.ftc.teamcode.alonlib.units.meters
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.ANGLE_INTERPOLATION_TABLE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_PID_GAINS
@@ -33,8 +29,6 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.MINIMU
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_INTERPOLATION_TABLE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_PID_GAINS
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_TOLERANCE
-import org.firstinspires.ftc.teamcode.subsystems.vision.VisionConstants.BLUE_GOAL_TARGET
-import org.firstinspires.ftc.teamcode.subsystems.vision.VisionConstants.RED_GOAL_TARGET
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Constants
 
@@ -59,8 +53,6 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         PIDFGains = HEADING_PID_GAINS
     }
     val hoodServo = HaServo(hardwareMap, HOOD_SERVO_ID).apply { runningDirection = HaServo.RunningDirection.FORWARD }
-
-
     // --- state getters and setters ---
 
     val currentAngle: Rotation2d
@@ -87,8 +79,8 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         }
     val isAtMaxHeading get() = currentHeading >= MAXIMUM_HEADING
     val isAtMinHeading get() = currentHeading >= MINIMUM_HEADING
-    val isWithinVelocityTolerance get() = flywheelMotor.inTolerance
-    val isWithinHeadingTolerance get() = headingMotor.inTolerance
+    val isInVelocityTolerance get() = flywheelMotor.inTolerance
+    val isInHeadingTolerance get() = headingMotor.inTolerance
     val latestBotPosition get() = limelight.latestBotPose2d
     var state: Constants.ShooterState
         get() = Constants.ShooterState(currentAngle, currentHeading, currentVelocity)
@@ -120,41 +112,31 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
     }
 
     // --- dynamic shooting ---
-    fun dynamicShootingUpdate(alliance: Alliance) {
-        state = when (alliance) {
-            Alliance.Red -> dynamicShooterCalculate(Alliance.Red)
-            Alliance.Blue -> dynamicShooterCalculate(Alliance.Blue)
-        }
-    }
 
-    private fun dynamicShooterCalculate(alliance: Alliance): Constants.ShooterState {
-        return Constants.ShooterState(
-            ANGLE_INTERPOLATION_TABLE.getOutputFor(horizontalDistanceToTarget(alliance).asMeters).degrees,
-            state.heading + angleToGoal(alliance),
-            VELOCITY_INTERPOLATION_TABLE.getOutputFor(horizontalDistanceToTarget(alliance).asMeters).rpm
-        )
-    }
-
-    private fun getDynamicHoodAngle(alliance: Alliance): Rotation2d {
+    fun getDynamicShootingVelocityCalc(alliance: Alliance): AngularVelocity {
         return when (alliance) {
-            Alliance.Blue -> ANGLE_INTERPOLATION_TABLE.getOutputFor(latestBotPosition.horizontalDistanceTo(BLUE_GOAL_TARGET)).degrees
-            Alliance.Red -> ANGLE_INTERPOLATION_TABLE.getOutputFor(latestBotPosition.horizontalDistanceTo(RED_GOAL_TARGET)).degrees
+            Alliance.Red -> VELOCITY_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToRedTarget.asMeters).rpm
+            Alliance.Blue -> VELOCITY_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToBlueTarget.asMeters).rpm
         }
     }
 
-    private fun horizontalDistanceToTarget(alliance: Alliance): Length {
+    fun getDynamicHeadingCalc(alliance: Alliance): Rotation2d {
         return when (alliance) {
-            Alliance.Red -> latestBotPosition.horizontalDistanceTo(RED_GOAL_TARGET).meters
-            Alliance.Blue -> latestBotPosition.horizontalDistanceTo(BLUE_GOAL_TARGET).meters
+            Alliance.Red -> state.heading + limelight.angleToRedTarget
+            Alliance.Blue -> state.heading + limelight.angleToBlueTarget
+
+        }
+
+
+    }
+
+    fun getDynamicHoodAngle(alliance: Alliance): Rotation2d {
+        return when (alliance) {
+            Alliance.Blue -> ANGLE_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToBlueTarget.asMeters).degrees
+            Alliance.Red -> ANGLE_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToRedTarget.asMeters).degrees
         }
     }
 
-    private fun angleToGoal(alliance: Alliance): Rotation2d {
-        return when (alliance) {
-            Alliance.Red -> latestBotPosition.horizontalAngleTo(RED_GOAL_TARGET)
-            Alliance.Blue -> latestBotPosition.horizontalAngleTo(BLUE_GOAL_TARGET)
-        }
-    }
 
     // --- Testing & Manual overrides ---
 
@@ -177,7 +159,6 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         currentAngleSetPoint += angle
     }
 
-
     // --- Telemetry ---
 
     fun addTelemetry() {
@@ -192,8 +173,8 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         telemetry.addData("current velocity error: ", flywheelMotor.velocityError)
         telemetry.addData("is At Max Heading: ", isAtMaxHeading)
         telemetry.addData("is at min heading: ", isAtMinHeading)
-        telemetry.addData("is within velocity tolerance: ", isWithinVelocityTolerance)
-        telemetry.addData("is within heading tolerance: ", isWithinHeadingTolerance)
+        telemetry.addData("is within velocity tolerance: ", isInVelocityTolerance)
+        telemetry.addData("is within heading tolerance: ", isInHeadingTolerance)
     }
 
     // --- periodic subsystem functions ---
