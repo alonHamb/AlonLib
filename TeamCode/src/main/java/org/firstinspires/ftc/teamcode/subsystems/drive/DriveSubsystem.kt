@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
+import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.SubsystemBase
 import com.seattlesolvers.solverslib.drivebase.MecanumDrive
@@ -9,38 +9,82 @@ import org.firstinspires.ftc.teamcode.RobotMap.Drive.BACK_LEFT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.BACK_RIGHT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_LEFT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_RIGHT_MOTOR_ID
-import org.firstinspires.ftc.teamcode.RobotMap.Drive.PIN_POINT_ID
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaDcMotor
+import org.firstinspires.ftc.teamcode.RobotMap.Drive.PINPOINT_ID
+import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.DRIVE_MOTOR_TYPE
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PIN_POINT_X_OFFSET
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PIN_POINT_Y_OFFSET
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_X_OFFSET
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_Y_OFFSET
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Telemetry.Limelight
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Telemetry.PinPoint
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.X_POD_DIRECTION
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Y_POD_DIRECTION
+import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
 
-class DriveSubsystem(val hardwareMap: HardwareMap, telemetry: Telemetry) : SubsystemBase() {
+@Config
+class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : SubsystemBase() {
+    @JvmField
     // --- hardware decleration ---
-    val frontLeftMotor = HaDcMotor(hardwareMap, FRONT_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
-    val frontRightMotor = HaDcMotor(hardwareMap, FRONT_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
-    val backLeftMotor = HaDcMotor(hardwareMap, BACK_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
-    val backRightMotor = HaDcMotor(hardwareMap, BACK_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
-
-    val localizer = HaPinPoint(hardwareMap, PIN_POINT_ID, GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD).apply {
-        setOffset(PIN_POINT_X_OFFSET, PIN_POINT_Y_OFFSET)
+    val frontLeftMotor = HaMotor(hardwareMap, FRONT_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
+    val frontRightMotor = HaMotor(hardwareMap, FRONT_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
+    val backLeftMotor = HaMotor(hardwareMap, BACK_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
+    val backRightMotor = HaMotor(hardwareMap, BACK_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
+    val localizer = HaPinPoint(hardwareMap, PINPOINT_ID, PINPOINT_ODOMETRY_PODS).apply {
+        setOffset(
+            PINPOINT_X_OFFSET,
+            PINPOINT_Y_OFFSET
+        )
+        setEncoderDirections(
+            X_POD_DIRECTION,
+            Y_POD_DIRECTION
+        )
     }
-
     val drive = MecanumDrive(frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor)
+    val limelight = VisionSubsystem(hardwareMap, telemetry)
 
-    fun driveFieldCentric(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
+    // --- state getters and setters ---
+    var currentLocalizer = PinPoint
+
+    // --- operation functions ---
+    fun fieldCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
         drive.driveFieldCentric(xSpeed, ySpeed, turnSpeed, localizer.heading.degrees)
     }
 
-    fun driveRobotCentric(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
+    fun robotCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
         drive.driveRobotCentric(xSpeed, ySpeed, turnSpeed)
+    }
+
+
+    // --- all subsystem periodic functions ---
+
+    fun updateLocalizer() {
+        if (limelight.isWithinLimelightAccuracyRange) {
+            localizer.position = limelight.latestBotPose2D
+            currentLocalizer = Limelight
+        } else {
+            currentLocalizer = PinPoint
+            localizer.update()
+        }
     }
 
     override fun periodic() {
         super.periodic()
-        localizer.update()
+        updateLocalizer()
 
     }
+
+    // --- Telemetry ---
+
+    fun addTelemetry() {
+        telemetry.addLine("--- Drive subsystem ---")
+        telemetry.addData("Running Command", super.currentCommand)
+        telemetry.addData("Robot pose", localizer.position.toString())
+        telemetry.addData("Robot heading", localizer.heading)
+        telemetry.addData("localizer", currentLocalizer)
+
+
+    }
+
 
 }

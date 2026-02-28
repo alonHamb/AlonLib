@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode
 
-import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.RunCommand
@@ -12,7 +11,6 @@ import org.firstinspires.ftc.teamcode.commands.dynamicShootingCommand
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
 
-@Config
 
 class RobotContainer(
     val hardwareMap: HardwareMap,
@@ -54,7 +52,7 @@ class RobotContainer(
 
     fun setDefaultCommands() {
         driveSubsystem.defaultCommand = driveSubsystem.driveFieldCentricCommand(controllerA.leftX, controllerA.leftY, controllerA.rightX)
-        shooterSubsystem.defaultCommand = RunCommand(shooterSubsystem.dynamicShootingCommand(alliance))
+        shooterSubsystem.defaultCommand = RunCommand({ shooterSubsystem.dynamicShootingCommand(alliance) })
     }
 
 }

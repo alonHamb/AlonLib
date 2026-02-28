@@ -5,13 +5,13 @@ import com.seattlesolvers.solverslib.command.SubsystemBase
 import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.RobotMap.Intake.INTAKE_MOTOR_ID
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaDcMotor
+import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import kotlin.math.absoluteValue
 
 class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
     // --- hardware decleration ---
-    val intakeMotor = HaDcMotor(hardwareMap, INTAKE_MOTOR_ID, Motor.GoBILDA.RPM_1150).apply { setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE) }
+    val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, Motor.GoBILDA.RPM_1150).apply { setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE) }
 
     // --- state getters ---
 

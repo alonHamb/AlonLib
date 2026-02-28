@@ -2,19 +2,21 @@ package org.firstinspires.ftc.teamcode.subsystems.shooter
 
 import com.hamosad1657.lib.math.PIDGains
 import com.seattlesolvers.solverslib.geometry.Rotation2d
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
-import org.firstinspires.ftc.robotcore.external.navigation.Position
+import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.math.LinearInterpolationTable
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.meters
 import org.firstinspires.ftc.teamcode.alonlib.units.rangeTo
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 object ShooterConstants {
+    // --- hardware configuration ---
+    val FLYWHEEL_MOTOR_TYPE = Motor.GoBILDA.BARE
+    val HEADING_MOTOR_TYPE = Motor.GoBILDA.RPM_435
+
     // --- Ratios ---
-    val HEADING_RATIO = 11.0 / 140.0
+    const val HEADING_RATIO = 11.0 / 140.0
 
     // --- Mechanical limits ---
     val MAXIMUM_HEADING = 360.degrees
@@ -34,9 +36,6 @@ object ShooterConstants {
     val MINIMUM_SHOOTING_VELOCITY = 2100.rpm
 
     val MAXIMUM_SHOOTING_VELOCITY = 2950.rpm
-    val MINIMUM_DYNAMIC_SHOOTING_DISTANCE = 0.60.meters
-
-    val MAXIMUM_DYNAMIC_SHOOTING_DISTANCE = 2.179.meters
 
     // --- PID parameters ---
     val VELOCITY_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
@@ -69,10 +68,7 @@ object ShooterConstants {
     val HEADING_TOLERANCE = 1.degrees
     val VELOCITY_TOLERANCE = 100.rpm
 
-    // --- tag positions ---
-
-    val BLUE_GOAL_SHOOTING_TARGET = Position(DistanceUnit.MM, -1.779, -1.782, 996.0, 0)
-    val RED_GOAL_SHOOTING_TARGET = Position(DistanceUnit.MM, -1.779, 1.782, 996.0, 0)
+    // --- field positions ---
 
 
     class ShooterState(angle: Rotation2d, heading: Rotation2d, velocity: AngularVelocity) {
