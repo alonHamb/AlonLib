@@ -36,7 +36,7 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Con
 class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
     @JvmField
 
-    // --- hardware decleration and configuration ---
+    // --- hardware declaration and configuration ---
     val limelight = VisionSubsystem(hardwareMap, telemetry)
     val flywheelMotor = HaMotor(hardwareMap, FLYWHEEL_MOTOR_ID, FLYWHEEL_MOTOR_TYPE).apply {
         setRunMode(Motor.RunMode.VelocityControl)
@@ -88,7 +88,6 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
             currentAngleSetPoint = value.angle
             currentHeadingSetPoint = value.heading
             currentVelocitySetPoint = value.velocity
-
         }
 
     // --- operation functions ---
@@ -180,11 +179,10 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         telemetry.addData("is within heading tolerance: ", isInHeadingTolerance)
     }
 
-    // --- periodic subsystem functions ---
+    // --- periodic hardware functions ---
     override fun periodic() {
-        super.periodic()
-        flywheelMotor.calculatePid()
-        headingMotor.calculatePid()
+        flywheelMotor.calculatePidF()
+        headingMotor.calculatePidF()
     }
 
 
