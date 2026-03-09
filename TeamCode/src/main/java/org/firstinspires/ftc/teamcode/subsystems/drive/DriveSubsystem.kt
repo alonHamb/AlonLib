@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
 @Config
 class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : SubsystemBase() {
     @JvmField
-    // --- hardware decleration ---
+    // --- hardware declaration ---
     val frontLeftMotor = HaMotor(hardwareMap, FRONT_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
     val frontRightMotor = HaMotor(hardwareMap, FRONT_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
     val backLeftMotor = HaMotor(hardwareMap, BACK_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)

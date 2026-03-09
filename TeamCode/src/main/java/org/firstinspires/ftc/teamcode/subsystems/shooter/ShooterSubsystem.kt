@@ -43,16 +43,18 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT)
         runningDirection = Motor.Direction.FORWARD
         velocityTolerance = VELOCITY_TOLERANCE
-        PIDFGains = VELOCITY_PID_GAINS
+        pidfGains = VELOCITY_PID_GAINS
     }
     val headingMotor = HaMotor(hardwareMap, HEADING_MOTOR_ID, HEADING_MOTOR_TYPE).apply {
         setRunMode(Motor.RunMode.PositionControl)
         setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
         runningDirection = Motor.Direction.FORWARD
         positionTolerance = HEADING_TOLERANCE
-        PIDFGains = HEADING_PID_GAINS
+        pidfGains = HEADING_PID_GAINS
     }
-    val hoodServo = HaServo(hardwareMap, HOOD_SERVO_ID).apply { runningDirection = HaServo.RunningDirection.FORWARD }
+    val hoodServo = HaServo(hardwareMap, HOOD_SERVO_ID).apply {
+        runningDirection = HaServo.RunningDirection.FORWARD
+    }
     // --- state getters and setters ---
 
     val currentAngle: Rotation2d
@@ -140,7 +142,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
     // --- Testing & Manual overrides ---
 
     fun setFlywheelMotorPower(power: PercentOutput) {
-        flywheelMotor.precentOutput = power
+        flywheelMotor.percentOutput = power
     }
 
     fun increaseVelocitySetPointBy(velocity: AngularVelocity) {
@@ -148,13 +150,10 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
     }
 
     fun setHeadingMotorOutput(output: PercentOutput) {
-        if (output > 0.0 && isAtMaxHeading) {
-            headingMotor.precentOutput = 0.0
+        if (output > 0.0 && isAtMaxHeading || output < 0.0 && isAtMinHeading) {
+            headingMotor.percentOutput = 0.0
         }
-        if (output < 0.0 && isAtMinHeading) {
-            headingMotor.precentOutput = 0.0
-        }
-        headingMotor.precentOutput = output
+        headingMotor.percentOutput = output
     }
 
     fun increaseAngleSetpointBy(angle: Rotation2d) {

@@ -16,27 +16,27 @@ import kotlin.math.absoluteValue
 @Config
 class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
     @JvmField
-    // --- hardware decleration
+    // --- hardware declaration
     val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, INTAKE_MOTOR_TYPE).apply {
         setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
         setRunMode(Motor.RunMode.RawPower)
-        runningDirection == Motor.Direction.FORWARD
+        runningDirection = Motor.Direction.FORWARD
     }
 
     val transferMotor = HaMotor(hardwareMap, TRANSFER_MOTOR_ID, TRANSFER_MOTOR_TYPE).apply {
         setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
         setRunMode(Motor.RunMode.RawPower)
-        runningDirection == Motor.Direction.REVERSE
+        runningDirection = Motor.Direction.REVERSE
     }
 
     // --- state getters ---
 
-    val isRunning get() = transferMotor.precentOutput.absoluteValue > 0
+    val isRunning get() = transferMotor.percentOutput.absoluteValue > 0
 
     // --- motor control ---
 
     fun setMotorPower(power: PercentOutput) {
-        transferMotor.precentOutput = power
+        transferMotor.percentOutput = power
     }
 
     fun stopMotor() {
@@ -45,6 +45,8 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Su
 
     // --- telemetry ---
     fun addTelemetry() {
+        telemetry.addLine("--- transfer subsystem ---")
+        telemetry.addData("Running Command", super.currentCommand)
         telemetry.addData("is running", isRunning)
         telemetry.addData("running direction", transferMotor.runningDirection.toString())
     }

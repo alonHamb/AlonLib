@@ -10,17 +10,19 @@ import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import kotlin.math.absoluteValue
 
 class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
-    // --- hardware decleration ---
-    val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, Motor.GoBILDA.RPM_1150).apply { setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE) }
+    // --- hardware declaration ---
+    val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, Motor.GoBILDA.RPM_1150).apply {
+        setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
+    }
 
     // --- state getters ---
 
-    val isActive get() = intakeMotor.precentOutput.absoluteValue >= 0
+    val isActive get() = intakeMotor.percentOutput.absoluteValue >= 0
 
     // --- motors control ---
 
     fun setMotorPower(power: PercentOutput) {
-        intakeMotor.precentOutput = power
+        intakeMotor.percentOutput = power
     }
 
     fun stopMotor() {
@@ -29,6 +31,8 @@ class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Subs
 
     // --- telemetry ---
     fun addTelemetry() {
+        telemetry.addLine("--- intake subsystem ---")
+        telemetry.addData("Running Command", super.currentCommand)
         telemetry.addData("is running: ", isActive)
     }
 
