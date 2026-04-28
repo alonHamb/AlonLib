@@ -9,6 +9,9 @@ import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 
 
+/**
+ * this is the robot container class it contrains all of your robots subsytems and the controllers you are going to use
+ */
 class RobotContainer(
     hardwareMap: HardwareMap,
     telemetry: Telemetry,

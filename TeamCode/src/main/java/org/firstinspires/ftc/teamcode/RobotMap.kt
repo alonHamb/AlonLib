@@ -4,10 +4,14 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor
 
 object RobotMap {
 
-    /** here you set the hardware ids for your subsystems
-     * each subsystem has her own object with its devices and their ids
-     * an id decleration looks like this
-     *  var DEVICE_NAME = "deviceId"
+    /** here you set the hardware ids and motor types for your subsystems
+     * each subsystem has her own object with its devices and their ids or types
+     * an id declaration looks like this:
+     *  const val DEVICE_NAME_ID = "device name"
+     *
+     * a type declaration looks like this:
+     *
+     *  val MOTOR_NAME_TYPE = Motor.GoBILDA.type
      */
 
     object Drive {
