@@ -11,33 +11,42 @@ import org.firstinspires.ftc.teamcode.RobotMap.ExampleSubsystem.EXAMPLE_SERVO_ID
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaCrServo
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
-import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 
 class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
     // --- hardware initialization and configuration ---
     /*
-     *  each hardware device has its own value variable
+        here you declare all the hardware used by your subsystem and configure them
+        each hardware device has its own value
      */
-    var motor = HaMotor(hardwareMap, EXAMPLE_MOTOR_ID, Motor.GoBILDA.NONE)
+    val motor = HaMotor(hardwareMap, EXAMPLE_MOTOR_ID, Motor.GoBILDA.NONE)
 
-    var servo = HaServo(hardwareMap, EXAMPLE_SERVO_ID)
+    val servo = HaServo(hardwareMap, EXAMPLE_SERVO_ID)
 
     val crServo = HaCrServo(hardwareMap, EXAMPLE_CR_SERVO_ID)
 
     // --- state getters ---
+    /*
+      here you create a properties for any state that you want eiter to receive in other areas of the code or to let other areas of the code set and modify
+     */
     val stateComponent1 get() = servo.position
 
     val stateComponent2 get() = motor.velocity
 
+
     //  --- subsystemFunctions --
+
+    /*
+    here you can put any function your subsystem might need but beware! most things can be getters and setters and don't require a function
+     */
     fun setExamplePosition(position: Rotation2d) {
         motor.position = position
     }
 
-    // --- states class ---
-    enum class ExampleSubsystemState(
-        var stateComponent1: Rotation2d,
-        var stateComponent2: AngularVelocity
-    )
+
+    override fun periodic() {
+        /*
+        here you set all the actions you want to run every run loop
+         */
+    }
 
 }
