@@ -5,9 +5,11 @@ import com.seattlesolvers.solverslib.command.SubsystemBase
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.firstinspires.ftc.teamcode.RobotMap.ExampleSubsystem.EXAMPLE_CR_SERVO_ID
 import org.firstinspires.ftc.teamcode.RobotMap.ExampleSubsystem.EXAMPLE_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.ExampleSubsystem.EXAMPLE_SERVO_ID
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaDcMotor
+import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.servos.HaCrServo
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 
@@ -16,9 +18,11 @@ class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
     /*
      *  each hardware device has its own value variable
      */
-    var motor = HaDcMotor(hardwareMap, EXAMPLE_MOTOR_ID, Motor.GoBILDA.NONE)
+    var motor = HaMotor(hardwareMap, EXAMPLE_MOTOR_ID, Motor.GoBILDA.NONE)
 
     var servo = HaServo(hardwareMap, EXAMPLE_SERVO_ID)
+
+    val crServo = HaCrServo(hardwareMap, EXAMPLE_CR_SERVO_ID)
 
     // --- state getters ---
     val stateComponent1 get() = servo.position
@@ -27,10 +31,13 @@ class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
 
     //  --- subsystemFunctions --
     fun setExamplePosition(position: Rotation2d) {
-        motor.setPositionSetPoint(position)
+        motor.position = position
     }
 
     // --- states class ---
-    enum class ExampleSubsystemState(var stateComponent1: Rotation2d, var stateComponent2: AngularVelocity)
+    enum class ExampleSubsystemState(
+        var stateComponent1: Rotation2d,
+        var stateComponent2: AngularVelocity
+    )
 
 }

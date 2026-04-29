@@ -11,6 +11,7 @@ object RobotMap {
     object ExampleSubsystem {
         const val EXAMPLE_MOTOR_ID = "example motor"
         const val EXAMPLE_SERVO_ID = "example servo"
+        const val EXAMPLE_CR_SERVO_ID = "example cr servo id"
     }
 
 }
