@@ -4,10 +4,8 @@ typealias Point = Pair<Double, Double>
 
 class LinearInterpolationTable(vararg points: Point) {
     private val table: Array<out Point> = points
-
     private var minInput = table.minOf { it.first }
     private var maxInput = table.maxOf { it.first }
-
     fun getOutputFor(input: Double): Double {
         var index = 0
 
@@ -18,7 +16,6 @@ class LinearInterpolationTable(vararg points: Point) {
                 if (input > table[i - 1].first && input <= table[i].first) index = i - 1
             }
         }
-
         return interpolate(input, table[index], table[index + 1])
     }
 

@@ -122,6 +122,15 @@ fun feetToInches(feet: Number) = feet.toDouble() * 12.0
  * @param alliance - The current alliance.
  * @return New position relative to robot's alliance.
  */
+
+fun mpsToMMps(mps: Number) = mps.toDouble() * 1000.0
+fun mpsToCMps(mps: Number) = mps.toDouble() * 100.0
+fun mpsToKph(mps: Number) = mps.toDouble() * 3.6
+fun mpsToIps(mps: Number) = mps.toDouble() * 39.37008
+fun mpsToMph(mps: Number) = mps.toDouble() * 2.23693632
+fun mmpsToMps(mmps: Number) = mmps.toDouble() / 1000.0
+
+
 fun matchPoseToAlliance(position: Pose2d, alliance: Alliance): Pose2d {
     return when (alliance) {
         Alliance.Blue -> position
