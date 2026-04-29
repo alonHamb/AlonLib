@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.example
 
+import com.acmerobotics.dashboard.config.Config
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rangeTo
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
+@Config
 object ExampleConstants {
     /**
      * here you put any constant number relating to your subsystem
@@ -20,7 +22,12 @@ object ExampleConstants {
 
     val MAX_COMPONENT_2 = 6000.rpm
 
+
     class ExampleState(stateComponent1: Rotation2d, stateComponent2: AngularVelocity) {
+        /*
+        this is a state class which allows you to have a nice way to send and receive changes to your subsystem
+        */
+
         val stateComponent1: Rotation2d
         val stateComponent2: AngularVelocity
 

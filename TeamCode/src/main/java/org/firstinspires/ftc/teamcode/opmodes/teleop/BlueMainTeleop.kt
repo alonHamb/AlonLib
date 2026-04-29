@@ -13,15 +13,21 @@ class BlueMainTeleop : CommandOpMode() {
         val alliance = Alliance.Blue
         telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
         telemetry.addLine("Robot initializing")
-        RobotContainer(hardwareMap, FtcDashboard.getInstance().telemetry, gamepad1, gamepad2, alliance)
+        RobotContainer(
+            hardwareMap,
+            FtcDashboard.getInstance().telemetry,
+            gamepad1,
+            gamepad2,
+            alliance
+        )
         telemetry.update()
 
 
     }
 
     override fun run() {
+        telemetry.update()
         telemetry.addLine("Robot is running")
         super.run()
-        telemetry.update()
     }
 }
