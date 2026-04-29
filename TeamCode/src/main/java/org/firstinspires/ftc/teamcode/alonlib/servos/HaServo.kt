@@ -19,30 +19,56 @@ class HaServo(
     MathUtils.normalizeDegrees(minPosition.degrees, true),
     MathUtils.normalizeDegrees(maxPosition.degrees, true)
 ) {
-    constructor(hardwareMap: HardwareMap, id: String, range: Rotation2d) : this(hardwareMap, id, range / 2.0, -range / 2.0)
-    constructor(hardwareMap: HardwareMap, id: String) : this(hardwareMap, id, 0.degrees, 300.degrees)
+    constructor(hardwareMap: HardwareMap, id: String, range: Rotation2d) : this(
+        hardwareMap,
+        id,
+        range / 2.0,
+        -range / 2.0
+    )
 
-    val position get() = mapRange(super.rawPosition, 0.0, 1.0, minPosition, maxPosition)
-    val minPosition = MathUtils.normalizeDegrees(minPosition.degrees, true)
-    val maxPosition = MathUtils.normalizeDegrees(maxPosition.degrees, true)
+    constructor(hardwareMap: HardwareMap, id: String) : this(
+        hardwareMap,
+        id,
+        0.degrees,
+        300.degrees
+    )
 
-
-    fun setPositionSetPoint(position: Rotation2d) {
-        super.set(MathUtils.normalizeDegrees(position.degrees, true))
-
-    }
-
-    fun setRunningDirection(direction: RunningDirection) {
-        if (direction == RunningDirection.REVERSE) {
-            setInverted(true)
-        } else {
-            setInverted(false)
+    var position: Rotation2d
+        get() = mapRange(
+            super.rawPosition,
+            0.0,
+            1.0,
+            minPosition.degrees,
+            maxPosition.degrees
+        ).degrees
+        set(position) {
+            super.set(
+                MathUtils.normalizeDegrees(
+                    position.degrees.coerceIn(
+                        minPosition.degrees,
+                        maxPosition.degrees
+                    ), true
+                )
+            )
         }
-    }
+    val minPosition = MathUtils.normalizeDegrees(minPosition.degrees, true).degrees
+    val maxPosition = MathUtils.normalizeDegrees(maxPosition.degrees, true).degrees
 
-    fun getPositionSetPoint(): Rotation2d {
-        return (mapRange(rawPosition, 0.0, 1.0, minPosition, maxPosition)).degrees
-    }
+    var runningDirection: RunningDirection
+        get() {
+            return if (super.inverted) {
+                RunningDirection.REVERSE
+            } else {
+                RunningDirection.FORWARD
+            }
+        }
+        set(runningDirection) {
+            if (runningDirection == RunningDirection.FORWARD) {
+                super.setInverted(true)
+            } else {
+                super.setInverted(false)
+            }
+        }
 
     enum class RunningDirection {
 
