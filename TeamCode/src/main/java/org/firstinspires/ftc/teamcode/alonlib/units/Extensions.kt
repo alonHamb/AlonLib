@@ -44,5 +44,4 @@ fun Pose2d.xDistanceTo(other: Pose2d) = other.x - this.x
 fun Pose2d.yDistanceTO(other: Pose2d) = other.y - this.y
 fun Pose2d.distanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
 fun Pose2d.horizontalDistanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
-
 fun Pose2d.horizontalAngleTo(other: Pose2d): Rotation2d = atan(this.yDistanceTO(other) / this.xDistanceTo(other)).degrees
