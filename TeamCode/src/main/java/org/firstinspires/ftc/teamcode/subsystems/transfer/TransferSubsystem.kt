@@ -39,6 +39,7 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Su
         transferMotor.percentOutput = power
     }
 
+
     fun stopMotor() {
         transferMotor.disable()
     }
