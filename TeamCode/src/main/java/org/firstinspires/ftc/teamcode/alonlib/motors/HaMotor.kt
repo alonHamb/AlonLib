@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.alonlib.motors
 
 import com.hamosad1657.lib.math.PIDGains
+import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.PIDFCoefficients
 import com.qualcomm.robotcore.hardware.VoltageSensor
-import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import com.seattlesolvers.solverslib.hardware.motors.Motor
+import com.seattlesolvers.solverslib.hardware.motors.Motor.RunMode
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
@@ -14,9 +17,8 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
-class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
-    MotorEx(hardwareMap, id, cpr, rpm) {
-    constructor(hardwareMap: HardwareMap, id: String, type: GoBILDA) : this(
+class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : HardwareDevice {
+    constructor(hardwareMap: HardwareMap, id: String, type: Motor.GoBILDA) : this(
         hardwareMap,
         id,
         type.cpr,
@@ -24,104 +26,66 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
     )
 
     // --- hardware declaration ---
+    private val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble())
     private val voltageSensor: VoltageSensor = hardwareMap.voltageSensor.iterator().next()
+    private val currentTime = System.nanoTime()
 
     // --- motor configurations ---
-    var runningDirection: Direction
+
+    var runningDirection: Motor.Direction
         get() {
-            return when (this.inverted) {
-                true -> Direction.REVERSE
-                false -> Direction.FORWARD
+            return when (motor.inverted) {
+                true -> Motor.Direction.REVERSE
+                false -> Motor.Direction.FORWARD
             }
         }
         set(value) {
             when (value) {
-                Direction.FORWARD -> this.setInverted(false)
-                Direction.REVERSE -> this.setInverted(true)
+                Motor.Direction.FORWARD -> motor.inverted = false
+                Motor.Direction.REVERSE -> motor.inverted = true
             }
         }
 
-    var runMode: RunMode
-        get() = this.runmode
+    var runMode: RunMode = RunMode.RawPower
         set(value) {
-            this.setRunMode(value)
+            motor.setRunMode(runMode)
+            field = value
         }
 
-    var positionTolerance: Rotation2d
-        get() = positionController.tolerance[0].degrees
-        set(value) = positionController.setTolerance(value.degrees)
-
-
-    var velocityTolerance: AngularVelocity
-        get() = veloController.tolerance[1].rpm
-        set(value) = veloController.setTolerance(value.asRpm)
-
-    val positionError get() = positionController.positionError
-
-    val velocityError get() = veloController.velocityError
-    var pidfGains: PIDGains
-        get() {
-            return when (runmode) {
-                RunMode.RawPower -> PIDGains(
-                    positionController.coefficients[0],
-                    positionController.coefficients[1],
-                    positionController.coefficients[2],
-                    positionController.coefficients[3]
-                )
-
-                RunMode.PositionControl -> PIDGains(
-                    positionController.coefficients[0],
-                    positionController.coefficients[1],
-                    positionController.coefficients[2],
-                    positionController.coefficients[3]
-                )
-
-                RunMode.VelocityControl -> PIDGains(
-                    veloController.coefficients[0],
-                    veloController.coefficients[1],
-                    veloController.coefficients[2],
-                    veloController.coefficients[3]
-                )
-            }
-        }
-        set(value) {
-            positionController.setPIDF(value.kP, value.kI, value.kD, value.kFF)
-            veloController.setPIDF(value.kP, value.kI, value.kD, value.kFF)
-            feedforward = SimpleMotorFeedforward(value.kS, value.KV, value.Ka)
+    var pidfGains: PIDGains = PIDGains(0.0, 0.0, 0.0, 0.0)
+        set(gains) {
+            field = gains
+            motor.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
+            motor.setVeloCoefficients(gains.kP, gains.kI, gains.kD)
+            motor.setFeedforwardCoefficients(gains.kS, gains.KV, gains.Ka)
         }
 
     // --- state getters and setters ---
     /**
      * percentOutput is clamped between properties minPercentOutput and maxPercentOutput.
-     * default is 0.0 and 1.0
+     * default is -1.0 and 1.0
      */
-    var percentOutput: PercentOutput
-        get() = get()
+    var percentOutput: PercentOutput = 0.0
+        get() = motor.get()
         set(percentOutput) {
-            if (!(forwardLimit() && percentOutput > 0) && !(reverseLimit() && percentOutput < 0)) {
-                when (runmode) {
-                    RunMode.RawPower -> super.set(
-                        percentOutput.coerceAtMost(maxPercentOutput)
-                            .coerceAtLeast(minPercentOutput) * runningDirection.multiplier
-                    )
-
-                    RunMode.PositionControl -> robotPrintError("motor isn't in raw power mode $runmode")
-                    RunMode.VelocityControl -> robotPrintError("motor isn't in raw power mode $runmode")
-                }
-            } else robotPrintError("limit is reached: $position")
+            if (!(forwardLimit() && percentOutput > 0) or !(reverseLimit() && percentOutput < 0)) {
+                field = percentOutput
+                motor.setRunMode(RunMode.RawPower)
+                motor.set(percentOutput)
+                motor.setRunMode(runMode)
+            } else {
+                robotPrintError("limit reached")
+            }
 
         }
 
-    fun setVoltage(voltage: Double) {
-        val battery = voltageSensor.voltage.coerceAtLeast(1.0)
-        this.percentOutput = ((voltage.coerceIn(1.0, 15.0) / battery))
-    }
-
-    val inTolerance: Boolean
-        get() = when (runmode) {
-            RunMode.PositionControl -> positionController.atSetPoint()
-            RunMode.VelocityControl -> veloController.atSetPoint()
-            RunMode.RawPower -> false
+    var voltage: Double
+        get() {
+            return voltageSensor.voltage * motor.get()
+        }
+        set(value) {
+            val battery = voltageSensor.voltage.coerceAtLeast(1.0)
+            this.percentOutput = ((value.coerceIn(minPercentOutput * battery, maxPercentOutput * battery) / battery))
         }
 
     /**
@@ -139,10 +103,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
      * when set sets the position setpoint of the motor
      */
     var position
-        get() = (currentPosition / cpr).rotations
+        get() = (motor.currentPosition / motor.cpr).rotations
         set(position) {
-            positionSetpoint =
-                position.degrees.coerceIn(minimumPosition.degrees, maximumPosition.degrees).degrees
+            setPoint = position.degrees.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
         }
 
     /**
@@ -150,35 +113,45 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
      * when set sets the velocity setpoint of the motor
      */
     var velocity: AngularVelocity
-        get() = (super.correctedVelocity / cpr).rpm
+        get() = (motor.correctedVelocity / motor.cpr * 60).rpm
         set(velocity) {
             when (velocity) {
-                0.rpm -> super.set(0.0)
-                else -> velocitySetpoint = velocity.coerceIn((maxRPM * -1).rpm, maxRPM.rpm)
-            }
-        }
-    var positionSetpoint: Rotation2d
-        get() = positionController.setPoint.degrees
-        set(positionSetpoint) {
-            when (runmode) {
-                RunMode.PositionControl -> positionController.setPoint = positionSetpoint.degrees
-                else -> robotPrintError("motor isn't in position control mode but in $runmode")
+                0.rpm -> {
+                    motor.setRunMode(RunMode.RawPower)
+                    motor.set(0.0)
+                    motor.setRunMode(runMode)
+                }
+
+                else -> setPoint = velocity.coerceIn((-motor.maxRPM).rpm, motor.maxRPM.rpm).asRpm
             }
         }
 
-    var velocitySetpoint: AngularVelocity
-        get() = veloController.setPoint.rpm
-        set(velocitySetpoint) {
-            when (runMode) {
-                RunMode.VelocityControl -> veloController.setPoint = velocitySetpoint.asRpm
-                else -> robotPrintError("motor isn't in velocity control mode but in $runmode")
+    /*
+      the current setpoint for the motors pid controller
+      if the run mode is position control the unit is degrees if the run mode is velocity control the unit is rpm
+     */
+    var setPoint: Double = 0.0
+        set(setPoint) {
+            when (this.runMode) {
+                RunMode.PositionControl -> motor.setTargetPosition(
+                    (setPoint.coerceIn(
+                        minimumPosition.degrees,
+                        maximumPosition.degrees
+                    ) / 360 * motor.cpr).toInt()
+                )
+
+                RunMode.VelocityControl -> motor.velocity = (setPoint.coerceIn((-motor.maxRPM), motor.maxRPM)) * motor.cpr / 60
+                RunMode.RawPower -> {
+                    robotPrintError("cant set setpoint when run mode is ${this.runMode}")
+                }
             }
+            field = setPoint
         }
 
     // --- limits ---
 
     /**
-     * the smallest number you can send to the motor with the precent output property
+     * the smallest number you can sed to the motor with the percent output property
      */
     var minPercentOutput = -1.0
         set(percentOutput) {
@@ -197,7 +170,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
     /**
      * sets the maximum position setpoint you can set to the motor
      */
-    var maximumPosition: Rotation2d = 360.degrees
+    var maximumPosition: Rotation2d = 180.degrees
         set(value) {
             when (value > minimumPosition) {
                 true -> value
@@ -210,7 +183,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
     /**
      * sets the minimum position setpoint you can set to the motor
      */
-    var minimumPosition = 0.degrees
+    var minimumPosition: Rotation2d = (-180).degrees
         set(value) {
             when (value < maximumPosition) {
                 true -> value
@@ -219,18 +192,36 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Double, rpm: Double) :
             field = value
         }
 
-    // --- periodic functions ---
-    fun calculatePidF() {
-        veloController.calculate()
-        positionController.calculate()
-        when (runmode) {
-            RunMode.VelocityControl -> feedforward.calculate(velocitySetpoint.asRpm)
-
-            RunMode.PositionControl -> feedforward.calculate(positionSetpoint.degrees)
-
-            RunMode.RawPower -> feedforward.calculate(positionSetpoint.degrees)
-
+    fun update() {
+        when (this.runMode) {
+            RunMode.VelocityControl -> motor.set(setPoint / motor.maxRPM)
+            RunMode.PositionControl -> motor.set(this.maxPercentOutput)
+            RunMode.RawPower -> motor.set(percentOutput)
         }
+    }
+
+    override fun getManufacturer(): HardwareDevice.Manufacturer {
+        return HardwareDevice.Manufacturer.Unknown
+    }
+
+    override fun getDeviceName(): String {
+        return "HaMotor"
+    }
+
+    override fun getConnectionInfo(): String {
+        return ""
+    }
+
+    override fun getVersion(): Int {
+        return 1
+    }
+
+    override fun resetDeviceConfigurationForOpMode() {
+        motor.stopAndResetEncoder()
+    }
+
+    override fun close() {
+        motor.disable()
     }
 
 

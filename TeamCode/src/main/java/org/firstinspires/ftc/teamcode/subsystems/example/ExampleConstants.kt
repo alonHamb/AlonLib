@@ -14,6 +14,20 @@ object ExampleConstants {
      * here you put any constant number relating to your subsystem
      */
 
+    val EXAMPLE_MOTOR_RPM = 312
+
+    val EXAMPLE_MOTOR_CPR = 28 * 19.2
+
+
+    @JvmField
+    var EXAMPLE_MOTOR_KP = 0.0
+
+    @JvmField
+    var EXAMPLE_MOTOR_KI = 0.0
+
+    @JvmField
+    var EXAMPLE_MOTOR_KD = 0.0
+
     val MIN_COMPONENT_1 = 0.degrees
 
     val MAX_COMPONENT_1 = 90.degrees
@@ -52,5 +66,4 @@ object ExampleConstants {
             var STATE2 = ExampleState(30.degrees, 1500.rpm)
         }
     }
-
 }
