@@ -12,7 +12,7 @@ class HaCrServo(hardwareMap: HardwareMap, id: String) : HardwareDevice {
 
 
     // --- hardware declaration ---
-    val crServo = CRServoEx(hardwareMap, id).apply { runMode = RunMode.RawPower }
+    val crServo = CRServoEx(hardwareMap, id)
 
     // --- motor configurations ---
 
@@ -43,7 +43,7 @@ class HaCrServo(hardwareMap: HardwareMap, id: String) : HardwareDevice {
                 Motor.Direction.REVERSE -> crServo.inverted = true
             }
         }
-    
+
     var runMode: RunMode = RunMode.RawPower
         set(value) {
             crServo.setRunMode(runMode)

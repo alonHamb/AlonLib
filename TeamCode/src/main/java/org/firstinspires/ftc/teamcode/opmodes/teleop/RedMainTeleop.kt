@@ -17,7 +17,7 @@ class RedMainTeleop : CommandOpMode() {
         telemetry.addLine("Robot initializing")
         RobotContainer(
             hardwareMap,
-            FtcDashboard.getInstance().telemetry,
+            telemetry,
             gamepad1,
             gamepad2,
             alliance,
@@ -29,8 +29,7 @@ class RedMainTeleop : CommandOpMode() {
     }
 
     override fun run() {
-        telemetry.update()
-        telemetry.addLine("Robot is running")
         super.run()
+        telemetry.update()
     }
 }

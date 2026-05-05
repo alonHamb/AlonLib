@@ -17,6 +17,8 @@ object ExampleConstants {
 
     val EXAMPLE_MOTOR_CPR = 28 * 19.2
 
+    val EXAMPLE_SERVO_RANGE = 357.degrees
+
 
     @JvmField
     var EXAMPLE_MOTOR_KP = 0.0

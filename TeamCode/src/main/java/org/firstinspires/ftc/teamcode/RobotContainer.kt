@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.seattlesolvers.solverslib.command.Robot
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -12,16 +13,15 @@ import org.firstinspires.ftc.teamcode.subsystems.example.ExampleSubsystem
 
 
 class RobotContainer(
-    val hardwareMap: HardwareMap,
+    hardwareMap: HardwareMap,
     val telemetry: Telemetry,
-    gamepad1: Gamepad,
-    gamepad2: Gamepad,
+    var gamepad1: Gamepad,
+    var gamepad2: Gamepad,
     alliance: Alliance,
     telemetryLevel: TelemetryLevel
-) {
-    // --- Controller declaration ---
-    val controllerA = GamepadEx(gamepad1)
+) : Robot() {
 
+    val controllerA = GamepadEx(gamepad1)
     val controllerB = GamepadEx(gamepad2)
 
     // --- Subsystem declaration
@@ -36,18 +36,19 @@ class RobotContainer(
 
     fun initializeSubsystems() {
         exampleSubsystem
+
     }
 
     fun configureButtonBindings() {
         with(controllerA) {
-            getGamepadButton(GamepadKeys.Button.X).whenPressed(exampleSubsystem.exampleInstantCommand())
+            getGamepadButton(GamepadKeys.Button.X).whenPressed(exampleSubsystem.exampleInstantCommand(controllerA.leftY))
         }
 
 
     }
 
     fun setDefaultCommands() {
-        exampleSubsystem.defaultCommand = exampleSubsystem.exampleInstantCommand()
+        exampleSubsystem.defaultCommand = exampleSubsystem.exampleInstantCommand { controllerA.leftY }
     }
 
 }

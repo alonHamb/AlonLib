@@ -23,6 +23,9 @@ android {
     }
 
     packagingOptions {
+        jniLibs {
+            pickFirsts += ['**/*.so']
+        }
         jniLibs.useLegacyPackaging true
     }
 }
@@ -54,18 +57,18 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation libs.kotlin.stdlib.jdk8
 
     // SolversLib: Latest Stable Version
-    implementation "org.solverslib:core:SNAPSHOT-5a81a6b" // core
-    implementation "org.solverslib:pedroPathing:SNAPSHOT-5a81a6b" // pedroPathing
+    implementation libs.core // core
+    implementation libs.pedropathing // pedroPathing
 
-    implementation "com.acmerobotics.dashboard:dashboard:0.5.1" // FTC Dashboard
+    implementation libs.dashboard // FTC Dashboard
 
     // Pedro Pathing
-    implementation 'com.pedropathing:ftc:2.1.1'
-    implementation 'com.pedropathing:telemetry:1.0.0'
+    implementation libs.ftc
+    implementation libs.telemetry
 
     // Panels Dashboard
-    implementation "com.bylazar:fullpanels:1.0.12"
+    implementation libs.fullpanels
 }
