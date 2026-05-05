@@ -23,10 +23,12 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.ANGLE_INTERPOLATION_TABLE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_PID_GAINS
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_RATIO
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_TOLERANCE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.MAXIMUM_HEADING
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.MINIMUM_HEADING
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_INTERPOLATION_TABLE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_PID_GAINS
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_TOLERANCE
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Constants
 
@@ -40,14 +42,14 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         runMode = Motor.RunMode.VelocityControl
         zeroPowerBehavior = Motor.ZeroPowerBehavior.FLOAT
         runningDirection = Motor.Direction.FORWARD
-        TODO("add tolerance to Hamotor")
+        tolerance = VELOCITY_TOLERANCE.asRpm
         pidfGains = VELOCITY_PID_GAINS
     }
     val headingMotor = HaMotor(hardwareMap, HEADING_MOTOR_ID, HEADING_MOTOR_TYPE).apply {
         runMode = Motor.RunMode.PositionControl
         zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
         runningDirection = Motor.Direction.FORWARD
-        TODO("implement tolerance when HaMotor Supports it")
+        tolerance = HEADING_TOLERANCE.degrees
         pidfGains = HEADING_PID_GAINS
     }
     val hoodServo = HaServo(hardwareMap, HOOD_SERVO_ID).apply {
@@ -80,8 +82,8 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
         }
     val isAtMaxHeading get() = currentHeading >= MAXIMUM_HEADING
     val isAtMinHeading get() = currentHeading >= MINIMUM_HEADING
-    val isInVelocityTolerance get() = false //TODO( implement tolerance when HaMotor Supports it")
-    val isInHeadingTolerance get() = false //TODO( implement tolerance when HaMotor Supports it")
+    val isInVelocityTolerance get() = flywheelMotor.inTolerance
+    val isInHeadingTolerance get() = headingMotor.inTolerance
     val latestBotPosition get() = limelight.latestBotPose2d
     var state: Constants.ShooterState
         get() = Constants.ShooterState(currentAngle, currentHeading, currentVelocity)

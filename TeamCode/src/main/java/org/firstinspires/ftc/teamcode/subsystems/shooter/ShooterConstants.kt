@@ -33,6 +33,10 @@ object ShooterConstants {
 
     val MAXIMUM_SHOOTING_VELOCITY = 2950.rpm
 
+    // --- tolerances ---
+    val HEADING_TOLERANCE = 1.degrees
+    val VELOCITY_TOLERANCE = 100.rpm
+
     // --- PID parameters ---
     val VELOCITY_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
     val HEADING_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
@@ -59,10 +63,6 @@ object ShooterConstants {
 
     )
 
-
-    // --- tolerances ---
-    val HEADING_TOLERANCE = 1.degrees
-    val VELOCITY_TOLERANCE = 100.rpm
 
     // --- field positions ---
 
