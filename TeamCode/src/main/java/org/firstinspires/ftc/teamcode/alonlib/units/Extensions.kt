@@ -32,7 +32,6 @@ inline val Number.rotations: Rotation2d get() = Rotation2d.fromDegrees(this.toDo
 inline val Rotation2d.absoluteValue: Rotation2d get() = Rotation2d.fromDegrees(abs(this.degrees))
 inline val Rotation2d.rotations: Double get() = (this.degrees / 360.0)
 
-
 operator fun Rotation2d.plus(other: Rotation2d) = (this.degrees + other.degrees).degrees
 operator fun Rotation2d.minus(other: Rotation2d) = (this.degrees - other.degrees).degrees
 operator fun Rotation2d.times(ratio: Double) = (this.degrees * ratio).degrees
