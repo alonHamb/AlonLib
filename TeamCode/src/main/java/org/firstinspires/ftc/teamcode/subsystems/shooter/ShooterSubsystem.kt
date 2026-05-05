@@ -65,12 +65,12 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
             hoodServo.position = value
         }
     val currentHeading: Rotation2d
-        get() = TODO("${(headingMotor.position * HEADING_RATIO).degrees} add scalar multiplication to Rotation2D")
+        get() = (headingMotor.position.degrees * HEADING_RATIO).degrees
 
     var currentHeadingSetPoint: Rotation2d
         get() = headingMotor.position / HEADING_RATIO
         set(value) {
-            headingMotor.setPoint = TODO("${value * HEADING_RATIO} add scalar multiplication to Rotation2D")
+            headingMotor.setPoint = value.degrees * HEADING_RATIO
         }
     val currentVelocity: AngularVelocity
         get() = flywheelMotor.velocity
