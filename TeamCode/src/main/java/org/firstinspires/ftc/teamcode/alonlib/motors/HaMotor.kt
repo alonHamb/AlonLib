@@ -29,6 +29,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     // --- hardware declaration ---
     private val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble())
     private val voltageSensor: VoltageSensor = hardwareMap.voltageSensor.iterator().next()
+
     // --- motor configurations ---
 
     /**
@@ -71,16 +72,6 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             field = value
         }
 
-    /**
-     * the gains for the motor's PIDF controller used in any closed loop [runMode]
-     */
-    var pidfGains: PIDGains = PIDGains()
-        set(gains) {
-            motor.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
-            motor.setVeloCoefficients(gains.kP, gains.kI, gains.kD)
-            motor.setFeedforwardCoefficients(gains.kS, gains.KV, gains.Ka)
-            field = gains
-        }
 
     // --- state getters and setters ---
 
@@ -123,6 +114,11 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             return motor.getCurrent(CurrentUnit.MILLIAMPS)
         }
 
+    /**
+     * a very crude current limiter for a motor
+     *
+     *if the set current is acceded it sets [maxPercentOutput] to the percent that made it go over the limit
+     */
     var currentLimit: Double
         set(value) {
             motor.setCurrentAlert(value, CurrentUnit.MILLIAMPS)
@@ -132,19 +128,20 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         }
 
     /**
-     * Software forward limit, ONLY for percent-output control.
+     * Software forward limit, ONLY for [percentOutput] control.
      */
     var forwardLimit: () -> Boolean = { false }
 
     /**
-     * Software reverse limit, ONLY for percent-output control.
+     * Software reverse limit, ONLY for [percentOutput] control.
      */
     var reverseLimit: () -> Boolean = { false }
 
+
     /**
-     * when called gives the current position from the motor encoder
+     * when called gives the current [position] from the motor encoder
      *
-     * when set sets the position setpoint of the motor
+     * when set sets the position [setPoint] of the motor
      */
     var position: Rotation2d
         get() = (motor.currentPosition / motor.cpr).rotations
@@ -153,9 +150,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         }
 
     /**
-     * when called gives the current velocity from the motor encoder
+     * when called gives the current [velocity] from the motor encoder
      *
-     * when set sets the velocity setpoint of the motor
+     * when set sets the velocity [setPoint] of the motor
      */
     var velocity: AngularVelocity
         get() = (motor.correctedVelocity / motor.cpr * 60).rpm
@@ -171,8 +168,21 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             }
         }
 
+    // --- pid properties ---
+
     /**
-    the current setpoint for the motors pid controller
+     * the [pidfGains] for the motor's PIDF controller used in any closed loop [runMode]
+     */
+    var pidfGains: PIDGains = PIDGains()
+        set(gains) {
+            motor.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
+            motor.setVeloCoefficients(gains.kP, gains.kI, gains.kD)
+            motor.setFeedforwardCoefficients(gains.kS, gains.KV, gains.Ka)
+            field = gains
+        }
+
+    /**
+    the current [setPoint] for the motors pid controller
 
     if the run mode is [RunMode.PositionControl] the unit is degrees if the run mode is [RunMode.VelocityControl] the unit is rpm
      */
@@ -190,6 +200,56 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
                 RunMode.RawPower -> {}
             }
             field = setPoint
+        }
+
+    /**
+     *  the current [error] of the pid controller
+     *
+     *  uses the same units as the controller
+     */
+    val error: Double
+        get() {
+            return when (runMode) {
+                RunMode.PositionControl -> {
+                    position.degrees - setPoint
+                }
+
+                RunMode.VelocityControl -> {
+                    velocity.asRpm - setPoint
+                }
+
+                RunMode.RawPower -> {
+                    0.0
+                }
+            }
+
+        }
+
+    /**
+     * the tolerance used for the [inTolerance] properties
+     *
+     * uses the units of the pid controller
+     */
+    var tolerance: Double = 0.0
+
+    /**
+     * @returns true if the error of the pid controller is within the tolerance
+     */
+    val inTolerance: Boolean
+        get() {
+            return when (runMode) {
+                RunMode.PositionControl -> {
+                    position.degrees - setPoint < tolerance
+                }
+
+                RunMode.VelocityControl -> {
+                    velocity.asRpm - setPoint < tolerance
+                }
+
+                RunMode.RawPower -> {
+                    true
+                }
+            }
         }
 
     // --- limits ---
@@ -236,6 +296,8 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             field = value
         }
 
+    // --- operations functions ---
+
     /**
      * stops the motor
      *
@@ -252,6 +314,10 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * must be called every loop
      */
     fun update() {
+        when (motor.isOverCurrent) {
+            true -> maxPercentOutput = percentOutput
+            else -> {}
+        }
         when (this.runMode) {
             RunMode.VelocityControl -> motor.set(setPoint / motor.maxRPM)
             RunMode.PositionControl -> motor.set(this.maxPercentOutput)
@@ -261,7 +327,10 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             true -> maxPercentOutput = percentOutput
             else -> {}
         }
+
     }
+
+    // --- hardware device shit ---
 
     override fun getManufacturer(): HardwareDevice.Manufacturer {
         return HardwareDevice.Manufacturer.Unknown
