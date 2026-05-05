@@ -37,7 +37,6 @@ operator fun Rotation2d.minus(other: Rotation2d) = (this.degrees - other.degrees
 operator fun Rotation2d.div(ratio: Double) = (this.degrees / 2).degrees
 operator fun Rotation2d.rangeTo(that: Rotation2d) = (this.degrees.rangeTo(that.degrees))
 operator fun Rotation2d.compareTo(other: Rotation2d) = (this.degrees.compareTo(other.degrees))
-
 // --- Position ---
 
 fun Pose2d.xDistanceTo(other: Pose2d) = other.x - this.x

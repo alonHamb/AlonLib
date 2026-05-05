@@ -44,7 +44,7 @@ class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, var t
     val stateComponent2 get() = motor.velocity
 
 
-    //  --- subsystemFunctions --
+    //  --- subsystem functions --
 
     //here you can put any function your subsystem might need but beware! most things can be getters and setters and don't require a function
     fun setExamplePosition() {

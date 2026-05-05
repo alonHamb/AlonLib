@@ -33,7 +33,9 @@ class HaServo(
 
     var position: Rotation2d = 0.0.degrees
         set(position) {
-            servo.set(MathUtils.normalizeDegrees(position.degrees, true))
+            servo.set(
+                MathUtils.normalizeDegrees(position.degrees, true)
+            )
             field = position
         }
 
