@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.subsystems.example.ExampleSubsystem
 
 class RobotContainer(
     hardwareMap: HardwareMap,
-    val telemetry: Telemetry,
-    var gamepad1: Gamepad,
-    var gamepad2: Gamepad,
+    telemetry: Telemetry,
+    gamepad1: Gamepad,
+    gamepad2: Gamepad,
     alliance: Alliance,
     telemetryLevel: TelemetryLevel
 ) : Robot() {
@@ -25,7 +25,7 @@ class RobotContainer(
     val controllerB = GamepadEx(gamepad2)
 
     // --- Subsystem declaration
-    var exampleSubsystem = ExampleSubsystem(hardwareMap, telemetry, telemetryLevel)
+    val exampleSubsystem = ExampleSubsystem(hardwareMap, telemetry, telemetryLevel)
 
     // --- init functions ---
     init {
@@ -41,7 +41,7 @@ class RobotContainer(
 
     fun configureButtonBindings() {
         with(controllerA) {
-            getGamepadButton(GamepadKeys.Button.X).whenPressed(exampleSubsystem.exampleInstantCommand(controllerA.leftY))
+            getGamepadButton(GamepadKeys.Button.X).whenPressed(exampleSubsystem.exampleInstantCommand(0.0))
         }
 
 

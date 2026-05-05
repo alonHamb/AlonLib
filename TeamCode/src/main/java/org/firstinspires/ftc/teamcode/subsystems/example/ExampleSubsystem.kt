@@ -56,7 +56,7 @@ class ExampleSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, var t
             TelemetryLevel.Testing -> {
                 telemetry.addData("servo position", servo.position.degrees)
                 telemetry.addData("encoder position", encoder.position.degrees)
-                telemetry.addData("position error", encoder.position.degrees - servo.position.degrees)
+                telemetry.addData("position error", (-encoder.position - servo.position).degrees)
                 telemetry.addData("motor position", motor.position.degrees)
             }
 

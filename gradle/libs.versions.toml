@@ -1,23 +1,35 @@
 [versions]
+appcompat = "1.7.1"
 dashboard = "0.5.1"
 ftc = "2.1.1"
 fullpanels = "1.0.12"
 gradle = "9.1.0"
 gradle-toolchains-foojay-resolver-convention = "1.0.0"
+ftcSDK = "11.1.0"
 kotlin = "2.3.21"
 solverslib = "SNAPSHOT-5a81a6b"
 telemetry = "1.0.0"
 
 [libraries]
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+blocks = { module = "org.firstinspires.ftc:Blocks", version.ref = "ftcSDK" }
 core = { group = "org.solverslib", name = "core", version.ref = "solverslib" }
 dashboard = { group = "com.acmerobotics.dashboard", name = "dashboard", version.ref = "dashboard" }
 ftc = { group = "com.pedropathing", name = "ftc", version.ref = "ftc" }
+ftccommon = { module = "org.firstinspires.ftc:FtcCommon", version.ref = "ftcSDK" }
 fullpanels = { group = "com.bylazar", name = "fullpanels", version.ref = "fullpanels" }
 gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
+hardware = { module = "org.firstinspires.ftc:Hardware", version.ref = "ftcSDK" }
+inspection = { module = "org.firstinspires.ftc:Inspection", version.ref = "ftcSDK" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-stdlib-jdk8 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
+onbotjava = { module = "org.firstinspires.ftc:OnBotJava", version.ref = "ftcSDK" }
 pedropathing = { group = "org.solverslib", name = "pedroPathing", version.ref = "solverslib" }
+#noinspection Aligned16KB
+robotcore = { module = "org.firstinspires.ftc:RobotCore", version.ref = "ftcSDK" }
+robotserver = { module = "org.firstinspires.ftc:RobotServer", version.ref = "ftcSDK" }
 telemetry = { group = "com.pedropathing", name = "telemetry", version.ref = "telemetry" }
+vision = { module = "org.firstinspires.ftc:Vision", version.ref = "ftcSDK" }
 
 [plugins]
 foojay-resolver = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "gradle-toolchains-foojay-resolver-convention" }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.alonlib.servos
 
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.PwmControl
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.Motor
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx
@@ -25,10 +26,15 @@ class HaServo(
         hardwareMap,
         id,
         0.degrees,
-        300.degrees
+        357.4.degrees
     )
 
-    val servo = ServoEx(hardwareMap, id, MathUtils.normalizeDegrees(minPosition.degrees, true), MathUtils.normalizeDegrees(maxPosition.degrees, true))
+    val servo = ServoEx(
+        hardwareMap,
+        id,
+        MathUtils.normalizeDegrees(minPosition.degrees, true),
+        MathUtils.normalizeDegrees(maxPosition.degrees, true).coerceIn(0.0, 359.999)
+    ).apply { setPwm(PwmControl.PwmRange(500.0, 2500.0)) }
 
 
     var position: Rotation2d = 0.0.degrees
