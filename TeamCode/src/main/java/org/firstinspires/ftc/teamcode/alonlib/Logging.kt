@@ -6,6 +6,6 @@ fun robotPrint(message: Any?) =
 fun robotPrintError(message: Any?) =
     print("ROBOT ERROR: $message END")
 
-enum class Telemetry {
+enum class TelemetryLevel {
     Testing, Competition;
 }

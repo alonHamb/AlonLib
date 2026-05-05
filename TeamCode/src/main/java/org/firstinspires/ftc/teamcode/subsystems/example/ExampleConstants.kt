@@ -10,9 +10,8 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 @Config
 object ExampleConstants {
-    /**
-     * here you put any constant number relating to your subsystem
-     */
+
+    //here you put any constant number relating to your subsystem
 
     val EXAMPLE_MOTOR_RPM = 312
 

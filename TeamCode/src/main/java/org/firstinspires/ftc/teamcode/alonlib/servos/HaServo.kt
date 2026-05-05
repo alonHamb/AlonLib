@@ -1,29 +1,24 @@
 package org.firstinspires.ftc.teamcode.alonlib.servos
 
+import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import com.seattlesolvers.solverslib.hardware.motors.Motor
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx
 import com.seattlesolvers.solverslib.util.MathUtils
-import org.firstinspires.ftc.teamcode.alonlib.math.mapRange
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.div
 
 class HaServo(
-    hMap: HardwareMap?,
+    hardwareMap: HardwareMap?,
     id: String,
-    minPosition: Rotation2d,
-    maxPosition: Rotation2d
-) : ServoEx(
-    hMap,
-    id,
-    MathUtils.normalizeDegrees(minPosition.degrees, true),
-    MathUtils.normalizeDegrees(maxPosition.degrees, true)
-) {
+    val minPosition: Rotation2d,
+    val maxPosition: Rotation2d
+) : HardwareDevice {
     constructor(hardwareMap: HardwareMap, id: String, range: Rotation2d) : this(
         hardwareMap,
         id,
-        range / 2.0,
-        -range / 2.0
+        0.degrees,
+        range
     )
 
     constructor(hardwareMap: HardwareMap, id: String) : this(
@@ -33,48 +28,51 @@ class HaServo(
         300.degrees
     )
 
-    var position: Rotation2d
-        get() = mapRange(
-            super.rawPosition,
-            0.0,
-            1.0,
-            minPosition.degrees,
-            maxPosition.degrees
-        ).degrees
-        set(position) {
-            super.set(
-                MathUtils.normalizeDegrees(
-                    position.degrees.coerceIn(
-                        minPosition.degrees,
-                        maxPosition.degrees
-                    ), true
-                )
-            )
-        }
-    val minPosition = MathUtils.normalizeDegrees(minPosition.degrees, true).degrees
-    val maxPosition = MathUtils.normalizeDegrees(maxPosition.degrees, true).degrees
+    val servo = ServoEx(hardwareMap, id, MathUtils.normalizeDegrees(minPosition.degrees, true), MathUtils.normalizeDegrees(maxPosition.degrees, true))
 
-    var runningDirection: RunningDirection
+
+    var position: Rotation2d = 0.0.degrees
+        set(position) {
+            servo.set(MathUtils.normalizeDegrees(position.degrees, true))
+            field = position
+        }
+
+    var runningDirection: Motor.Direction
         get() {
-            return if (super.inverted) {
-                RunningDirection.REVERSE
-            } else {
-                RunningDirection.FORWARD
+            return when (servo.inverted) {
+                true -> Motor.Direction.REVERSE
+                false -> Motor.Direction.FORWARD
             }
         }
         set(runningDirection) {
-            if (runningDirection == RunningDirection.FORWARD) {
-                super.setInverted(true)
-            } else {
-                super.setInverted(false)
+            when (runningDirection) {
+                Motor.Direction.FORWARD -> servo.setInverted(false)
+                Motor.Direction.REVERSE -> servo.setInverted(true)
             }
         }
 
-    enum class RunningDirection {
-
-        FORWARD,
-        REVERSE
-
+    override fun getManufacturer(): HardwareDevice.Manufacturer {
+        return HardwareDevice.Manufacturer.Unknown
     }
+
+    override fun getDeviceName(): String {
+        return "HaServo"
+    }
+
+    override fun getConnectionInfo(): String {
+        return ""
+    }
+
+    override fun getVersion(): Int {
+        return 1
+    }
+
+    override fun resetDeviceConfigurationForOpMode() {
+    }
+
+    override fun close() {
+        servo.disable()
+    }
+
 
 }
