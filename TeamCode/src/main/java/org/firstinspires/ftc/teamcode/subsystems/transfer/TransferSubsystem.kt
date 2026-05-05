@@ -18,14 +18,14 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Su
     @JvmField
     // --- hardware declaration
     val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, INTAKE_MOTOR_TYPE).apply {
-        setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
-        setRunMode(Motor.RunMode.RawPower)
+        zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
+        runMode = Motor.RunMode.RawPower
         runningDirection = Motor.Direction.FORWARD
     }
 
     val transferMotor = HaMotor(hardwareMap, TRANSFER_MOTOR_ID, TRANSFER_MOTOR_TYPE).apply {
-        setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
-        setRunMode(Motor.RunMode.RawPower)
+        zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
+        runMode = Motor.RunMode.RawPower
         runningDirection = Motor.Direction.REVERSE
     }
 
@@ -41,7 +41,7 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Su
 
 
     fun stopMotor() {
-        transferMotor.disable()
+        transferMotor.stop()
     }
 
     // --- telemetry ---

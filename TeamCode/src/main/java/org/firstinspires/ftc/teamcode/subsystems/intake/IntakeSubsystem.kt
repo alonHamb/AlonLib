@@ -12,7 +12,7 @@ import kotlin.math.absoluteValue
 class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
     // --- hardware declaration ---
     val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, Motor.GoBILDA.RPM_1150).apply {
-        setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
+        zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
     }
 
     // --- state getters ---
@@ -26,7 +26,7 @@ class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Subs
     }
 
     fun stopMotor() {
-        intakeMotor.disable()
+        intakeMotor.stop()
     }
 
     // --- telemetry ---

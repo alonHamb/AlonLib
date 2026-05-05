@@ -40,7 +40,7 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
             Y_POD_DIRECTION
         )
     }
-    val drive = MecanumDrive(frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor)
+    val drive = MecanumDrive(frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor) // TODO add motor object access to HaMotor
     val limelight = VisionSubsystem(hardwareMap, telemetry)
 
     // --- state getters and setters ---
@@ -59,7 +59,7 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
     // --- all subsystem periodic functions ---
     fun updateLocalizer() {
         if (limelight.isInLimelightAccuracyRange) {
-            localizer.position = limelight.latestBotPose2D
+            localizer.position = limelight.latestBotPose2d
             currentLocalizer = Limelight
         } else {
             currentLocalizer = PinPoint

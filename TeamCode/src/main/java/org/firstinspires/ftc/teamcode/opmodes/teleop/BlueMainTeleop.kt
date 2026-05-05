@@ -10,9 +10,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 
 @TeleOp(name = "Blue Main Teleop", group = "Teleop")
 class BlueMainTeleop : CommandOpMode() {
-        lateinit var robot : RobotContainer
     override fun initialize() {
-
         val alliance = Alliance.Blue
         val telemetryLevel = TelemetryLevel.Testing
         telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
@@ -26,8 +24,6 @@ class BlueMainTeleop : CommandOpMode() {
             telemetryLevel
         )
         telemetry.update()
-
-
     }
 
     override fun run() {
