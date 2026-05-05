@@ -30,18 +30,18 @@ inline val Number.rotations: Rotation2d get() = Rotation2d.fromDegrees(this.toDo
 
 
 inline val Rotation2d.absoluteValue: Rotation2d get() = Rotation2d.fromDegrees(abs(this.degrees))
-inline val Rotation2d.rotations: Number get() = (this.degrees / 360.0)
+inline val Rotation2d.rotations: Double get() = (this.degrees / 360.0)
 
 operator fun Rotation2d.plus(other: Rotation2d) = (this.degrees + other.degrees).degrees
 operator fun Rotation2d.minus(other: Rotation2d) = (this.degrees - other.degrees).degrees
 operator fun Rotation2d.div(ratio: Double) = (this.degrees / 2).degrees
 operator fun Rotation2d.rangeTo(that: Rotation2d) = (this.degrees.rangeTo(that.degrees))
 operator fun Rotation2d.compareTo(other: Rotation2d) = (this.degrees.compareTo(other.degrees))
-
 // --- Position ---
 
 fun Pose2d.xDistanceTo(other: Pose2d) = other.x - this.x
 fun Pose2d.yDistanceTO(other: Pose2d) = other.y - this.y
 fun Pose2d.distanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
 fun Pose2d.horizontalDistanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
+
 fun Pose2d.horizontalAngleTo(other: Pose2d): Rotation2d = atan(this.yDistanceTO(other) / this.xDistanceTo(other)).degrees

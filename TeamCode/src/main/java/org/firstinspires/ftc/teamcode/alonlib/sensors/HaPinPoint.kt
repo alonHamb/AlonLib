@@ -4,10 +4,11 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver.GoBildaOdometryPods
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.seattlesolvers.solverslib.geometry.Pose2d
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import com.seattlesolvers.solverslib.geometry.Translation2d
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import org.firstinspires.ftc.teamcode.alonlib.units.Length
 import org.firstinspires.ftc.teamcode.alonlib.units.degPs
@@ -40,10 +41,14 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
 
     val encoderYTicks get() = pinPoint.encoderY
 
-    var position: Pose2D
-        get() = pinPoint.position
+    var position: Pose2d
+        get() = Pose2d(
+            Translation2d(pinPoint.position.getX(DistanceUnit.METER), pinPoint.position.getY(DistanceUnit.METER)),
+            pinPoint.position.getHeading(AngleUnit.DEGREES).degrees
+        )
         set(value) {
-            pinPoint.position = value
+            pinPoint.setPosX(value.x, DistanceUnit.METER)
+            pinPoint.setPosY(value.y, DistanceUnit.METER)
         }
 
     var positionX: Length
