@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.RobotMap.Shooter.FLYWHEEL_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HEADING_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HEADING_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HOOD_SERVO_ID
+import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
@@ -33,7 +34,7 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Constants
 
 @Config
-class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
+class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     @JvmField
 
     // --- hardware declaration and configuration ---
@@ -164,19 +165,24 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Sub
     // --- Telemetry ---
 
     fun addTelemetry() {
-        telemetry.addLine("--- shooter subsystem ---")
-        telemetry.addData("running command", super.currentCommand)
-        telemetry.addData("current angle: ", currentAngle)
-        telemetry.addData("current heading: ", currentHeading)
-        telemetry.addData("heading setpoint: ", currentHeadingSetPoint)
-        telemetry.addData("heading error: ", headingMotor.setPoint - headingMotor.position.degrees * HEADING_RATIO)
-        telemetry.addData("current velocity: ", currentVelocity)
-        telemetry.addData("current velocity setpoint: ", currentVelocitySetPoint)
-        telemetry.addData("current velocity error: ", flywheelMotor.setPoint - flywheelMotor.velocity.asRpm)
-        telemetry.addData("is At Max Heading: ", isAtMaxHeading)
-        telemetry.addData("is at min heading: ", isAtMinHeading)
-        telemetry.addData("is within velocity tolerance: ", isInVelocityTolerance)
-        telemetry.addData("is within heading tolerance: ", isInHeadingTolerance)
+        when (telemetryLevel) {
+            TelemetryLevel.Competition -> {}
+            TelemetryLevel.Testing -> {
+                telemetry.addLine("--- shooter subsystem ---")
+                telemetry.addData("running command", super.currentCommand)
+                telemetry.addData("current angle: ", currentAngle)
+                telemetry.addData("current heading: ", currentHeading)
+                telemetry.addData("heading setpoint: ", currentHeadingSetPoint)
+                telemetry.addData("heading error: ", headingMotor.setPoint - headingMotor.position.degrees * HEADING_RATIO)
+                telemetry.addData("current velocity: ", currentVelocity)
+                telemetry.addData("current velocity setpoint: ", currentVelocitySetPoint)
+                telemetry.addData("current velocity error: ", flywheelMotor.setPoint - flywheelMotor.velocity.asRpm)
+                telemetry.addData("is At Max Heading: ", isAtMaxHeading)
+                telemetry.addData("is at min heading: ", isAtMinHeading)
+                telemetry.addData("is within velocity tolerance: ", isInVelocityTolerance)
+                telemetry.addData("is within heading tolerance: ", isInHeadingTolerance)
+            }
+        }
     }
 
     // --- periodic hardware functions ---

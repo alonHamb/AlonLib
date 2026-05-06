@@ -7,6 +7,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
+import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
 
 
 /**
@@ -25,6 +27,9 @@ class RobotContainer(
     val controllerB = GamepadEx(gamepad2)
 
     // --- Subsystem declaration
+    val shooterSubsystem = ShooterSubsystem(hardwareMap, telemetry, telemetryLevel)
+
+    val driveSubsystem = DriveSubsystem(hardwareMap, telemetry, telemetryLevel)
 
 
     // --- init functions ---
@@ -44,7 +49,7 @@ class RobotContainer(
 
         }
         with(controllerB) {
-            
+
         }
 
 

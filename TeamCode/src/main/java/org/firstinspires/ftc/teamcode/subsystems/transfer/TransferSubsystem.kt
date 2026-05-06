@@ -9,12 +9,13 @@ import org.firstinspires.ftc.teamcode.RobotMap.Intake.INTAKE_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Intake.INTAKE_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Transfer.TRANSFER_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Transfer.TRANSFER_MOTOR_TYPE
+import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import kotlin.math.absoluteValue
 
 @Config
-class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : SubsystemBase() {
+class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     @JvmField
     // --- hardware declaration
     val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, INTAKE_MOTOR_TYPE).apply {
@@ -46,10 +47,15 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry) : Su
 
     // --- telemetry ---
     fun addTelemetry() {
-        telemetry.addLine("--- transfer subsystem ---")
-        telemetry.addData("Running Command", super.currentCommand)
-        telemetry.addData("is running", isRunning)
-        telemetry.addData("running direction", transferMotor.runningDirection.toString())
+        when (telemetryLevel) {
+            TelemetryLevel.Competition -> {}
+            TelemetryLevel.Testing -> {
+                telemetry.addLine("--- transfer subsystem ---")
+                telemetry.addData("Running Command", super.currentCommand)
+                telemetry.addData("is running", isRunning)
+                telemetry.addData("running direction", transferMotor.runningDirection.toString())
+            }
+        }
     }
 
 

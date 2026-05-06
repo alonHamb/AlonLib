@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.RobotMap.Drive.DRIVE_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_LEFT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_RIGHT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.PINPOINT_ID
+import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
@@ -23,14 +24,14 @@ import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Y_POD_DIRE
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
 
 @Config
-class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : SubsystemBase() {
+class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     @JvmField
     // --- hardware declaration ---
     val frontLeftMotor = HaMotor(hardwareMap, FRONT_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
     val frontRightMotor = HaMotor(hardwareMap, FRONT_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
     val backLeftMotor = HaMotor(hardwareMap, BACK_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
     val backRightMotor = HaMotor(hardwareMap, BACK_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
-    val localizer = HaPinPoint(hardwareMap, PINPOINT_ID, PINPOINT_ODOMETRY_PODS).apply {
+    val pinPoint = HaPinPoint(hardwareMap, PINPOINT_ID, PINPOINT_ODOMETRY_PODS).apply {
         setOffset(
             PINPOINT_X_OFFSET,
             PINPOINT_Y_OFFSET
@@ -40,20 +41,22 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
             Y_POD_DIRECTION
         )
     }
+
+    // --- functional properties ---
+    val limelight = VisionSubsystem(hardwareMap, telemetry)
     val drive = MecanumDrive(
         frontLeftMotor.motor,
         frontRightMotor.motor,
         backLeftMotor.motor,
         backRightMotor.motor
     )
-    val limelight = VisionSubsystem(hardwareMap, telemetry)
 
     // --- state getters and setters ---
     var currentLocalizer = PinPoint
 
     // --- operation functions ---
     fun fieldCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
-        drive.driveFieldCentric(xSpeed, ySpeed, turnSpeed, localizer.heading.degrees)
+        drive.driveFieldCentric(xSpeed, ySpeed, turnSpeed, pinPoint.heading.degrees)
     }
 
     fun robotCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
@@ -64,11 +67,11 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
     // --- all subsystem periodic functions ---
     fun updateLocalizer() {
         if (limelight.isInLimelightAccuracyRange) {
-            localizer.position = limelight.latestBotPose2d
+            pinPoint.position = limelight.latestBotPose2d
             currentLocalizer = Limelight
         } else {
             currentLocalizer = PinPoint
-            localizer.update()
+            pinPoint.update()
         }
     }
 
@@ -81,11 +84,16 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
     // --- Telemetry ---
 
     fun addTelemetry() {
-        telemetry.addLine("--- Drive subsystem ---")
-        telemetry.addData("Running Command", super.currentCommand)
-        telemetry.addData("Robot pose", localizer.position.toString())
-        telemetry.addData("Robot heading", localizer.heading)
-        telemetry.addData("localizer", currentLocalizer)
+        when (telemetryLevel) {
+            TelemetryLevel.Competition -> {}
+            TelemetryLevel.Testing -> {
+                telemetry.addLine("--- Drive subsystem ---")
+                telemetry.addData("Running Command", super.currentCommand)
+                telemetry.addData("Robot pose", pinPoint.position.toString())
+                telemetry.addData("Robot heading", pinPoint.heading)
+                telemetry.addData("localizer", currentLocalizer)
+            }
+        }
 
 
     }
