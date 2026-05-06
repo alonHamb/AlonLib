@@ -40,7 +40,12 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry) : S
             Y_POD_DIRECTION
         )
     }
-    val drive = MecanumDrive(frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor) // TODO add motor object access to HaMotor
+    val drive = MecanumDrive(
+        frontLeftMotor.motor,
+        frontRightMotor.motor,
+        backLeftMotor.motor,
+        backRightMotor.motor
+    )
     val limelight = VisionSubsystem(hardwareMap, telemetry)
 
     // --- state getters and setters ---
