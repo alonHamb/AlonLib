@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.shooter
 
+import com.acmerobotics.dashboard.config.Config
 import com.hamosad1657.lib.math.PIDGains
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import org.firstinspires.ftc.teamcode.alonlib.math.LinearInterpolationTable
@@ -9,7 +10,12 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rangeTo
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
+@Config
 object ShooterConstants {
+
+    // --- Hardware constants ---
+
+    val HOOD_SERVO_RANGE = 357.4.degrees
 
     // --- Ratios ---
     const val HEADING_RATIO = 11.0 / 140.0
@@ -68,31 +74,20 @@ object ShooterConstants {
 
 
     class ShooterState(angle: Rotation2d, heading: Rotation2d, velocity: AngularVelocity) {
-        var angle: Rotation2d
-        var velocity: AngularVelocity
-        var heading: Rotation2d
-
-        init {
-            this.angle =
-                if (angle.degrees in MINIMUM_ANGLE..MAXIMUM_ANGLE) angle
-                else {
-                    robotPrintError("Shooter angle out of bounds: ${angle.degrees}")
-                    0.degrees
-                }
-
-            this.velocity =
-                if (velocity in MINIMUM_VELOCITY..MAXIMUM_VELOCITY) velocity
-                else {
-                    robotPrintError("Shooter velocity out of bounds: ${velocity.asRpm}")
-                    0.rpm
-                }
-
-            this.heading =
-                if (heading.degrees in MINIMUM_HEADING_ANGLE..MAXIMUM_HEADING_ANGLE) heading
-                else {
-                    robotPrintError("heading angle out of bounds: ${heading.degrees}")
-                    0.degrees
-                }
+        var angle: Rotation2d = if (angle.degrees in MINIMUM_ANGLE..MAXIMUM_ANGLE) angle
+        else {
+            robotPrintError("Shooter angle out of bounds: ${angle.degrees}")
+            0.degrees
+        }
+        var heading: Rotation2d = if (heading.degrees in MINIMUM_HEADING_ANGLE..MAXIMUM_HEADING_ANGLE) heading
+        else {
+            robotPrintError("heading angle out of bounds: ${heading.degrees}")
+            0.degrees
+        }
+        var velocity: AngularVelocity = if (velocity in MINIMUM_VELOCITY..MAXIMUM_VELOCITY) velocity
+        else {
+            robotPrintError("Shooter velocity out of bounds: ${velocity.asRpm}")
+            0.rpm
         }
 
         companion object {
