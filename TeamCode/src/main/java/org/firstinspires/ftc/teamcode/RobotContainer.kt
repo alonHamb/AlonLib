@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferSubsystem
 
 
 /**
@@ -30,6 +31,8 @@ class RobotContainer(
     val shooterSubsystem = ShooterSubsystem(hardwareMap, telemetry, telemetryLevel)
 
     val driveSubsystem = DriveSubsystem(hardwareMap, telemetry, telemetryLevel)
+
+    val transferSubsystem = TransferSubsystem(hardwareMap, telemetry, telemetryLevel)
 
 
     // --- init functions ---

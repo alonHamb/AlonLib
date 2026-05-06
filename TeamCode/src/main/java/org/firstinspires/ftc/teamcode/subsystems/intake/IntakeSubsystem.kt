@@ -8,17 +8,20 @@ import org.firstinspires.ftc.teamcode.RobotMap.Intake.INTAKE_MOTOR_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
+import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeConstants.INTAKE_ACTIVE_VOLTAGE_THRESHOLD
 import kotlin.math.absoluteValue
 
 class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     // --- hardware declaration ---
     val intakeMotor = HaMotor(hardwareMap, INTAKE_MOTOR_ID, Motor.GoBILDA.RPM_1150).apply {
         zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
+        runningDirection = Motor.Direction.FORWARD
+        runMode = Motor.RunMode.RawPower
     }
 
     // --- state getters ---
 
-    val isActive get() = intakeMotor.percentOutput.absoluteValue >= 0
+    val isActive get() = intakeMotor.voltage.absoluteValue >= INTAKE_ACTIVE_VOLTAGE_THRESHOLD
 
     // --- motors control ---
 
