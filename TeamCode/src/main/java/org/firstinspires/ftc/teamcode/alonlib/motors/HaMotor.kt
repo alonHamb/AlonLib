@@ -27,7 +27,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     )
 
     // --- hardware declaration ---
-    private val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble())
+    val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble())
     private val voltageSensor: VoltageSensor = hardwareMap.voltageSensor.iterator().next()
 
     // --- motor configurations ---
