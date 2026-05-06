@@ -37,7 +37,7 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Con
 @Config
 class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     // --- hardware declaration and configuration ---
-    val limelight = VisionSubsystem(hardwareMap, telemetry)
+    val limelight = VisionSubsystem(hardwareMap, telemetry, telemetryLevel)
     val topFlywheelMotor = HaMotor(hardwareMap, TOP_FLYWHEEL_MOTOR_ID, TOP_FLYWHEEL_MOTOR_TYPE).apply {
         runMode = Motor.RunMode.VelocityControl
         zeroPowerBehavior = Motor.ZeroPowerBehavior.FLOAT
@@ -73,7 +73,6 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
         }
     val currentHeading: Rotation2d
         get() = (headingMotor.position.degrees * HEADING_RATIO).degrees
-
     var currentHeadingSetPoint: Rotation2d
         get() = headingMotor.position / HEADING_RATIO
         set(value) {
@@ -81,7 +80,6 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
         }
     val currentVelocity: AngularVelocity
         get() = topFlywheelMotor.velocity
-
     var currentVelocitySetPoint: AngularVelocity
         get() = topFlywheelMotor.setPoint.rpm
         set(value) {
