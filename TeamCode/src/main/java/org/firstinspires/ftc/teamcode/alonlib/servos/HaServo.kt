@@ -159,6 +159,13 @@ class HaServo(
             }
         }
 
+    fun stop() {
+        when (mode) {
+            Mode.CR -> percentOutput = 0.0
+            Mode.FULL_RANGE -> {}
+        }
+    }
+
     override fun getManufacturer(): HardwareDevice.Manufacturer {
         return HardwareDevice.Manufacturer.Unknown
     }
