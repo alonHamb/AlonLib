@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
+import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferConstants.TRANSFER_GEAR_RATIO
 import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferConstants.TRANSFER_SERVO_MODE
 import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferConstants.TRANSFER_SERVO_TYPE
 import kotlin.math.absoluteValue
@@ -28,22 +29,21 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val 
     }
 
     // --- state getters ---
-
-    val isRunning get() = leftTransferServo.percentOutput.absoluteValue > 0
+    val isRunning get() = power.absoluteValue > 0
 
     var velocity: AngularVelocity = 0.rpm
         set(value) {
-            leftTransferServo.velocity = value
-            rightTransferServo.velocity = value
+            leftTransferServo.velocity = (value.asRpm / TRANSFER_GEAR_RATIO).rpm
+            rightTransferServo.velocity = (value.asRpm / TRANSFER_GEAR_RATIO).rpm
             field = value
         }
 
-    // --- motor control ---
-
-    fun setServoPower(power: PercentOutput) {
-        leftTransferServo.percentOutput = power
-        rightTransferServo.percentOutput = power
-    }
+    var power: PercentOutput = 0.0
+        set(value) {
+            leftTransferServo.percentOutput = value
+            rightTransferServo.percentOutput = value
+            field = value
+        }
 
 
     fun stopMotor() {
@@ -59,7 +59,9 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val 
                 telemetry.addLine("--- transfer subsystem ---")
                 telemetry.addData("Running Command", super.currentCommand)
                 telemetry.addData("is running", isRunning)
-                telemetry.addData("running direction", leftTransferServo.runningDirection.toString())
+                telemetry.addData("running direction", "${leftTransferServo.runningDirection}")
+                telemetry.addData("velocity", velocity.asRpm)
+                telemetry.addData("power level", power)
             }
         }
     }

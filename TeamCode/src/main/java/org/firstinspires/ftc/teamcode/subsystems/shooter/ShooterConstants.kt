@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.shooter
 import com.acmerobotics.dashboard.config.Config
 import com.hamosad1657.lib.math.PIDGains
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.math.LinearInterpolationTable
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
@@ -15,7 +16,9 @@ object ShooterConstants {
 
     // --- Hardware constants ---
 
-    val HOOD_SERVO_RANGE = 357.4.degrees
+    val HOOD_SERVO_MODE = Data.Servos.Mode.CR
+    val HOOD_SERVO_TYPE = Data.Servos.Type.AxonMax
+
 
     // --- Ratios ---
     const val HEADING_RATIO = 11.0 / 140.0

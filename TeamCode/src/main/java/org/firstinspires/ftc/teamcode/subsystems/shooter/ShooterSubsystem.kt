@@ -27,7 +27,8 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.ANGLE_
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_PID_GAINS
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_RATIO
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HEADING_TOLERANCE
-import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HOOD_SERVO_RANGE
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HOOD_SERVO_MODE
+import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.HOOD_SERVO_TYPE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.MAXIMUM_HEADING
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.MINIMUM_HEADING
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_INTERPOLATION_TABLE
@@ -61,7 +62,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
         tolerance = HEADING_TOLERANCE.degrees
         pidfGains = HEADING_PID_GAINS
     }
-    val hoodServo = HaServo(hardwareMap, HOOD_SERVO_ID, HOOD_SERVO_RANGE).apply { // TODO add stock servo ranges to library
+    val hoodServo = HaServo(hardwareMap, HOOD_SERVO_ID, HOOD_SERVO_MODE, HOOD_SERVO_TYPE).apply {
         runningDirection = Motor.Direction.FORWARD
     }
     // --- state getters and setters ---
@@ -91,7 +92,6 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
     val isAtMinHeading get() = currentHeading >= MINIMUM_HEADING
     val isInVelocityTolerance get() = topFlywheelMotor.inTolerance
     val isInHeadingTolerance get() = headingMotor.inTolerance
-    val latestBotPosition get() = localizer.latestBotPose2d
     var state: Constants.ShooterState
         get() = Constants.ShooterState(currentAngle, currentHeading, currentVelocity)
         set(value) {
@@ -117,7 +117,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
     }
 
     fun stopHoodServo() {
-        hoodServo.servo.disable()
+        hoodServo.stop()
     }
 
     // --- dynamic shooting ---
@@ -155,6 +155,10 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
 
     fun increaseVelocitySetPointBy(velocity: AngularVelocity) {
         currentVelocitySetPoint += velocity
+    }
+
+    fun increaseAngleSetPointBy(angle: Rotation2d) {
+        currentAngleSetPoint += angle
     }
 
     fun setHeadingMotorOutput(output: PercentOutput) {
