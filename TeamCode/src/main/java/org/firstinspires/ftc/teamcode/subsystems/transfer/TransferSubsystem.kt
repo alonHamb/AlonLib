@@ -8,20 +8,22 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.RobotMap.Transfer.LEFT_TRANSFER_SERVO_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Transfer.RIGHT_TRANSFER_SERVO_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaCrServo
+import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
+import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
+import org.firstinspires.ftc.teamcode.alonlib.units.rpm
+import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferConstants.TRANSFER_SERVO_MODE
+import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferConstants.TRANSFER_SERVO_TYPE
 import kotlin.math.absoluteValue
 
 @Config
 class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     @JvmField
     // --- hardware declaration
-    val leftTransferServo = HaCrServo(hardwareMap, LEFT_TRANSFER_SERVO_ID).apply {
-        zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
+    val leftTransferServo = HaServo(hardwareMap, LEFT_TRANSFER_SERVO_ID, TRANSFER_SERVO_MODE, TRANSFER_SERVO_TYPE).apply {
         runningDirection = Motor.Direction.FORWARD
     }
-    val rightTransferServo = HaCrServo(hardwareMap, RIGHT_TRANSFER_SERVO_ID).apply {
-        zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
+    val rightTransferServo = HaServo(hardwareMap, RIGHT_TRANSFER_SERVO_ID, TRANSFER_SERVO_MODE, TRANSFER_SERVO_TYPE).apply {
         runningDirection = Motor.Direction.REVERSE
     }
 
@@ -29,9 +31,16 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val 
 
     val isRunning get() = leftTransferServo.percentOutput.absoluteValue > 0
 
+    var velocity: AngularVelocity = 0.rpm
+        set(value) {
+            leftTransferServo.velocity = value
+            rightTransferServo.velocity = value
+            field = value
+        }
+
     // --- motor control ---
 
-    fun setMotorPower(power: PercentOutput) {
+    fun setServoPower(power: PercentOutput) {
         leftTransferServo.percentOutput = power
         rightTransferServo.percentOutput = power
     }
