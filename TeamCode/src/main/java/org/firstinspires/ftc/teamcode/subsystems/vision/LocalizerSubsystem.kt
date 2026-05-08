@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.vision
 
+import com.qualcomm.robotcore.hardware.GyroSensor
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.SubsystemBase
 import com.seattlesolvers.solverslib.geometry.Pose2d
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.RobotMap.Vision.LIMELIGHT_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaLimelight3A
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
+import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.distanceTo
 import org.firstinspires.ftc.teamcode.alonlib.units.horizontalAngleTo
 import org.firstinspires.ftc.teamcode.alonlib.units.meters
@@ -30,6 +32,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
 
     val pinPoint = HaPinPoint(hardwareMap, PINPOINT_ID, PINPOINT_ODOMETRY_PODS)
 
+    val imu: GyroSensor = hardwareMap.gyroSensor.get("imu")
     // --- state getters and setters ---
 
     var currentLocalizer = PinPoint
@@ -98,6 +101,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
 
     // --- periodic function ---
     override fun periodic() {
+        limelight.UpdateMegaTag2RobotHeading(imu.heading.degrees)
         updateTelemetry()
     }
 }
