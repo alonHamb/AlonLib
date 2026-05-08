@@ -23,7 +23,6 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.LocalizerSubsystem
 
 @Config
 class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
-    @JvmField
     // --- hardware declaration ---
     val frontLeftMotor = HaMotor(hardwareMap, FRONT_LEFT_MOTOR_ID, DRIVE_MOTOR_TYPE)
     val frontRightMotor = HaMotor(hardwareMap, FRONT_RIGHT_MOTOR_ID, DRIVE_MOTOR_TYPE)
@@ -63,7 +62,6 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
 
 
     // --- Telemetry ---
-
     fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}

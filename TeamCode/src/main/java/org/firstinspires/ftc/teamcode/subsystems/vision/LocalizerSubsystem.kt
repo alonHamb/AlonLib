@@ -39,6 +39,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
             when (isInLimelightAccuracyRange) {
                 true -> {
                     currentLocalizer = Limelight
+                    pinPoint.position = limelight.latestPose2d
                     return limelight.latestPose2d
                 }
 
