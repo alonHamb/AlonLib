@@ -67,12 +67,14 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
     val angleToBlueTarget get() = latestBotPose2d.horizontalAngleTo(BLUE_GOAL_TARGET)
     val isInLimelightAccuracyRange: Boolean
         get() {
-            return when (limelight.detectedTags[0].fiducialId) {
+            return when (limelight.detectedTags?.get(0)?.fiducialId) {
                 BLUE_GOAL_TAG_ID -> pinPointDistanceToBlueGoal in LIMELIGHT_ACCURACY_RANGE
                 RED_GOAL_TAG_ID -> pinPointDistanceToRedGoal in LIMELIGHT_ACCURACY_RANGE
-                else -> false
+                null -> false
+                else -> {
+                    false
+                }
             }
-
         }
 
 
