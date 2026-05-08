@@ -26,21 +26,15 @@ class RobotContainer(
 
     // --- init functions ---
     init {
-        initializeSubsystems()
         configureButtonBindings()
         setDefaultCommands()
-    }
-
-    fun initializeSubsystems() {
-
-
     }
 
     fun configureButtonBindings() {
         with(controllerA) {
         }
         with(controllerB) {
-            
+
         }
 
 
