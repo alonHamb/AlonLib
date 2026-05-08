@@ -7,6 +7,10 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
+import org.firstinspires.ftc.teamcode.commands.defaultIntakeCommand
+import org.firstinspires.ftc.teamcode.commands.defaultTransferCommand
+import org.firstinspires.ftc.teamcode.commands.driveFieldCentricCommand
+import org.firstinspires.ftc.teamcode.commands.dynamicShootingDefaultCommand
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
@@ -21,7 +25,7 @@ class RobotContainer(
     telemetry: Telemetry,
     gamepad1: Gamepad,
     gamepad2: Gamepad,
-    alliance: Alliance,
+    val alliance: Alliance,
     telemetryLevel: TelemetryLevel
 ) : Robot() {
     val controllerA = GamepadEx(gamepad1)
@@ -35,14 +39,8 @@ class RobotContainer(
 
     // --- init functions ---
     init {
-        initializeSubsystems()
         configureButtonBindings()
         setDefaultCommands()
-    }
-
-    fun initializeSubsystems() {
-
-
     }
 
     fun configureButtonBindings() {
@@ -57,6 +55,10 @@ class RobotContainer(
     }
 
     fun setDefaultCommands() {
+        driveSubsystem.defaultCommand = driveSubsystem.driveFieldCentricCommand({ controllerA.leftX }, { controllerA.leftY }) { controllerA.rightX }
+        intakeSubsystem.defaultCommand = intakeSubsystem.defaultIntakeCommand()
+        transferSubsystem.defaultCommand = transferSubsystem.defaultTransferCommand()
+        shooterSubsystem.defaultCommand = shooterSubsystem.dynamicShootingDefaultCommand(alliance)
     }
 
 }
