@@ -6,6 +6,8 @@ import com.seattlesolvers.solverslib.command.SubsystemBase
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.firstinspires.ftc.teamcode.RobotMap.Shooter.BOTTOM_FLYWHEEL_MOTOR_ID
+import org.firstinspires.ftc.teamcode.RobotMap.Shooter.BOTTOM_FLYWHEEL_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HEADING_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HEADING_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HOOD_SERVO_ID
@@ -45,7 +47,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
         tolerance = VELOCITY_TOLERANCE.asRpm
         pidfGains = VELOCITY_PID_GAINS
     }
-    val bottomFlywheelMotor = HaMotor(hardwareMap, TOP_FLYWHEEL_MOTOR_ID, TOP_FLYWHEEL_MOTOR_TYPE).apply {
+    val bottomFlywheelMotor = HaMotor(hardwareMap, BOTTOM_FLYWHEEL_MOTOR_ID, BOTTOM_FLYWHEEL_MOTOR_TYPE).apply {
         runMode = topFlywheelMotor.runMode
         zeroPowerBehavior = topFlywheelMotor.zeroPowerBehavior
         runningDirection = topFlywheelMotor.runningDirection
