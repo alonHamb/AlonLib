@@ -5,7 +5,7 @@ import com.seattlesolvers.solverslib.geometry.Translation2d
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.meters
 
-object VisionConstants {
+object LocalizerConstants {
     val LIMELIGHT_ACCURACY_RANGE = 0.6.meters..3.5.meters
     val FAR_SHOOTING_RANGE = 3.meters..5.meters
 

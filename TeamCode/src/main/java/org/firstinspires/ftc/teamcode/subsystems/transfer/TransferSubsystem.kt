@@ -46,7 +46,7 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val 
     }
 
     // --- telemetry ---
-    fun addTelemetry() {
+    fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}
             TelemetryLevel.Testing -> {
@@ -58,5 +58,8 @@ class TransferSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val 
         }
     }
 
-
+    // --- periodic function ---
+    override fun periodic() {
+        updateTelemetry()
+    }
 }

@@ -31,13 +31,13 @@ import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.MINIMU
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_INTERPOLATION_TABLE
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_PID_GAINS
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants.VELOCITY_TOLERANCE
-import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.vision.LocalizerSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Constants
 
 @Config
 class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
     // --- hardware declaration and configuration ---
-    val limelight = VisionSubsystem(hardwareMap, telemetry, telemetryLevel)
+    val localizer = LocalizerSubsystem(hardwareMap, telemetry, telemetryLevel)
     val topFlywheelMotor = HaMotor(hardwareMap, TOP_FLYWHEEL_MOTOR_ID, TOP_FLYWHEEL_MOTOR_TYPE).apply {
         runMode = Motor.RunMode.VelocityControl
         zeroPowerBehavior = Motor.ZeroPowerBehavior.FLOAT
@@ -89,7 +89,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
     val isAtMinHeading get() = currentHeading >= MINIMUM_HEADING
     val isInVelocityTolerance get() = topFlywheelMotor.inTolerance
     val isInHeadingTolerance get() = headingMotor.inTolerance
-    val latestBotPosition get() = limelight.latestBotPose2d
+    val latestBotPosition get() = localizer.latestBotPose2d
     var state: Constants.ShooterState
         get() = Constants.ShooterState(currentAngle, currentHeading, currentVelocity)
         set(value) {
@@ -122,15 +122,15 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
 
     fun getDynamicShootingVelocityCalc(alliance: Alliance): AngularVelocity {
         return when (alliance) {
-            Alliance.Red -> VELOCITY_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToRedTarget.asMeters).rpm
-            Alliance.Blue -> VELOCITY_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToBlueTarget.asMeters).rpm
+            Alliance.Red -> VELOCITY_INTERPOLATION_TABLE.getOutputFor(localizer.distanceToRedTarget.asMeters).rpm
+            Alliance.Blue -> VELOCITY_INTERPOLATION_TABLE.getOutputFor(localizer.distanceToBlueTarget.asMeters).rpm
         }
     }
 
     fun getDynamicHeadingCalc(alliance: Alliance): Rotation2d {
         return when (alliance) {
-            Alliance.Red -> state.heading + limelight.angleToRedTarget
-            Alliance.Blue -> state.heading + limelight.angleToBlueTarget
+            Alliance.Red -> state.heading + localizer.angleToRedTarget
+            Alliance.Blue -> state.heading + localizer.angleToBlueTarget
 
         }
 
@@ -139,8 +139,8 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
 
     fun getDynamicHoodAngle(alliance: Alliance): Rotation2d {
         return when (alliance) {
-            Alliance.Blue -> ANGLE_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToBlueTarget.asMeters).degrees
-            Alliance.Red -> ANGLE_INTERPOLATION_TABLE.getOutputFor(limelight.distanceToRedTarget.asMeters).degrees
+            Alliance.Blue -> ANGLE_INTERPOLATION_TABLE.getOutputFor(localizer.distanceToBlueTarget.asMeters).degrees
+            Alliance.Red -> ANGLE_INTERPOLATION_TABLE.getOutputFor(localizer.distanceToRedTarget.asMeters).degrees
         }
     }
 
@@ -168,7 +168,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
 
     // --- Telemetry ---
 
-    fun addTelemetry() {
+    fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}
             TelemetryLevel.Testing -> {
@@ -194,7 +194,7 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
         topFlywheelMotor.update()
         bottomFlywheelMotor.update()
         headingMotor.update()
+        updateTelemetry()
+
     }
-
-
 }

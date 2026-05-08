@@ -17,11 +17,9 @@ import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_X_OFFSET
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_Y_OFFSET
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Telemetry.Limelight
-import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Telemetry.PinPoint
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.X_POD_DIRECTION
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Y_POD_DIRECTION
-import org.firstinspires.ftc.teamcode.subsystems.vision.VisionSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.vision.LocalizerSubsystem
 
 @Config
 class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
@@ -43,7 +41,7 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
     }
 
     // --- functional properties ---
-    val limelight = VisionSubsystem(hardwareMap, telemetry)
+    val localizer = LocalizerSubsystem(hardwareMap, telemetry, telemetryLevel)
     val drive = MecanumDrive(
         frontLeftMotor.motor,
         frontRightMotor.motor,
@@ -52,7 +50,7 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
     )
 
     // --- state getters and setters ---
-    var currentLocalizer = PinPoint
+
 
     // --- operation functions ---
     fun fieldCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
@@ -64,39 +62,26 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
     }
 
 
-    // --- all subsystem periodic functions ---
-    fun updateLocalizer() {
-        if (limelight.isInLimelightAccuracyRange) {
-            pinPoint.position = limelight.latestBotPose2d
-            currentLocalizer = Limelight
-        } else {
-            currentLocalizer = PinPoint
-            pinPoint.update()
-        }
-    }
-
-    override fun periodic() {
-        super.periodic()
-        updateLocalizer()
-
-    }
-
     // --- Telemetry ---
 
-    fun addTelemetry() {
+    fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}
             TelemetryLevel.Testing -> {
                 telemetry.addLine("--- Drive subsystem ---")
                 telemetry.addData("Running Command", super.currentCommand)
-                telemetry.addData("Robot pose", pinPoint.position.toString())
-                telemetry.addData("Robot heading", pinPoint.heading)
-                telemetry.addData("localizer", currentLocalizer)
+                telemetry.addData(
+                    "Robot pose",
+                    "x: ${localizer.latestBotPose2d.x}, y: ${localizer.latestBotPose2d.y} heading: ${localizer.latestBotPose2d.heading}"
+                )
+                telemetry.addData("Robot heading", localizer.latestBotPose2d.heading)
+                telemetry.addData("localizer", localizer.currentLocalizer)
             }
         }
-
-
     }
 
-
+    // --- periodic function ---
+    override fun periodic() {
+        updateTelemetry()
+    }
 }

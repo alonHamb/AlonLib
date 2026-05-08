@@ -33,8 +33,9 @@ class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val te
         intakeMotor.stop()
     }
 
+
     // --- telemetry ---
-    fun addTelemetry() {
+    fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}
             TelemetryLevel.Testing -> {
@@ -45,4 +46,8 @@ class IntakeSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val te
         }
     }
 
+    // --- periodic function ---
+    override fun periodic() {
+        updateTelemetry()
+    }
 }
