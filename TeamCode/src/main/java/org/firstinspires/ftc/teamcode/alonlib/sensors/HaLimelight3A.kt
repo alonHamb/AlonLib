@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.alonlib.sensors
 
+import com.qualcomm.hardware.limelightvision.LLResult
+import com.qualcomm.hardware.limelightvision.LLResultTypes
+import com.qualcomm.hardware.limelightvision.LLStatus
 import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
@@ -11,21 +14,31 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
     private val limelight = hardwareMap.get(Limelight3A::class.java, id)
 
-    val isPolling get() = limelight.isRunning
+    val isPolling: Boolean
+        get() = limelight.isRunning
 
-    val currentlyConnected get() = limelight.isConnected
+    val currentlyConnected: Boolean
+        get() = limelight.isConnected
 
-    val status get() = limelight.status
+    val status: LLStatus
+        get() = limelight.status
 
-    val latestResult get() = limelight.latestResult
+    val latestResult: LLResult?
+        get() = limelight.latestResult
 
-    val detectedTags get() = limelight.latestResult.fiducialResults
+    val detectedTags: List<LLResultTypes.FiducialResult>?
+        get() = limelight.latestResult.fiducialResults
 
-    val firstDetectedTag get() = limelight.latestResult.fiducialResults[0]
+    val firstDetectedTag: LLResultTypes.FiducialResult? get() = limelight.latestResult.fiducialResults[0]
 
-    val firstDetectedTagId get() = firstDetectedTag.fiducialId
+    val firstDetectedTagId: Int?
+        get() = firstDetectedTag?.fiducialId
 
-    val latestPose2d get() = Pose2d(Translation2d(latestResult.botpose.position.x, latestResult.botpose.position.y), latestResult.botpose.orientation.yaw.degrees)
+    val latestPose2d: Pose2d
+        get() = Pose2d(
+            Translation2d(latestResult?.botpose_MT2?.position?.x ?: 0.0, latestResult?.botpose_MT2?.position?.y ?: 0.0),
+            latestResult?.botpose_MT2?.orientation?.yaw?.degrees ?: 0.0.degrees
+        )
 
 
     var pipeLine = 1

@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.geometry.Translation2d
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
+import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.Length
 import org.firstinspires.ftc.teamcode.alonlib.units.degPs
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
@@ -31,15 +32,20 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
         pinPoint.setEncoderResolution(pod)
     }
 
-    val deviceStatus get() = pinPoint.deviceStatus
+    val deviceStatus: GoBildaPinpointDriver.DeviceStatus
+        get() = pinPoint.deviceStatus
 
-    val loopTime get() = pinPoint.loopTime
+    val loopTime: Int
+        get() = pinPoint.loopTime
 
-    val frequency get() = pinPoint.frequency
+    val frequency: Double
+        get() = pinPoint.frequency
 
-    val encoderXTicks get() = pinPoint.encoderX
+    val encoderXTicks: Int
+        get() = pinPoint.encoderX
 
-    val encoderYTicks get() = pinPoint.encoderY
+    val encoderYTicks: Int
+        get() = pinPoint.encoderY
 
     var position: Pose2d
         get() = Pose2d(
@@ -69,23 +75,29 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
             pinPoint.setHeading(value.degrees, AngleUnit.DEGREES)
         }
 
-    val countedHeading get() = pinPoint.getHeading(UnnormalizedAngleUnit.DEGREES).degrees
+    val countedHeading: Rotation2d
+        get() = pinPoint.getHeading(UnnormalizedAngleUnit.DEGREES).degrees
 
     /**
      * the velocity in the x-axis in units per second
      */
-    val xVelocity get() = pinPoint.getVelX(DistanceUnit.METER).millimeters
+    val xVelocity: Length
+        get() = pinPoint.getVelX(DistanceUnit.METER).millimeters
 
     /**
      * the velocity in the y-axis in units per second
      */
-    val yVelocity get() = pinPoint.getVelY(DistanceUnit.MM).millimeters
+    val yVelocity: Length
+        get() = pinPoint.getVelY(DistanceUnit.MM).millimeters
 
-    val headingVelocity get() = pinPoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES).degPs
+    val headingVelocity: AngularVelocity
+        get() = pinPoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES).degPs
 
-    val xOffset get() = pinPoint.getXOffset(DistanceUnit.MM).millimeters
+    val xOffset: Length
+        get() = pinPoint.getXOffset(DistanceUnit.MM).millimeters
 
-    val yOffset get() = pinPoint.getYOffset(DistanceUnit.MM).millimeters
+    val yOffset: Length
+        get() = pinPoint.getYOffset(DistanceUnit.MM).millimeters
 
     fun setEncoderDirections(
         xEncoderDirection: GoBildaPinpointDriver.EncoderDirection,

@@ -9,6 +9,7 @@ ftcSDK = "11.1.0"
 kotlin = "2.3.21"
 solverslib = "SNAPSHOT-5a81a6b"
 telemetry = "1.0.0"
+playServicesBasement = "18.10.0"
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -30,6 +31,7 @@ robotcore = { module = "org.firstinspires.ftc:RobotCore", version.ref = "ftcSDK"
 robotserver = { module = "org.firstinspires.ftc:RobotServer", version.ref = "ftcSDK" }
 telemetry = { group = "com.pedropathing", name = "telemetry", version.ref = "telemetry" }
 vision = { module = "org.firstinspires.ftc:Vision", version.ref = "ftcSDK" }
+play-services-basement = { group = "com.google.android.gms", name = "play-services-basement", version.ref = "playServicesBasement" }
 
 [plugins]
 foojay-resolver = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "gradle-toolchains-foojay-resolver-convention" }
