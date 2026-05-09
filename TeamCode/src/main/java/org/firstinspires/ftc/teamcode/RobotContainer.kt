@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.Robot
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.firstinspires.ftc.teamcode.Commands.testDefaultCommand
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
@@ -45,7 +46,6 @@ class RobotContainer(
     }
 
     fun setDefaultCommands() {
-        testSubsystem.defaultCommand = testSubsystem.testAngle { controllerA.leftY.rotations }
+        testSubsystem.defaultCommand = testSubsystem.testDefaultCommand { controllerA.leftY.rotations }
     }
-
 }

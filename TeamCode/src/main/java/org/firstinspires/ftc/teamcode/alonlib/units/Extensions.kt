@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.alonlib.units
 
 import com.seattlesolvers.solverslib.geometry.Pose2d
 import com.seattlesolvers.solverslib.geometry.Rotation2d
+import com.seattlesolvers.solverslib.util.MathUtils
 import kotlin.math.abs
 import kotlin.math.atan
 import kotlin.math.pow
@@ -31,6 +32,10 @@ inline val Number.rotations: Rotation2d get() = Rotation2d.fromDegrees(this.toDo
 
 inline val Rotation2d.absoluteValue: Rotation2d get() = Rotation2d.fromDegrees(abs(this.degrees))
 inline val Rotation2d.rotations: Double get() = (this.degrees / 360.0)
+inline val Rotation2d.normalizedDegrees: Double get() = MathUtils.normalizeDegrees(this.degrees, true)
+inline val Rotation2d.normalizedRadians: Double get() = MathUtils.normalizeRadians(this.radians, true)
+inline val Rotation2d.normalizedRotations: Double get() = MathUtils.normalizeDegrees(this.degrees, true) / 360.0
+
 
 operator fun Rotation2d.plus(other: Rotation2d) = (this.degrees + other.degrees).degrees
 operator fun Rotation2d.minus(other: Rotation2d) = (this.degrees - other.degrees).degrees

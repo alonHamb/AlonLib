@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.Servo
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.Motor
-import com.seattlesolvers.solverslib.util.MathUtils
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Mode
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Type
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 class HaServo(
@@ -96,12 +96,9 @@ class HaServo(
             when (mode) {
                 Mode.CR -> robotPrintError("cannot set position in CR mode")
                 Mode.FULL_RANGE -> {
-                    servo.position = MathUtils.normalizeDegrees(
-                        (position.degrees.coerceIn(
-                            MathUtils.normalizeDegrees(minPosition.degrees, true),
-                            MathUtils.normalizeDegrees(maxPosition.degrees, true)
-                        ) / (MathUtils.normalizeDegrees(type.range.degrees, true))),
-                        true
+                    servo.position = (position.normalizedDegrees / type.range.normalizedDegrees).coerceIn(
+                        minPosition.normalizedDegrees,
+                        maxPosition.normalizedDegrees
                     )
                     field = type.range * servo.position
                 }
