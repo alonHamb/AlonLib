@@ -3,10 +3,13 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.seattlesolvers.solverslib.command.Robot
+import com.seattlesolvers.solverslib.command.button.GamepadButton
 import com.seattlesolvers.solverslib.gamepad.GamepadEx
+import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
+import org.firstinspires.ftc.teamcode.commands.IntakeCommand
 import org.firstinspires.ftc.teamcode.commands.defaultIntakeCommand
 import org.firstinspires.ftc.teamcode.commands.defaultTransferCommand
 import org.firstinspires.ftc.teamcode.commands.driveFieldCentricCommand
@@ -45,7 +48,7 @@ class RobotContainer(
 
     fun configureButtonBindings() {
         with(controllerA) {
-
+            GamepadButton(this, GamepadKeys.Button.A).whenPressed(intakeSubsystem.IntakeCommand())
         }
         with(controllerB) {
 
