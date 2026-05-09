@@ -7,6 +7,8 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
+import org.firstinspires.ftc.teamcode.alonlib.units.rotations
+import org.firstinspires.ftc.teamcode.subsystems.TestSubsystem
 
 
 class RobotContainer(
@@ -22,6 +24,8 @@ class RobotContainer(
     val controllerB = GamepadEx(gamepad2)
 
     // --- Subsystem declaration
+
+    val testSubsystem = TestSubsystem(hardwareMap, telemetry, telemetryLevel)
 
 
     // --- init functions ---
@@ -41,6 +45,7 @@ class RobotContainer(
     }
 
     fun setDefaultCommands() {
+        testSubsystem.defaultCommand = testSubsystem.testAngle { controllerA.leftY.rotations }
     }
 
 }
