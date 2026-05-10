@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
 import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.radians
+import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_X_OFFSET
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_Y_OFFSET
@@ -63,7 +64,7 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
     }
 
     fun resetImu() {
-        localizer.imu.calibrate()
+        localizer.pinPoint.heading = 0.rotations
     }
 
 

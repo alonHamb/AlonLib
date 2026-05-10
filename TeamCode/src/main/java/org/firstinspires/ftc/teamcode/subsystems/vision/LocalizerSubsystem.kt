@@ -52,8 +52,6 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
                 }
             }
         }
-    val pinPointDistanceToRedGoal get() = pinPoint.position.distanceTo(RED_GOAL_TARGET).meters
-    val pinPointDistanceToBlueGoal get() = pinPoint.position.distanceTo(BLUE_GOAL_TARGET).meters
     val latestBotPose2D
         get() = Pose2D(
             DistanceUnit.METER,
@@ -62,10 +60,10 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
             AngleUnit.DEGREES,
             latestBotPose2d.heading
                       )
-    val isInRedGoalRange get() = distanceToRedTarget in LIMELIGHT_ACCURACY_RANGE
+    val pinPointDistanceToRedGoal get() = pinPoint.position.distanceTo(RED_GOAL_TARGET).meters
+    val pinPointDistanceToBlueGoal get() = pinPoint.position.distanceTo(BLUE_GOAL_TARGET).meters
     val distanceToRedTarget get() = latestBotPose2d.distanceTo(RED_GOAL_TARGET).meters
     val angleToRedTarget get() = latestBotPose2d.horizontalAngleTo(RED_GOAL_TARGET)
-    val isInBlueGoalRange get() = distanceToBlueTarget in LIMELIGHT_ACCURACY_RANGE
     val distanceToBlueTarget get() = latestBotPose2d.distanceTo(BLUE_GOAL_TARGET).meters
     val angleToBlueTarget get() = latestBotPose2d.horizontalAngleTo(BLUE_GOAL_TARGET)
     val isInLimelightAccuracyRange: Boolean
@@ -74,9 +72,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
                 BLUE_GOAL_TAG_ID -> pinPointDistanceToBlueGoal in LIMELIGHT_ACCURACY_RANGE
                 RED_GOAL_TAG_ID  -> pinPointDistanceToRedGoal in LIMELIGHT_ACCURACY_RANGE
                 null             -> false
-                else             -> {
-                    false
-                }
+                else             -> false
             }
         }
 
@@ -88,12 +84,10 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
             TelemetryLevel.Testing     -> {
                 telemetry.addLine("--- Vision Subsystem ---")
                 telemetry.addData("detected tags", limelight.detectedTags)
+                telemetry.addData("current localizer", currentLocalizer)
                 telemetry.addData("is in limelight detection range", isInLimelightAccuracyRange)
-                telemetry.addData("current botPose2d", latestBotPose2d)
-                telemetry.addData("current botPose2D", latestBotPose2D)
-                telemetry.addData("is in red goal range", isInRedGoalRange)
+                telemetry.addData("current botPose2d", "(${latestBotPose2d.x},${latestBotPose2d.y})")
                 telemetry.addData("distance to red goal target", distanceToRedTarget)
-                telemetry.addData("is in blue goal range", isInBlueGoalRange)
                 telemetry.addData("distance to blue goal target", distanceToBlueTarget)
             }
         }
@@ -101,7 +95,8 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
 
     // --- periodic function ---
     override fun periodic() {
-        limelight.UpdateMegaTag2RobotHeading(latestBotPose2d.heading.radians)
+        pinPoint.update()
+        limelight.UpdateMegaTag2RobotHeading(pinPoint.position.heading.radians)
         updateTelemetry()
     }
 }
