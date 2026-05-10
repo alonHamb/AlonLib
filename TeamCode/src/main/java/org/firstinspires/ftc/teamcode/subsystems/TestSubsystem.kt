@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 
 class TestSubsystem(hardwareMap: HardwareMap, val telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
 
-    val testMotor = HaMotor(hardwareMap, "motor 0", 8192.0, 0.0)
-    val testServo = HaServo(hardwareMap, "servo 0", Data.Servos.Mode.FULL_RANGE, Data.Servos.Type.AxonMax).apply {
+    val testMotor = HaMotor(hardwareMap, "m0", 8192.0, 0.0)
+    val testServo = HaServo(hardwareMap, "s0", Data.Servos.Mode.FULL_RANGE, Data.Servos.Type.AxonMax).apply {
         runningDirection = Motor.Direction.REVERSE
 
     }
@@ -26,7 +26,6 @@ class TestSubsystem(hardwareMap: HardwareMap, val telemetry: Telemetry, val tele
     fun testAngle(angle: () -> Rotation2d) {
         testServo.position = angle()
         controllerPosition = angle()
-        return
     }
 
     override fun periodic() {

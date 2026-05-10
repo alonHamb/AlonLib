@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.alonlib.servos
 
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.ServoImplEx
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Mode
@@ -19,13 +21,21 @@ class HaServo(
     val mode: Mode,
     val type: Type
 ) : HardwareDevice {
+
     // --- servo object declaration ---
     /**
      * the base [servo] object
      *
      * NOT TO BE USED UNLESS YOU KNOW WHAT YOU ARE DOING
      */
-    val servo: Servo = hardwareMap.get(Servo::class.java, id)
+    var servo: Servo = hardwareMap.get(Servo::class.java, id)
+
+    init {
+        (servo as ServoImplEx).apply {
+            pwmRange = (PwmControl.PwmRange(500.0, 2500.0))
+        }
+    }
+
 
     // --- state getters and setters ---
 
