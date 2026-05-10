@@ -1,8 +1,6 @@
-package com.hamosad1657.lib.math
+package org.firstinspires.ftc.teamcode.alonlib.math
 
 import com.seattlesolvers.solverslib.controller.PIDController
-import com.seattlesolvers.solverslib.controller.wpilibcontroller.ProfiledPIDController
-import com.seattlesolvers.solverslib.trajectory.TrapezoidProfile
 
 /**
  * Contains the following gains:
@@ -12,12 +10,7 @@ import com.seattlesolvers.solverslib.trajectory.TrapezoidProfile
  * - [kFF] Feed Forward gain calculation function.
  * - [kIZone] If the absolute error is above IZone, the integral accumulator is cleared
  * (making it ineffective). Motor controllers have this feature, but WPILib don't.
- *
- * And some methods to convert it to the following objects:
- * - [toPIDController] for conversion to a [PIDController].
- * - [toProfiledPIDController] for conversion to a [ProfiledPIDController].
- * - [toPathPlannerPIDConstants] for conversion to [PIDConstants].
- */
+ **/
 class PIDGains @JvmOverloads constructor(
     var kP: Double = 0.0,
     var kI: Double = 0.0,
@@ -27,17 +20,12 @@ class PIDGains @JvmOverloads constructor(
     var KV: Double = 0.0,
     var Ka: Double = 0.0,
     var kIZone: Double = 0.0,
-) {
-    /** Creates a WPILib [PIDController] with the P, I and D gains. */
-    fun toPIDController() = PIDController(kP, kI, kD)
-
-    /** Creates a WPILib [ProfiledPIDController] with the P, I, and D gains and the given [constraints]. */
-    fun toProfiledPIDController(constraints: TrapezoidProfile.Constraints) =
-        ProfiledPIDController(kP, kI, kD, constraints)
-
-    /** Converts the P, I and D gains to a Path Planner [PIDConstants]. */
-    fun toPathPlannerPIDConstants() = PIDGains(kP, kI, kD)
+                                        ) {
+    override fun toString(): String {
+        return "(kP: $kP ,kI: $kI ,Kd: $kD ,kFF: $kFF ,kS:$kS ,kV: $KV ,kA:$Ka )"
+    }
 }
+
 
 fun PIDController.configPID(gains: PIDGains) {
     p = gains.kP
