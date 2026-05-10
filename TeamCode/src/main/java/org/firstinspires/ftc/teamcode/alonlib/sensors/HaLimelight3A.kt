@@ -10,6 +10,7 @@ import com.seattlesolvers.solverslib.geometry.Pose2d
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.geometry.Translation2d
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 
 class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
     private val limelight = hardwareMap.get(Limelight3A::class.java, id)
@@ -38,7 +39,7 @@ class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
         get() = Pose2d(
             Translation2d(latestResult?.botpose_MT2?.position?.x ?: 0.0, latestResult?.botpose_MT2?.position?.y ?: 0.0),
             latestResult?.botpose_MT2?.orientation?.yaw?.degrees ?: 0.0.degrees
-        )
+                      )
 
 
     var pipeLine = 1
@@ -83,7 +84,7 @@ class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
     }
 
     fun UpdateMegaTag2RobotHeading(yaw: Rotation2d) {
-        limelight.updateRobotOrientation(yaw.degrees)
+        limelight.updateRobotOrientation(yaw.normalizedDegrees)
     }
 
 
