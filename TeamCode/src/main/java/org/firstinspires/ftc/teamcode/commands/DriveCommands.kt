@@ -7,5 +7,7 @@ fun DriveSubsystem.driveFieldCentricCommand(
     xSpeed: () -> Double,
     ySpeed: () -> Double,
     turnSpeed: () -> Double
-): Command =
+                                           ): Command =
     run { fieldCentricDrive(xSpeed(), ySpeed(), turnSpeed()) }
+
+fun DriveSubsystem.resetImuCommand(): Command = run { resetImu() }

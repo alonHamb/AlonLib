@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.commands.defaultIntakeCommand
 import org.firstinspires.ftc.teamcode.commands.defaultTransferCommand
 import org.firstinspires.ftc.teamcode.commands.driveFieldCentricCommand
 import org.firstinspires.ftc.teamcode.commands.dynamicShootingDefaultCommand
+import org.firstinspires.ftc.teamcode.commands.resetImuCommand
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
@@ -30,7 +31,7 @@ class RobotContainer(
     gamepad2: Gamepad,
     val alliance: Alliance,
     telemetryLevel: TelemetryLevel
-) : Robot() {
+                    ) : Robot() {
     val controllerA = GamepadEx(gamepad1)
     val controllerB = GamepadEx(gamepad2)
 
@@ -48,7 +49,9 @@ class RobotContainer(
 
     fun configureButtonBindings() {
         with(controllerA) {
-            GamepadButton(this, GamepadKeys.Button.A).whenPressed(intakeSubsystem.IntakeCommand())
+            GamepadButton(this, GamepadKeys.Button.A).whileHeld(intakeSubsystem.IntakeCommand())
+            GamepadButton(this, GamepadKeys.Button.OPTIONS).whenPressed(driveSubsystem.resetImuCommand())
+        
         }
         with(controllerB) {
 

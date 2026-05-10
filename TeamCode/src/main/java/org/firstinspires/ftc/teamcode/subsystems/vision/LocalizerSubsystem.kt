@@ -13,10 +13,10 @@ import org.firstinspires.ftc.teamcode.RobotMap.Vision.LIMELIGHT_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaLimelight3A
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
-import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.distanceTo
 import org.firstinspires.ftc.teamcode.alonlib.units.horizontalAngleTo
 import org.firstinspires.ftc.teamcode.alonlib.units.meters
+import org.firstinspires.ftc.teamcode.alonlib.units.radians
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Telemetry.Limelight
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.Telemetry.PinPoint
@@ -40,7 +40,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
     val latestBotPose2d: Pose2d
         get() {
             when (isInLimelightAccuracyRange) {
-                true -> {
+                true  -> {
                     currentLocalizer = Limelight
                     pinPoint.position = limelight.latestPose2d
                     return limelight.latestPose2d
@@ -61,7 +61,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
             latestBotPose2d.y,
             AngleUnit.DEGREES,
             latestBotPose2d.heading
-        )
+                      )
     val isInRedGoalRange get() = distanceToRedTarget in LIMELIGHT_ACCURACY_RANGE
     val distanceToRedTarget get() = latestBotPose2d.distanceTo(RED_GOAL_TARGET).meters
     val angleToRedTarget get() = latestBotPose2d.horizontalAngleTo(RED_GOAL_TARGET)
@@ -72,9 +72,9 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
         get() {
             return when (limelight.detectedTags?.get(0)?.fiducialId) {
                 BLUE_GOAL_TAG_ID -> pinPointDistanceToBlueGoal in LIMELIGHT_ACCURACY_RANGE
-                RED_GOAL_TAG_ID -> pinPointDistanceToRedGoal in LIMELIGHT_ACCURACY_RANGE
-                null -> false
-                else -> {
+                RED_GOAL_TAG_ID  -> pinPointDistanceToRedGoal in LIMELIGHT_ACCURACY_RANGE
+                null             -> false
+                else             -> {
                     false
                 }
             }
@@ -85,7 +85,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
     fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}
-            TelemetryLevel.Testing -> {
+            TelemetryLevel.Testing     -> {
                 telemetry.addLine("--- Vision Subsystem ---")
                 telemetry.addData("detected tags", limelight.detectedTags)
                 telemetry.addData("is in limelight detection range", isInLimelightAccuracyRange)
@@ -101,7 +101,7 @@ class LocalizerSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val
 
     // --- periodic function ---
     override fun periodic() {
-        limelight.UpdateMegaTag2RobotHeading(imu.heading.degrees)
+        limelight.UpdateMegaTag2RobotHeading(latestBotPose2d.heading.radians)
         updateTelemetry()
     }
 }

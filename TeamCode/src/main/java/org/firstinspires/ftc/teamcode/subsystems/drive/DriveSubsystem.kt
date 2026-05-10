@@ -14,6 +14,8 @@ import org.firstinspires.ftc.teamcode.RobotMap.Drive.PINPOINT_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
+import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
+import org.firstinspires.ftc.teamcode.alonlib.units.radians
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_ODOMETRY_PODS
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_X_OFFSET
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveConstants.PINPOINT_Y_OFFSET
@@ -32,11 +34,11 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
         setOffset(
             PINPOINT_X_OFFSET,
             PINPOINT_Y_OFFSET
-        )
+                 )
         setEncoderDirections(
             X_POD_DIRECTION,
             Y_POD_DIRECTION
-        )
+                            )
     }
 
     // --- functional properties ---
@@ -46,18 +48,22 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
         frontRightMotor.motor,
         backLeftMotor.motor,
         backRightMotor.motor
-    )
+                            )
 
     // --- state getters and setters ---
 
 
     // --- operation functions ---
     fun fieldCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
-        drive.driveFieldCentric(xSpeed, ySpeed, turnSpeed, pinPoint.heading.degrees)
+        drive.driveFieldCentric(xSpeed, ySpeed, turnSpeed, localizer.latestBotPose2d.heading.radians.normalizedDegrees)
     }
 
     fun robotCentricDrive(xSpeed: Double, ySpeed: Double, turnSpeed: Double) {
         drive.driveRobotCentric(xSpeed, ySpeed, turnSpeed)
+    }
+
+    fun resetImu() {
+        localizer.imu.calibrate()
     }
 
 
@@ -65,13 +71,13 @@ class DriveSubsystem(val hardwareMap: HardwareMap, val telemetry: Telemetry, val
     fun updateTelemetry() {
         when (telemetryLevel) {
             TelemetryLevel.Competition -> {}
-            TelemetryLevel.Testing -> {
+            TelemetryLevel.Testing     -> {
                 telemetry.addLine("--- Drive subsystem ---")
                 telemetry.addData("Running Command", super.currentCommand)
                 telemetry.addData(
                     "Robot pose",
                     "x: ${localizer.latestBotPose2d.x}, y: ${localizer.latestBotPose2d.y} heading: ${localizer.latestBotPose2d.heading}"
-                )
+                                 )
                 telemetry.addData("Robot heading", localizer.latestBotPose2d.heading)
                 telemetry.addData("localizer", localizer.currentLocalizer)
             }
