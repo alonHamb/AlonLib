@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <LynxUsbDevice
+        name="Control Hub Portal"
+        parentModuleAddress="173"
+        serialNumber="(embedded)">
+        <LynxModule
+            name="Control Hub"
+            port="173">
+            <LynxEmbeddedIMU
+                name="imu"
+                bus="0"
+                port="0" />
+            <Motor
+                name="m0"
+                port="0" />
+            <Motor
+                name="m1"
+                port="1" />
+            <Motor
+                name="m2"
+                port="2" />
+            <Motor
+                name="m3"
+                port="3" />
+            <Servo
+                name="s0"
+                port="0" />
+            <Servo
+                name="s1"
+                port="1" />
+            <Servo
+                name="s2"
+                port="2" />
+            <Servo
+                name="s3"
+                port="3" />
+            <Servo
+                name="s4"
+                port="4" />
+            <Servo
+                name="s5"
+                port="5" />
+            <AnalogInput
+                name="a0"
+                port="0" />
+            <AnalogInput
+                name="a1"
+                port="1" />
+            <AnalogInput
+                name="a2"
+                port="2" />
+            <AnalogInput
+                name="a3"
+                port="3" />
+            <DigitalDevice
+                name="d0"
+                port="0" />
+            <DigitalDevice
+                name="d1"
+                port="1" />
+            <DigitalDevice
+                name="d2"
+                port="2" />
+            <DigitalDevice
+                name="d3"
+                port="3" />
+            <DigitalDevice
+                name="d4"
+                port="4" />
+            <DigitalDevice
+                name="d5"
+                port="5" />
+            <DigitalDevice
+                name="d6"
+                port="6" />
+            <DigitalDevice
+                name="d7"
+                port="7" />
+        </LynxModule>
+        <LynxModule
+            name="Expansion Hub"
+            port="2">
+            <Motor
+                name="em0"
+                port="0" />
+            <Motor
+                name="em1"
+                port="1" />
+            <Motor
+                name="em2"
+                port="2" />
+            <Motor
+                name="em3"
+                port="3" />
+            <Servo
+                name="es0"
+                port="0" />
+            <Servo
+                name="es1"
+                port="1" />
+            <Servo
+                name="es2"
+                port="2" />
+            <Servo
+                name="es3"
+                port="3" />
+            <Servo
+                name="es4"
+                port="4" />
+            <Servo
+                name="es5"
+                port="5" />
+            <AnalogInput
+                name="ea0"
+                port="0" />
+            <AnalogInput
+                name="ea1"
+                port="1" />
+            <AnalogInput
+                name="ea2"
+                port="2" />
+            <AnalogInput
+                name="ea3"
+                port="3" />
+            <DigitalDevice
+                name="ea0"
+                port="0" />
+            <DigitalDevice
+                name="ed1"
+                port="1" />
+            <DigitalDevice
+                name="ed2"
+                port="2" />
+            <DigitalDevice
+                name="Ed3"
+                port="3" />
+            <DigitalDevice
+                name="ed4"
+                port="4" />
+            <DigitalDevice
+                name="ed5"
+                port="5" />
+            <DigitalDevice
+                name="ed6"
+                port="6" />
+            <DigitalDevice
+                name="ed7"
+                port="7" />
+        </LynxModule>
+    </LynxUsbDevice>
+</Robot>

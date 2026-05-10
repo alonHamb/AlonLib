@@ -17,8 +17,8 @@ object Data {
             Torque(300.degrees, 50.rpm),
             Speed(300.degrees, 111.11.rpm),
             SuperSpeed(300.degrees, 232.558.rpm),
-            AxonMax(357.4.degrees, 86.905.rpm),
-            AxonMini(357.4.degrees, 111.111.rpm),
+            AxonMax(350.degrees, 86.905.rpm),
+            AxonMini(350.degrees, 111.111.rpm),
 
 
         }

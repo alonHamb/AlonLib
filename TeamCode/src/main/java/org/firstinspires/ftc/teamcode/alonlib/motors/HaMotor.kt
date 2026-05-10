@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.alonlib.motors
 
 import com.hamosad1657.lib.math.PIDGains
+import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
@@ -26,10 +27,12 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         type.rpm
     )
 
+
     // --- hardware declaration ---
     val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble())
     private val voltageSensor: VoltageSensor = hardwareMap.voltageSensor.iterator().next()
 
+    val hub = hardwareMap.get(LynxModule::class.java, "Control Hub")
     // --- motor configurations ---
 
     /**
@@ -144,7 +147,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * when set sets the position [setPoint] of the motor
      */
     var position: Rotation2d
-        get() = (motor.currentPosition / motor.cpr).rotations
+        get() = (hub.bulkData.getMotorCurrentPosition(motor.motor.portNumber) / motor.cpr).rotations
         set(position) {
             setPoint = position.degrees.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
         }
@@ -155,7 +158,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * when set sets the velocity [setPoint] of the motor
      */
     var velocity: AngularVelocity
-        get() = (motor.correctedVelocity / motor.cpr * 60).rpm
+        get() = (hub.bulkData.getMotorVelocity(motor.motor.portNumber) / motor.cpr * 60).rpm
         set(velocity) {
             when (velocity) {
                 0.rpm -> {

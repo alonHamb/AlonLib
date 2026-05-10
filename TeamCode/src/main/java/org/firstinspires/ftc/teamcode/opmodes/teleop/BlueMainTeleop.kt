@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry
+import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.seattlesolvers.solverslib.command.CommandOpMode
 import org.firstinspires.ftc.teamcode.RobotContainer
@@ -10,7 +11,11 @@ import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 
 @TeleOp(name = "Blue Main Teleop", group = "Teleop")
 class BlueMainTeleop : CommandOpMode() {
+    lateinit var hub: LynxModule
     override fun initialize() {
+        hub = hardwareMap.get(LynxModule::class.java, "Control Hub").apply {
+            bulkCachingMode = LynxModule.BulkCachingMode.MANUAL
+        }
         val alliance = Alliance.Blue
         val telemetryLevel = TelemetryLevel.Testing
         telemetry = MultipleTelemetry(telemetry, FtcDashboard.getInstance().telemetry)
@@ -27,6 +32,7 @@ class BlueMainTeleop : CommandOpMode() {
     }
 
     override fun run() {
+        hub.clearBulkCache()
         super.run()
         telemetry.update()
     }
