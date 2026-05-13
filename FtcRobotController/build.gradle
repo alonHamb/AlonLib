@@ -16,7 +16,7 @@ android {
     buildFeatures {
         buildConfig = true
     }
-    compileSdk 36
+    compileSdk 34
     //noinspection GradleDependency
 
     compileOptions {
