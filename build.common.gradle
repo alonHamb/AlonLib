@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk 36
+    compileSdk 34
 
 
     //noinspection GradleDependency

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.alonlib.sensors
+package org.firstinspires.ftc.teamcode.alonlib.hardware.sensors
 
 import com.qualcomm.hardware.limelightvision.LLResult
 import com.qualcomm.hardware.limelightvision.LLResultTypes
@@ -38,7 +38,7 @@ class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
         get() = Pose2d(
             Translation2d(latestResult?.botpose_MT2?.position?.x ?: 0.0, latestResult?.botpose_MT2?.position?.y ?: 0.0),
             latestResult?.botpose_MT2?.orientation?.yaw?.degrees ?: 0.0.degrees
-        )
+                      )
 
 
     var pipeLine = 1

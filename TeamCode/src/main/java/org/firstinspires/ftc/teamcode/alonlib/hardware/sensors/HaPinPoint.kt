@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.alonlib.sensors
+package org.firstinspires.ftc.teamcode.alonlib.hardware.sensors
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver.GoBildaOdometryPods
@@ -25,7 +25,7 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
     private var ticksPerMm =
         when (pod) {
             GoBildaOdometryPods.goBILDA_SWINGARM_POD -> 13.262912f
-            GoBildaOdometryPods.goBILDA_4_BAR_POD -> 19.894367f
+            GoBildaOdometryPods.goBILDA_4_BAR_POD    -> 19.894367f
         }
 
     init {
@@ -51,7 +51,7 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
         get() = Pose2d(
             Translation2d(pinPoint.position.getX(DistanceUnit.METER), pinPoint.position.getY(DistanceUnit.METER)),
             pinPoint.position.getHeading(AngleUnit.DEGREES).degrees
-        )
+                      )
         set(value) {
             pinPoint.setPosX(value.x, DistanceUnit.METER)
             pinPoint.setPosY(value.y, DistanceUnit.METER)
@@ -102,7 +102,7 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
     fun setEncoderDirections(
         xEncoderDirection: GoBildaPinpointDriver.EncoderDirection,
         yEncoderDirection: GoBildaPinpointDriver.EncoderDirection
-    ) {
+                            ) {
         pinPoint.setEncoderDirections(xEncoderDirection, yEncoderDirection)
     }
 

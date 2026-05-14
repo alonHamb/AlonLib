@@ -2,6 +2,8 @@ repositories {
     mavenCentral()
     google() // Needed for androidx
     maven { url = 'https://maven.brott.dev/' }
+    maven { url = "https://mymaven.bylazar.com/releases" }
+
 }
 
 dependencies {
@@ -13,6 +15,11 @@ dependencies {
     implementation libs.hardware
     implementation libs.ftccommon
     implementation libs.vision
+    implementation libs.dashboard
+    implementation libs.ftc
+    implementation libs.telemetry
+    implementation libs.fullpanels
+
 
     //noinspection GradleDependency
     implementation libs.appcompat

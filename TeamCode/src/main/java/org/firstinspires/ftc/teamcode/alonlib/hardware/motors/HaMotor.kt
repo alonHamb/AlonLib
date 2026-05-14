@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.alonlib.motors
+package org.firstinspires.ftc.teamcode.alonlib.hardware.motors
 
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.HardwareDevice
@@ -12,7 +12,7 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor.RunMode
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
-import org.firstinspires.ftc.teamcode.alonlib.math.PIDGains
+import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
+import kotlin.math.sign
 
 class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : HardwareDevice {
     constructor(hardwareMap: HardwareMap, id: String, type: Motor.GoBILDA) : this(
@@ -38,9 +39,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     }
     private val batteryVoltage = hub.getInputVoltage(VoltageUnit.VOLTS)
 
-    private val velocityController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, velocity.asRpm)
-    private val positonController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, position.normalizedDegrees)
-    private var feedForwardController = SimpleMotorFeedforward(0.0, 0.0, 0.0)
+    val velocityController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, velocity.asRpm)
+    val positonController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, position.normalizedDegrees)
+    var feedForwardController = SimpleMotorFeedforward(0.0, 0.0, 0.0)
 
     // --- motor configurations ---
 
@@ -178,10 +179,10 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     /**
      * the [pidfGains] for the motor's PIDF controller used in any closed loop [runMode]
      */
-    var pidfGains: PIDGains = PIDGains()
+    var pidfGains: PIDFGains = PIDFGains()
         set(gains) {
-            velocityController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
-            positonController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
+            velocityController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, 0.0))
+            positonController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, 0.0))
             feedForwardController = SimpleMotorFeedforward(gains.kS, gains.KV, gains.Ka)
             field = gains
         }
@@ -193,16 +194,24 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      */
     var setPoint: Double = 0.0
         set(setPoint) {
+            when (positonController.i > 0 || velocityController.i > 0) {
+                true  -> {
+                    positonController.reset()
+                    velocityController.reset()
+                }
+
+                false -> {}
+            }
             when (this.runMode) {
-                RunMode.PositionControl -> motor.setTargetPosition(
-                    (setPoint.coerceIn(
-                        minimumPosition.degrees,
-                        maximumPosition.degrees
-                                      ) / 360 * motor.cpr).toInt()
-                                                                  )
+                RunMode.PositionControl -> {
+                    positonController.setPoint =
+                        setPoint.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
+                    field = setPoint
+                }
+
 
                 RunMode.VelocityControl -> {
-                    velocityController.setPoint = setPoint
+                    velocityController.setPoint = setPoint.coerceIn(-motor.maxRPM, motor.maxRPM)
                     field = setPoint
                 }
 
@@ -219,11 +228,11 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         get() {
             return when (runMode) {
                 RunMode.PositionControl -> {
-                    position.degrees - setPoint
+                    positonController.positionError
                 }
 
                 RunMode.VelocityControl -> {
-                    velocity.asRpm - setPoint
+                    velocityController.positionError
                 }
 
                 RunMode.RawPower        -> {
@@ -239,6 +248,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * uses the units of the pid controller
      */
     var tolerance: Double = 0.0
+        set(value) {
+            when (runMode) {
+                RunMode.PositionControl -> positonController.setTolerance(value)
+                RunMode.VelocityControl -> velocityController.setTolerance(value)
+                RunMode.RawPower        -> {}
+            }
+        }
 
     /**
      * @returns true if the error of the pid controller is within the tolerance
@@ -247,11 +263,11 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         get() {
             return when (runMode) {
                 RunMode.PositionControl -> {
-                    position.degrees - setPoint < tolerance
+                    positonController.atSetPoint()
                 }
 
                 RunMode.VelocityControl -> {
-                    velocity.asRpm - setPoint < tolerance
+                    velocityController.atSetPoint()
                 }
 
                 RunMode.RawPower        -> {
@@ -325,11 +341,17 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             else -> {}
         }
         when (this.runMode) {
-            RunMode.VelocityControl -> motor.motor.power =
-                velocityController.calculate() + feedForwardController.calculate(velocity.asRpm, motor.acceleration / motor.cpr)
+            RunMode.VelocityControl -> voltage =
+                velocityController.calculate(velocity.asRpm) + feedForwardController.calculate(
+                    velocity.asRpm,
+                    motor.acceleration / motor.cpr
+                                                                                              ) + pidfGains.kFF * error.sign
 
-            RunMode.PositionControl -> motor.motor.power =
-                positonController.calculate() + feedForwardController.calculate(velocity.asRpm, motor.acceleration / motor.cpr)
+            RunMode.PositionControl -> voltage =
+                positonController.calculate(position.degrees) + feedForwardController.calculate(
+                    velocity.asRpm,
+                    motor.acceleration / motor.cpr
+                                                                                               ) + pidfGains.kFF * error.sign
 
             RunMode.RawPower        -> {}
         }
