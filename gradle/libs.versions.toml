@@ -10,8 +10,10 @@ kotlin = "2.3.21"
 solverslib = "SNAPSHOT-5a81a6b"
 telemetry = "1.0.0"
 playServicesBasement = "18.10.0"
+alonlib = "main"
 
 [libraries]
+alonlib = { module = "org.Boosteam:AlonLib" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 blocks = { module = "org.firstinspires.ftc:Blocks", version.ref = "ftcSDK" }
 core = { group = "org.solverslib", name = "core", version.ref = "solverslib" }

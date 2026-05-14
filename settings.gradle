@@ -3,3 +3,8 @@ plugins {
 }
 include ':FtcRobotController'
 include ':TeamCode'
+sourceControl {
+    gitRepository("https://github.com/alonHamb/AlonLib.git") {
+        producesModule("org.Boosteam:AlonLib") // Must match the library's group:name
+    }
+}

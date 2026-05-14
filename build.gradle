@@ -16,6 +16,8 @@ buildscript {
         //noinspection AndroidGradlePluginVersion
         classpath libs.kotlin.gradle.plugin
         classpath libs.gradle
+        implementation libs.alonlib // Resolves to tag '1.0'
+
     }
 }
 
