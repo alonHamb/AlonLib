@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.alonlib.servos
+package org.firstinspires.ftc.teamcode.alonlib.hardware.servos
 
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Type
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 class HaServo(
@@ -20,7 +19,7 @@ class HaServo(
     id: String,
     val mode: Mode,
     val type: Type
-) : HardwareDevice {
+             ) : HardwareDevice {
 
     // --- servo object declaration ---
     /**
@@ -73,7 +72,8 @@ class HaServo(
             if (!(forwardLimit() && percentOutput > 0) or !(reverseLimit() && percentOutput < 0)) {
                 field = percentOutput
                 servo.position = value.coerceIn(minPercentOutput..maxPercentOutput)
-            } else {
+            }
+            else {
                 robotPrintError("limit reached")
             }
         }
@@ -104,12 +104,12 @@ class HaServo(
     var position: Rotation2d = 0.0.degrees
         set(position) {
             when (mode) {
-                Mode.CR -> robotPrintError("cannot set position in CR mode")
+                Mode.CR         -> robotPrintError("cannot set position in CR mode")
                 Mode.FULL_RANGE -> {
-                    servo.position = (position.normalizedDegrees / type.range.normalizedDegrees).coerceIn(
-                        minPosition.normalizedDegrees,
-                        maxPosition.normalizedDegrees
-                    )
+                    servo.position = (position.degrees / type.range.degrees).coerceIn(
+                        minPosition.degrees,
+                        maxPosition.degrees
+                                                                                     )
                     field = type.range * servo.position
                 }
             }
@@ -139,7 +139,7 @@ class HaServo(
     var velocity: AngularVelocity = 0.0.rpm
         set(value) {
             when (mode) {
-                Mode.CR -> {
+                Mode.CR         -> {
                     servo.position = (value.asRpm.coerceIn(minVelocity.asRpm..maxVelocity.asRpm) / type.maxSpeed.asRpm)
                     field = value
                 }
@@ -168,7 +168,7 @@ class HaServo(
 
     fun stop() {
         when (mode) {
-            Mode.CR -> percentOutput = 0.0
+            Mode.CR         -> percentOutput = 0.0
             Mode.FULL_RANGE -> {}
         }
     }

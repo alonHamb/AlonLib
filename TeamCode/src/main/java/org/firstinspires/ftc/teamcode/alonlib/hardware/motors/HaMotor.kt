@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.alonlib.motors
+package org.firstinspires.ftc.teamcode.alonlib.hardware.motors
 
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.HardwareDevice
@@ -12,7 +12,7 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor.RunMode
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
-import org.firstinspires.ftc.teamcode.alonlib.math.PIDGains
+import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
@@ -178,7 +178,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     /**
      * the [pidfGains] for the motor's PIDF controller used in any closed loop [runMode]
      */
-    var pidfGains: PIDGains = PIDGains()
+    var pidfGains: PIDFGains = PIDFGains()
         set(gains) {
             velocityController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
             positonController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, gains.kFF))
@@ -193,6 +193,14 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      */
     var setPoint: Double = 0.0
         set(setPoint) {
+            when (positonController.i > 0 || velocityController.i > 0) {
+                true  -> {
+                    positonController.reset()
+                    velocityController.reset()
+                }
+
+                false -> {}
+            }
             when (this.runMode) {
                 RunMode.PositionControl -> motor.setTargetPosition(
                     (setPoint.coerceIn(

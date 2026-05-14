@@ -11,7 +11,7 @@ import com.seattlesolvers.solverslib.controller.PIDController
  * - [kIZone] If the absolute error is above IZone, the integral accumulator is cleared
  * (making it ineffective). Motor controllers have this feature, but WPILib don't.
  **/
-class PIDGains @JvmOverloads constructor(
+class PIDFGains @JvmOverloads constructor(
     var kP: Double = 0.0,
     var kI: Double = 0.0,
     var kD: Double = 0.0,
@@ -20,14 +20,14 @@ class PIDGains @JvmOverloads constructor(
     var KV: Double = 0.0,
     var Ka: Double = 0.0,
     var kIZone: Double = 0.0,
-                                        ) {
+                                         ) {
     override fun toString(): String {
         return "(kP: $kP ,kI: $kI ,Kd: $kD ,kFF: $kFF ,kS:$kS ,kV: $KV ,kA:$Ka )"
     }
 }
 
 
-fun PIDController.configPID(gains: PIDGains) {
+fun PIDController.configPID(gains: PIDFGains) {
     p = gains.kP
     i = gains.kI
     d = gains.kD
