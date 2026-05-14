@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.alonlib.sensors
+package org.firstinspires.ftc.teamcode.alonlib.hardware.sensors
 
 import com.qualcomm.hardware.limelightvision.LLResult
 import com.qualcomm.hardware.limelightvision.LLResultTypes
@@ -10,7 +10,6 @@ import com.seattlesolvers.solverslib.geometry.Pose2d
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import com.seattlesolvers.solverslib.geometry.Translation2d
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
-import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 
 class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
     private val limelight = hardwareMap.get(Limelight3A::class.java, id)
@@ -84,7 +83,7 @@ class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
     }
 
     fun UpdateMegaTag2RobotHeading(yaw: Rotation2d) {
-        limelight.updateRobotOrientation(yaw.normalizedDegrees)
+        limelight.updateRobotOrientation(yaw.degrees)
     }
 
 
