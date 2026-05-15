@@ -1,2 +1,20 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = 'https://maven.brott.dev/' }
+        maven { url = "https://repo.dairy.foundation/releases" }
+    }
+}
+
+rootProject.name = "FtcRobotController"
 include ':FtcRobotController'
 include ':TeamCode'
