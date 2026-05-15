@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.RobotMap.Intake.INTAKE_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Intake.INTAKE_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeConstants.INTAKE_ACTIVE_VOLTAGE_THRESHOLD
 import kotlin.math.absoluteValue

@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.RobotMap.Transfer.LEFT_TRANSFER_SERVO_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Transfer.RIGHT_TRANSFER_SERVO_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
-import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
+import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm

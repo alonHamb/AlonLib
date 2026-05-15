@@ -11,8 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.PINPOINT_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Vision.LIMELIGHT_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
-import org.firstinspires.ftc.teamcode.alonlib.sensors.HaLimelight3A
-import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
+import org.firstinspires.ftc.teamcode.alonlib.hardware.sensors.HaLimelight3A
+import org.firstinspires.ftc.teamcode.alonlib.hardware.sensors.HaPinPoint
 import org.firstinspires.ftc.teamcode.alonlib.units.distanceTo
 import org.firstinspires.ftc.teamcode.alonlib.units.horizontalAngleTo
 import org.firstinspires.ftc.teamcode.alonlib.units.meters

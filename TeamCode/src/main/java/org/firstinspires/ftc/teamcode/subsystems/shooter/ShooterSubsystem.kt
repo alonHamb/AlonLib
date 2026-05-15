@@ -14,8 +14,8 @@ import org.firstinspires.ftc.teamcode.RobotMap.Shooter.HOOD_SERVO_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.TOP_FLYWHEEL_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Shooter.TOP_FLYWHEEL_MOTOR_TYPE
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.servos.HaServo
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput

@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems.shooter
 
 import com.acmerobotics.dashboard.config.Config
-import com.hamosad1657.lib.math.PIDGains
 import com.seattlesolvers.solverslib.geometry.Rotation2d
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.math.LinearInterpolationTable
+import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
@@ -47,8 +47,8 @@ object ShooterConstants {
     val VELOCITY_TOLERANCE = 100.rpm
 
     // --- PID parameters ---
-    val VELOCITY_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
-    val HEADING_PID_GAINS = PIDGains(0.0, 0.0, 0.0, 0.0)
+    val VELOCITY_PID_GAINS = PIDFGains(0.0, 0.0, 0.0, 0.0)
+    val HEADING_PID_GAINS = PIDFGains(0.0, 0.0, 0.0, 0.0)
 
     // --- interpolation tables ---
     val ANGLE_INTERPOLATION_TABLE = LinearInterpolationTable(

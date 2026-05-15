@@ -12,8 +12,9 @@ import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_LEFT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.FRONT_RIGHT_MOTOR_ID
 import org.firstinspires.ftc.teamcode.RobotMap.Drive.PINPOINT_ID
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
-import org.firstinspires.ftc.teamcode.alonlib.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.sensors.HaPinPoint
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.sensors.HaPinPoint
+
 import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.radians
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
