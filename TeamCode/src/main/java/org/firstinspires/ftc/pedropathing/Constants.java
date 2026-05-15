@@ -1,10 +1,5 @@
 package org.firstinspires.ftc.pedropathing;
 
-import static org.firstinspires.ftc.teamcode.RobotMap.Drive.LEFT_BACK_MOTOR_ID;
-import static org.firstinspires.ftc.teamcode.RobotMap.Drive.LEFT_FRONT_MOTOR_ID;
-import static org.firstinspires.ftc.teamcode.RobotMap.Drive.RIGHT_BACK_MOTOR_ID;
-import static org.firstinspires.ftc.teamcode.RobotMap.Drive.RIGHT_FRONT_MOTOR_ID;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -22,10 +17,6 @@ public class Constants {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .rightFrontMotorName(RIGHT_FRONT_MOTOR_ID)
-            .rightRearMotorName(RIGHT_BACK_MOTOR_ID)
-            .leftFrontMotorName(LEFT_FRONT_MOTOR_ID)
-            .leftRearMotorName(LEFT_BACK_MOTOR_ID)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
