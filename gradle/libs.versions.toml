@@ -10,6 +10,12 @@ kotlin = "2.3.21"
 solverslib = "SNAPSHOT-5a81a6b"
 telemetry = "1.0.0"
 playServicesBasement = "18.10.0"
+agp = "9.1.1"
+coreKtx = "1.10.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+material = "1.10.0"
 
 [libraries]
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -32,6 +38,12 @@ robotserver = { module = "org.firstinspires.ftc:RobotServer", version.ref = "ftc
 telemetry = { group = "com.pedropathing", name = "telemetry", version.ref = "telemetry" }
 vision = { module = "org.firstinspires.ftc:Vision", version.ref = "ftcSDK" }
 play-services-basement = { group = "com.google.android.gms", name = "play-services-basement", version.ref = "playServicesBasement" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 foojay-resolver = { id = "org.gradle.toolchains.foojay-resolver-convention", version.ref = "gradle-toolchains-foojay-resolver-convention" }
+android-library = { id = "com.android.library", version.ref = "agp" }
