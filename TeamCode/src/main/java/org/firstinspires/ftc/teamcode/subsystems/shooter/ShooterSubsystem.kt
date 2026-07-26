@@ -38,23 +38,29 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.LocalizerSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterConstants as Constants
 
 @Config
-class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val telemetryLevel: TelemetryLevel) : SubsystemBase() {
+class ShooterSubsystem(
+    hardwareMap: HardwareMap,
+    var telemetry: Telemetry,
+    val telemetryLevel: TelemetryLevel
+) : SubsystemBase() {
     // --- hardware declaration and configuration ---
     val localizer = LocalizerSubsystem(hardwareMap, telemetry, telemetryLevel)
-    val topFlywheelMotor = HaMotor(hardwareMap, TOP_FLYWHEEL_MOTOR_ID, TOP_FLYWHEEL_MOTOR_TYPE).apply {
-        runMode = Motor.RunMode.VelocityControl
-        zeroPowerBehavior = Motor.ZeroPowerBehavior.FLOAT
-        runningDirection = Motor.Direction.FORWARD
-        tolerance = VELOCITY_TOLERANCE.asRpm
-        pidfGains = VELOCITY_PID_GAINS
-    }
-    val bottomFlywheelMotor = HaMotor(hardwareMap, BOTTOM_FLYWHEEL_MOTOR_ID, BOTTOM_FLYWHEEL_MOTOR_TYPE).apply {
-        runMode = topFlywheelMotor.runMode
-        zeroPowerBehavior = topFlywheelMotor.zeroPowerBehavior
-        runningDirection = topFlywheelMotor.runningDirection
-        tolerance = topFlywheelMotor.tolerance
-        pidfGains = topFlywheelMotor.pidfGains
-    }
+    val topFlywheelMotor =
+        HaMotor(hardwareMap, TOP_FLYWHEEL_MOTOR_ID, TOP_FLYWHEEL_MOTOR_TYPE).apply {
+            runMode = Motor.RunMode.VelocityControl
+            zeroPowerBehavior = Motor.ZeroPowerBehavior.FLOAT
+            runningDirection = Motor.Direction.FORWARD
+            tolerance = VELOCITY_TOLERANCE.asRpm
+            pidfGains = VELOCITY_PID_GAINS
+        }
+    val bottomFlywheelMotor =
+        HaMotor(hardwareMap, BOTTOM_FLYWHEEL_MOTOR_ID, BOTTOM_FLYWHEEL_MOTOR_TYPE).apply {
+            runMode = topFlywheelMotor.runMode
+            zeroPowerBehavior = topFlywheelMotor.zeroPowerBehavior
+            runningDirection = topFlywheelMotor.runningDirection
+            tolerance = topFlywheelMotor.tolerance
+            pidfGains = topFlywheelMotor.pidfGains
+        }
     val headingMotor = HaMotor(hardwareMap, HEADING_MOTOR_ID, HEADING_MOTOR_TYPE).apply {
         runMode = Motor.RunMode.PositionControl
         zeroPowerBehavior = Motor.ZeroPowerBehavior.BRAKE
@@ -66,6 +72,20 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
         runningDirection = Motor.Direction.FORWARD
     }
     // --- state getters and setters ---
+
+    val shootingMode = Constants.ShootingModes.DYNAMIC
+
+    var currentSetpoint = Constants.SetPoints.FAR_FROM_GOAL
+        set(value) {
+            when (value) {
+                Constants.SetPoints.AT_GOAL -> state = Constants.ShooterState.AT_GOAL_STATE
+                Constants.SetPoints.FAR_FROM_GOAL -> state =
+                    Constants.ShooterState.FAR_FROM_GOAL_STATE
+
+                Constants.SetPoints.LAUNCH_ZONE -> state = Constants.ShooterState.LAUNCH_ZONE_STATE
+            }
+            field = value
+        }
 
     val currentAngle: Rotation2d
         get() = hoodServo.position
@@ -183,10 +203,16 @@ class ShooterSubsystem(hardwareMap: HardwareMap, var telemetry: Telemetry, val t
                 telemetry.addData("current angle: ", currentAngle)
                 telemetry.addData("current heading: ", currentHeading)
                 telemetry.addData("heading setpoint: ", currentHeadingSetPoint)
-                telemetry.addData("heading error: ", headingMotor.setPoint - headingMotor.position.degrees * HEADING_RATIO)
+                telemetry.addData(
+                    "heading error: ",
+                    headingMotor.setPoint - headingMotor.position.degrees * HEADING_RATIO
+                )
                 telemetry.addData("current velocity: ", currentVelocity)
                 telemetry.addData("current velocity setpoint: ", currentVelocitySetPoint)
-                telemetry.addData("current velocity error: ", topFlywheelMotor.setPoint - topFlywheelMotor.velocity.asRpm)
+                telemetry.addData(
+                    "current velocity error: ",
+                    topFlywheelMotor.setPoint - topFlywheelMotor.velocity.asRpm
+                )
                 telemetry.addData("is At Max Heading: ", isAtMaxHeading)
                 telemetry.addData("is at min heading: ", isAtMinHeading)
                 telemetry.addData("is within velocity tolerance: ", isInVelocityTolerance)

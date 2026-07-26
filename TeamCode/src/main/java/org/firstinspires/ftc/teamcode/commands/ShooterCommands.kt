@@ -19,11 +19,14 @@ fun ShooterSubsystem.dynamicShootingDefaultCommand(alliance: Alliance): Command 
         )
     }
 
-fun ShooterSubsystem.dynamicShootingShootCommand(alliance: Alliance): Command =
+fun ShooterSubsystem.ShootCommand(alliance: Alliance): Command =
     run {
-        state = ShooterConstants.ShooterState(
-            getDynamicHoodAngle(alliance),
-            getDynamicHeadingCalc(alliance),
-            getDynamicShootingVelocityCalc(alliance)
-        )
+        when (this.shootingMode) {
+            ShooterConstants.ShootingModes.DYNAMIC -> {
+                state.velocity = getDynamicShootingVelocityCalc(alliance)
+            }
+
+            ShooterConstants.ShootingModes.SETPOINTS -> {}
+        }
+        state.velocity = getDynamicShootingVelocityCalc(alliance)
     }

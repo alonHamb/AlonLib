@@ -34,6 +34,28 @@ object ShooterConstants {
     val MINIMUM_HEADING_ANGLE = 0.0.degrees
 
     // --- dynamic shooting ---
+
+    enum class ShootingModes {
+        SETPOINTS,
+        DYNAMIC
+    }
+
+    enum class SetPoints {
+        FAR_FROM_GOAL,
+        AT_GOAL,
+        LAUNCH_ZONE
+    }
+
+    // --- setpoints velocities and tolerances ---
+
+
+    var FAR_FROM_GOAL_TOLERANCE = 50.rpm
+
+    var LAUNCH_ZONE_TOLERANCE = 50.rpm
+
+    var AT_GOAL_TOLERANCE = 50.rpm
+
+
     val MINIMUM_SHOOTING_ANGLE = 25.degrees
 
     val MAXIMUM_SHOOTING_ANGLE = 45.degrees
@@ -75,18 +97,18 @@ object ShooterConstants {
 
     // --- field positions ---
 
-
     class ShooterState(angle: Rotation2d, heading: Rotation2d, velocity: AngularVelocity) {
         var angle: Rotation2d = if (angle.degrees in MINIMUM_ANGLE..MAXIMUM_ANGLE) angle
         else {
             robotPrintError("Shooter angle out of bounds: ${angle.degrees}")
             0.degrees
         }
-        var heading: Rotation2d = if (heading.degrees in MINIMUM_HEADING_ANGLE..MAXIMUM_HEADING_ANGLE) heading
-        else {
-            robotPrintError("heading angle out of bounds: ${heading.degrees}")
-            0.degrees
-        }
+        var heading: Rotation2d =
+            if (heading.degrees in MINIMUM_HEADING_ANGLE..MAXIMUM_HEADING_ANGLE) heading
+            else {
+                robotPrintError("heading angle out of bounds: ${heading.degrees}")
+                0.degrees
+            }
         var velocity: AngularVelocity = if (velocity in MINIMUM_VELOCITY..MAXIMUM_VELOCITY) velocity
         else {
             robotPrintError("Shooter velocity out of bounds: ${velocity.asRpm}")
@@ -95,9 +117,14 @@ object ShooterConstants {
 
         companion object {
             // --- teleop ---
-            val AT_GOAL = ShooterState(0.0.degrees, 0.0.degrees, 1500.rpm)
-            val AT_FIELD_CENTER = ShooterState(45.degrees, 0.degrees, 2500.rpm)
-            val AT_FAR_TRIANGLE = ShooterState(45.degrees, 0.degrees, 4500.rpm)
+            var LAUNCH_ZONE_STATE = ShooterState(0.degrees, 0.degrees, 3770.rpm)
+
+            var AT_GOAL_STATE = ShooterState(0.degrees, 0.degrees, 2300.rpm)
+
+            var FAR_FROM_GOAL_STATE = ShooterState(0.degrees, 0.degrees, 3000.rpm)
+
+            var DISABLED_STATE = ShooterState(0.degrees, 0.degrees, 2000.rpm)
+
         }
     }
 
