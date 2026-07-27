@@ -33,14 +33,15 @@ class LocalizerSubsystem(
 
     var currentLocalizer = PinPoint
 
-    val latestBotPose2d: Pose2d
+    var latestBotPose2d: Pose2d
         get() {
-
             currentLocalizer = PinPoint
             return pinPoint.position
-
-
         }
+        set(value) {
+            pinPoint.position = value
+        }
+
     val latestBotPose2D
         get() = Pose2D(
             DistanceUnit.METER,
@@ -56,6 +57,10 @@ class LocalizerSubsystem(
     val distanceToBlueTarget get() = latestBotPose2d.distanceTo(BLUE_GOAL_TARGET).meters
     val angleToBlueTarget get() = latestBotPose2d.horizontalAngleTo(BLUE_GOAL_TARGET)
 
+    fun setBotPose2d(pos: Pose2d) {
+        latestBotPose2d = pos
+        pinPoint.position = pos
+    }
 
     // --- telemetry ---
     fun updateTelemetry() {
@@ -79,3 +84,4 @@ class LocalizerSubsystem(
         updateTelemetry()
     }
 }
+

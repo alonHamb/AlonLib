@@ -11,21 +11,24 @@ import com.seattlesolvers.solverslib.gamepad.GamepadKeys
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.alonlib.TelemetryLevel
 import org.firstinspires.ftc.teamcode.alonlib.units.Alliance
-import org.firstinspires.ftc.teamcode.commands.ShootCommand
+import org.firstinspires.ftc.teamcode.commands.ShootingDefaultCommand
+import org.firstinspires.ftc.teamcode.commands.changeModeCommand
 import org.firstinspires.ftc.teamcode.commands.defaultIntakeCommand
 import org.firstinspires.ftc.teamcode.commands.defaultTransferCommand
 import org.firstinspires.ftc.teamcode.commands.driveFieldCentricCommand
-import org.firstinspires.ftc.teamcode.commands.dynamicShootingDefaultCommand
 import org.firstinspires.ftc.teamcode.commands.intakeCommand
+import org.firstinspires.ftc.teamcode.commands.resetAtGoalCommand
 import org.firstinspires.ftc.teamcode.commands.resetImuCommand
+import org.firstinspires.ftc.teamcode.commands.shootCommand
 import org.firstinspires.ftc.teamcode.subsystems.drive.DriveSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.shooter.ShooterSubsystem
 import org.firstinspires.ftc.teamcode.subsystems.transfer.TransferSubsystem
+import org.firstinspires.ftc.teamcode.subsystems.vision.LocalizerSubsystem
 
 
-/**
- * this is the robot container class it contains all of your robots subsystems and the controllers you are going to use
+/*
+  this is the robot container class it contains all of your robots subsystems and the controllers you are going to use
  */
 class RobotContainer(
     hardwareMap: HardwareMap,
@@ -43,6 +46,7 @@ class RobotContainer(
     val intakeSubsystem = IntakeSubsystem(hardwareMap, telemetry, telemetryLevel)
     val transferSubsystem = TransferSubsystem(hardwareMap, telemetry, telemetryLevel)
     val shooterSubsystem = ShooterSubsystem(hardwareMap, telemetry, telemetryLevel)
+    val localizerSubsystem = LocalizerSubsystem(hardwareMap, telemetry, telemetryLevel)
 
     // --- init functions ---
     init {
@@ -76,7 +80,10 @@ class RobotContainer(
     )
 
     val shootCommandGroup =
-        ParallelCommandGroup(shooterSubsystem.ShootCommand(alliance))
+        ParallelCommandGroup(
+            shooterSubsystem.shootCommand(alliance),
+            intakeSubsystem.shootCommand()
+        )
 
     fun configureButtonBindings() {
         with(controllerA) {
@@ -84,19 +91,30 @@ class RobotContainer(
                 this,
                 GamepadKeys.Button.OPTIONS
             ).whenPressed(driveSubsystem.resetImuCommand())
-            GamepadButton(this, GamepadKeys.Button.SQUARE).whenPressed(shooterSubsystem.shoot)
+
+            GamepadButton(this, GamepadKeys.Button.SQUARE).whenPressed(shootCommandGroup)
+
+            GamepadButton(
+                this,
+                GamepadKeys.Button.DPAD_UP
+            ).whenPressed(shooterSubsystem.changeModeCommand())
+
+            GamepadButton(
+                this,
+                GamepadKeys.Button.DPAD_LEFT
+            ).whenPressed(localizerSubsystem.resetAtGoalCommand(alliance))
+
             Trigger { this.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0 }.whenActive(
                 intakeCommandGroup
             )
             Trigger { this.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0 }.whenActive(
                 ejectCommandGroup
             )
+
         }
         with(controllerB) {
 
         }
-
-
     }
 
     fun setDefaultCommands() {
@@ -105,7 +123,6 @@ class RobotContainer(
             { controllerA.leftY }) { controllerA.rightX }
         intakeSubsystem.defaultCommand = intakeSubsystem.defaultIntakeCommand()
         transferSubsystem.defaultCommand = transferSubsystem.defaultTransferCommand()
-        shooterSubsystem.defaultCommand = shooterSubsystem.dynamicShootingDefaultCommand(alliance)
+        shooterSubsystem.defaultCommand = shooterSubsystem.ShootingDefaultCommand(alliance)
     }
-
 }

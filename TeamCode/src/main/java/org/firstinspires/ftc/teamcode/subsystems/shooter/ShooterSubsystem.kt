@@ -73,34 +73,37 @@ class ShooterSubsystem(
     }
     // --- state getters and setters ---
 
-    val shootingMode = Constants.ShootingModes.DYNAMIC
+    var shootingMode = Constants.ShootingModes.DYNAMIC
 
     var currentSetpoint = Constants.SetPoints.FAR_FROM_GOAL
         set(value) {
-            when (value) {
-                Constants.SetPoints.AT_GOAL -> state = Constants.ShooterState.AT_GOAL_STATE
-                Constants.SetPoints.FAR_FROM_GOAL -> state =
-                    Constants.ShooterState.FAR_FROM_GOAL_STATE
+            state = when (value) {
+                Constants.SetPoints.AT_GOAL -> Constants.ShooterState.AT_GOAL_STATE
+                Constants.SetPoints.FAR_FROM_GOAL -> Constants.ShooterState.FAR_FROM_GOAL_STATE
 
-                Constants.SetPoints.LAUNCH_ZONE -> state = Constants.ShooterState.LAUNCH_ZONE_STATE
+                Constants.SetPoints.LAUNCH_ZONE -> Constants.ShooterState.LAUNCH_ZONE_STATE
             }
             field = value
         }
 
     val currentAngle: Rotation2d
         get() = hoodServo.position
-    var currentAngleSetPoint
+
+    var currentAngleSetPoint: Rotation2d
         get() = hoodServo.position
         set(value) {
             hoodServo.position = value
         }
+
     val currentHeading: Rotation2d
         get() = (headingMotor.position.degrees * HEADING_RATIO).degrees
+
     var currentHeadingSetPoint: Rotation2d
         get() = headingMotor.position / HEADING_RATIO
         set(value) {
             headingMotor.setPoint = value.degrees * HEADING_RATIO
         }
+
     val currentVelocity: AngularVelocity
         get() = topFlywheelMotor.velocity
     var currentVelocitySetPoint: AngularVelocity
@@ -108,6 +111,7 @@ class ShooterSubsystem(
         set(value) {
             topFlywheelMotor.velocity = value
         }
+
     val isAtMaxHeading get() = currentHeading >= MAXIMUM_HEADING
     val isAtMinHeading get() = currentHeading >= MINIMUM_HEADING
     val isInVelocityTolerance get() = topFlywheelMotor.inTolerance

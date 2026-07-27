@@ -19,7 +19,6 @@ object ShooterConstants {
     val HOOD_SERVO_MODE = Data.Servos.Mode.CR
     val HOOD_SERVO_TYPE = Data.Servos.Type.AxonMax
 
-
     // --- Ratios ---
     const val HEADING_RATIO = 11.0 / 140.0
 
@@ -49,20 +48,11 @@ object ShooterConstants {
     // --- setpoints velocities and tolerances ---
 
 
-    var FAR_FROM_GOAL_TOLERANCE = 50.rpm
-
-    var LAUNCH_ZONE_TOLERANCE = 50.rpm
-
-    var AT_GOAL_TOLERANCE = 50.rpm
-
-
     val MINIMUM_SHOOTING_ANGLE = 25.degrees
-
     val MAXIMUM_SHOOTING_ANGLE = 45.degrees
-
     val MINIMUM_SHOOTING_VELOCITY = 2100.rpm
-
     val MAXIMUM_SHOOTING_VELOCITY = 2950.rpm
+    val COASTING_VELOCITY = 2000.rpm
 
     // --- tolerances ---
     val HEADING_TOLERANCE = 1.degrees

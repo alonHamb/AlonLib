@@ -6,13 +6,24 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.meters
 
 object LocalizerConstants {
+
+    val RED_RESET_POSITION = Pose2d(Translation2d(1.2954, -1.143), (-39).degrees)
+
+    val BLUE_RESET_POSITION = Pose2d(Translation2d(1.2954, 1.143), 39.degrees)
+
     val LIMELIGHT_ACCURACY_RANGE = 0.6.meters..3.5.meters
     val FAR_SHOOTING_RANGE = 3.meters..5.meters
 
     val BLUE_GOAL_TAG_ID = 20
 
     val RED_GOAL_TAG_ID = 24
-    val BLUE_GOAL_TARGET = Pose2d(Translation2d(-1.7, -1.7), 54.046000.degrees) // translation is in metres from the center of the field
+    val BLUE_GOAL_TARGET = Pose2d(
+        Translation2d(-1.7, -1.7),
+        54.046000.degrees
+    ) // translation is in metres from the center of the field
 
-    val RED_GOAL_TARGET = Pose2d(Translation2d(-1.7, 1.7), 305.954.degrees) // translation is in metres from the center of the field
+    val RED_GOAL_TARGET = Pose2d(
+        Translation2d(-1.7, 1.7),
+        305.954.degrees
+    ) // translation is in metres from the center of the field
 }
