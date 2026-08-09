@@ -37,6 +37,9 @@ dependencies {
     api libs.bundles.ftc.sdk
 
     api libs.solverslib.core
+
+    api libs.bundles.roadrunner
+    api libs.acmerobotics.dashboard
 }
 
 afterEvaluate {

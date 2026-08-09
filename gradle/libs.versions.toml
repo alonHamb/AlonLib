@@ -6,6 +6,9 @@ dashboard = "0.5.1"
 appcompat = "1.7.1"
 core-ktx = "1.15.0"
 solverslib = "0.3.4"
+roadrunner-core = "1.0.1"
+roadrunner-actions = "1.0.1"
+roadrunner-ftc = "0.1.25"
 
 # SDK Versions
 compileSdk = "35"
@@ -34,6 +37,11 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 # Others
 solverslib-core = { group = "org.solverslib", name = "core", version.ref = "solverslib" }
 
+# RoadRunner
+roadrunner-core = { group = "com.acmerobotics.roadrunner", name = "core", version.ref = "roadrunner-core" }
+roadrunner-actions = { group = "com.acmerobotics.roadrunner", name = "actions", version.ref = "roadrunner-actions" }
+roadrunner-ftc = { group = "com.acmerobotics.roadrunner", name = "ftc", version.ref = "roadrunner-ftc" }
+
 [bundles]
 ftc-sdk = [
     "ftc-inspection",
@@ -44,6 +52,11 @@ ftc-sdk = [
     "ftc-hardware",
     "ftc-ftccommon",
     "ftc-vision"
+]
+roadrunner = [
+    "roadrunner-core",
+    "roadrunner-actions",
+    "roadrunner-ftc"
 ]
 
 [plugins]

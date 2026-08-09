@@ -22,6 +22,13 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
     private var pinPoint: GoBildaPinpointDriver =
         hardwareMap.get(GoBildaPinpointDriver::class.java, id)
 
+    /**
+     * the underlying [GoBildaPinpointDriver], for consumers (e.g. a RoadRunner localizer) that
+     * need low-level access this wrapper doesn't expose. Prefer the typed properties above when
+     * possible.
+     */
+    val driver: GoBildaPinpointDriver get() = pinPoint
+
     private var ticksPerMm =
         when (pod) {
             GoBildaOdometryPods.goBILDA_SWINGARM_POD -> 13.262912f
