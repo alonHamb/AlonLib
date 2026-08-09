@@ -69,8 +69,8 @@ class HaServo(
      */
     var percentOutput: Double = 0.0
         set(value) {
-            if (!(forwardLimit() && percentOutput > 0) or !(reverseLimit() && percentOutput < 0)) {
-                field = percentOutput
+            if (!(forwardLimit() && value > 0) && !(reverseLimit() && value < 0)) {
+                field = value
                 servo.position = value.coerceIn(minPercentOutput..maxPercentOutput)
             }
             else {
@@ -106,10 +106,8 @@ class HaServo(
             when (mode) {
                 Mode.CR         -> robotPrintError("cannot set position in CR mode")
                 Mode.FULL_RANGE -> {
-                    servo.position = (position.degrees / type.range.degrees).coerceIn(
-                        minPosition.degrees,
-                        maxPosition.degrees
-                                                                                     )
+                    val clampedDegrees = position.degrees.coerceIn(minPosition.degrees, maxPosition.degrees)
+                    servo.position = clampedDegrees / type.range.degrees
                     field = type.range * servo.position
                 }
             }

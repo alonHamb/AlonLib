@@ -37,10 +37,11 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble()).apply {
         runMode = RunMode.RawPower
     }
-    private val batteryVoltage = hub.getInputVoltage(VoltageUnit.VOLTS)
+    private val batteryVoltage: Double
+        get() = hub.getInputVoltage(VoltageUnit.VOLTS)
 
     val velocityController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, velocity.asRpm)
-    val positonController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, position.normalizedDegrees)
+    val positionController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, position.normalizedDegrees)
     var feedForwardController = SimpleMotorFeedforward(0.0, 0.0, 0.0)
 
     // --- motor configurations ---
@@ -86,14 +87,15 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
 
     /**
      * sets the percent output of the motor.
-     * is clamped between properties [minPercentOutput] and [maxPercentOutput].
+     * is clamped between properties [minPercentOutput] and [maxPercentOutput],
+     * further scaled down by [currentLimitScalar] when [currentLimit] is active.
      * default is -1.0 and 1.0
      */
     var percentOutput: PercentOutput = 0.0
         get() = motor.motor.power
         set(percentOutput) {
-            if (!(forwardLimit() && percentOutput > 0) or !(reverseLimit() && percentOutput < 0)) {
-                motor.motor.power = percentOutput.coerceIn(minPercentOutput, maxPercentOutput)
+            if (!(forwardLimit() && percentOutput > 0) && !(reverseLimit() && percentOutput < 0)) {
+                motor.motor.power = percentOutput.coerceIn(effectiveMinPercentOutput, effectiveMaxPercentOutput)
                 field = percentOutput
             }
             else {
@@ -123,17 +125,53 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         }
 
     /**
-     * a very crude current limiter for a motor
+     * the current limit in milliamps, enforced purely by scaling down [percentOutput].
      *
-     *if the set current is acceded it sets [maxPercentOutput] to the percent that made it go over the limit
+     * every [update] call, if [current] is over this value [currentLimitScalar] is stepped down by
+     * [currentLimitStep], shrinking the allowed [percentOutput] range; once [current] is back under
+     * the limit, [currentLimitScalar] is stepped back up until it reaches 1.0 again.
+     *
+     * set to a value <= 0.0 to disable current limiting entirely.
      */
-    var currentLimit: Double
+    var currentLimit: Double = 0.0
+
+    /**
+     * how much [currentLimitScalar] moves per [update] call while backing off or recovering.
+     *
+     * smaller values react more smoothly (less oscillation) but take longer to back off from an
+     * over-current condition; larger values react faster but can hunt/oscillate around the limit.
+     */
+    var currentLimitStep: Double = 0.05
         set(value) {
-            motor.setCurrentAlert(value, CurrentUnit.MILLIAMPS)
+            field = value.coerceIn(0.0, 1.0)
         }
-        get() {
-            return motor.getCurrentAlert(CurrentUnit.MILLIAMPS)
+
+    /**
+     * the fraction (0.0 to 1.0) that [minPercentOutput]/[maxPercentOutput] are currently scaled by
+     * because of [currentLimit]. 1.0 means no scaling is being applied.
+     */
+    var currentLimitScalar: Double = 1.0
+        private set
+
+    private val effectiveMinPercentOutput get() = minPercentOutput * currentLimitScalar
+    private val effectiveMaxPercentOutput get() = maxPercentOutput * currentLimitScalar
+
+    /**
+     * steps [currentLimitScalar] towards backing off or recovering based on [current] vs [currentLimit],
+     * then re-clamps the currently commanded [percentOutput] into the resulting range.
+     *
+     * called every loop by [update].
+     */
+    private fun limitCurrent() {
+        currentLimitScalar = if (currentLimit <= 0.0) {
+            1.0
+        } else if (current > currentLimit) {
+            (currentLimitScalar - currentLimitStep).coerceIn(0.0, 1.0)
+        } else {
+            (currentLimitScalar + currentLimitStep).coerceIn(0.0, 1.0)
         }
+        percentOutput = percentOutput
+    }
 
     /**
      * Software forward limit, ONLY for [percentOutput] control.
@@ -182,7 +220,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     var pidfGains: PIDFGains = PIDFGains()
         set(gains) {
             velocityController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, 0.0))
-            positonController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, 0.0))
+            positionController.setCoefficients(PIDFCoefficients(gains.kP, gains.kI, gains.kD, 0.0))
             feedForwardController = SimpleMotorFeedforward(gains.kS, gains.KV, gains.Ka)
             field = gains
         }
@@ -194,9 +232,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      */
     var setPoint: Double = 0.0
         set(setPoint) {
-            when (positonController.i > 0 || velocityController.i > 0) {
+            when (positionController.i > 0 || velocityController.i > 0) {
                 true  -> {
-                    positonController.reset()
+                    positionController.reset()
                     velocityController.reset()
                 }
 
@@ -204,7 +242,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             }
             when (this.runMode) {
                 RunMode.PositionControl -> {
-                    positonController.setPoint =
+                    positionController.setPoint =
                         setPoint.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
                     field = setPoint
                 }
@@ -228,7 +266,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         get() {
             return when (runMode) {
                 RunMode.PositionControl -> {
-                    positonController.positionError
+                    positionController.positionError
                 }
 
                 RunMode.VelocityControl -> {
@@ -250,7 +288,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     var tolerance: Double = 0.0
         set(value) {
             when (runMode) {
-                RunMode.PositionControl -> positonController.setTolerance(value)
+                RunMode.PositionControl -> positionController.setTolerance(value)
                 RunMode.VelocityControl -> velocityController.setTolerance(value)
                 RunMode.RawPower        -> {}
             }
@@ -263,7 +301,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         get() {
             return when (runMode) {
                 RunMode.PositionControl -> {
-                    positonController.atSetPoint()
+                    positionController.atSetPoint()
                 }
 
                 RunMode.VelocityControl -> {
@@ -336,10 +374,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * must be called every loop
      */
     fun update() {
-        when (motor.isOverCurrent) {
-            true -> maxPercentOutput = percentOutput
-            else -> {}
-        }
+        limitCurrent()
         when (this.runMode) {
             RunMode.VelocityControl -> voltage =
                 velocityController.calculate(velocity.asRpm) + feedForwardController.calculate(
@@ -348,18 +383,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
                                                                                               ) + pidfGains.kFF * error.sign
 
             RunMode.PositionControl -> voltage =
-                positonController.calculate(position.degrees) + feedForwardController.calculate(
+                positionController.calculate(position.degrees) + feedForwardController.calculate(
                     velocity.asRpm,
                     motor.acceleration / motor.cpr
                                                                                                ) + pidfGains.kFF * error.sign
 
             RunMode.RawPower        -> {}
         }
-        when (motor.isOverCurrent) {
-            true -> maxPercentOutput = percentOutput
-            else -> {}
-        }
-
     }
 
     // --- hardware device shit ---

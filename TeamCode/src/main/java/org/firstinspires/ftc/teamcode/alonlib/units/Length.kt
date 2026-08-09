@@ -20,9 +20,6 @@ class Length private constructor(length: Number, lengthUnit: Unit) : Comparable<
             } else if (value.isInfinite()) {
                 robotPrintError("Length is infinite.")
                 0.0
-            } else if (value < 0.0) {
-                robotPrintError("Length cannot be negative.")
-                0.0
             } else value
         }
 
@@ -66,7 +63,7 @@ class Length private constructor(length: Number, lengthUnit: Unit) : Comparable<
         }
 
     override fun toString() = "Meters($meters)"
-    override fun compareTo(other: Length) = (meters - other.meters).toInt()
+    override fun compareTo(other: Length) = meters.compareTo(other.meters)
 
     operator fun plus(other: Length) = fromMeters(meters + other.meters)
     operator fun minus(other: Length) = fromMeters(meters - other.meters)
