@@ -1,6 +1,5 @@
-package com.hamosad1657.lib.math.filters.movingwindowfilters
+package org.firstinspires.ftc.teamcode.alonlib.math.filters.movingwindowfilters
 
-import org.firstinspires.ftc.teamcode.alonlib.math.filters.movingwindowfilters.MovingWindowFilter
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import java.util.LinkedList
 

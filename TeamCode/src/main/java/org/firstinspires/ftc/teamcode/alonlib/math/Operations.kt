@@ -51,7 +51,7 @@ fun continuousDeadband(value: Double, deadband: Double): Double {
 }
 
 fun clamp(value: Double, min: Double, max: Double): Double {
-    return if (min > max) 0.0 else clamp(value, min, max)
+    return if (min > max) 0.0 else value.coerceIn(min, max)
 }
 
 /**
@@ -110,6 +110,6 @@ fun median(array: DoubleArray): Double {
     return if (size % 2 == 0) {
         (sortedArray[size / 2] + sortedArray[(size / 2) - 1]) / 2.0
     } else {
-        array[(size / 2)]
+        sortedArray[(size / 2)]
     }
 }

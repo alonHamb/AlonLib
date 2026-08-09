@@ -29,8 +29,6 @@ class BlueMainTeleop : CommandOpMode() {
             telemetryLevel
         )
         telemetry.update()
-
-
     }
 
     override fun run() {

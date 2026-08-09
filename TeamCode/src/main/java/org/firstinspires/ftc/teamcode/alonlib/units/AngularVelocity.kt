@@ -57,7 +57,7 @@ private constructor(velocity: Double, velocityUnit: AngularVelocityUnit) :
     val absoluteValue get() = fromRpm(rpm.absoluteValue)
 
     override fun toString() = "RPM($rpm)"
-    override fun compareTo(other: AngularVelocity): Int = (rpm - other.rpm).toInt()
+    override fun compareTo(other: AngularVelocity): Int = rpm.compareTo(other.rpm)
 
     operator fun plus(other: AngularVelocity) = fromRpm(rpm + other.rpm)
     operator fun minus(other: AngularVelocity) = fromRpm(rpm - other.rpm)

@@ -29,8 +29,6 @@ class RedMainTeleop : CommandOpMode() {
             telemetryLevel
         )
         telemetry.update()
-
-
     }
 
     override fun run() {
