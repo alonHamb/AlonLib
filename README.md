@@ -23,11 +23,11 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.alonHamb:AlonLib:v1.0.1'
+    implementation 'com.github.alonHamb:AlonLib:v1.1.0'
 }
 ```
 
-Use a specific tag (recommended, e.g. `v1.0.1`), a commit hash, or `<branch>-SNAPSHOT` to track a
+Use a specific tag (recommended, e.g. `v1.1.0`), a commit hash, or `<branch>-SNAPSHOT` to track a
 branch directly.
 
 ## Requirements
