@@ -1,0 +1,53 @@
+//
+// build.gradle for the alonlib library module
+//
+
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    id 'maven-publish'
+}
+
+android {
+    namespace = 'org.firstinspires.ftc.teamcode.alonlib'
+    compileSdk = libs.versions.compileSdk.get().toInteger()
+
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    publishing {
+        singleVariant('release')
+    }
+}
+
+dependencies {
+    // The FTC SDK and app-level dependencies are expected to already be on the
+    // classpath of whatever app consumes this library (via the FtcRobotController
+    // module), so they're compileOnly here to avoid bundling/duplicating them.
+    compileOnly libs.bundles.ftc.sdk
+
+    api libs.solverslib.core
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.alonHamb'
+                artifactId = 'AlonLib'
+            }
+        }
+    }
+}
