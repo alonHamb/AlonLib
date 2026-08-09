@@ -32,10 +32,9 @@ android {
 }
 
 dependencies {
-    // The FTC SDK and app-level dependencies are expected to already be on the
-    // classpath of whatever app consumes this library (via the FtcRobotController
-    // module), so they're compileOnly here to avoid bundling/duplicating them.
-    compileOnly libs.bundles.ftc.sdk
+    // Bundled (api) so consumers get the FTC SDK transitively just by depending on
+    // AlonLib, instead of having to declare it themselves.
+    api libs.bundles.ftc.sdk
 
     api libs.solverslib.core
 }

@@ -32,9 +32,11 @@ branch directly.
 
 ## Requirements
 
-Consumers must provide the FTC SDK and SolversLib on their own classpath (typically already the
-case via the `FtcRobotController` module and `org.solverslib:core`) — this library declares them
-as `compileOnly`/`api` and does not bundle them.
+The FTC SDK (`org.firstinspires.ftc:*`, v11.1.0) and SolversLib (`org.solverslib:core`) are bundled
+as `api` dependencies, so they come along transitively — you don't need to declare either yourself
+just to use AlonLib's classes. If your project also depends on `FtcRobotController` directly (the
+usual FTC project setup, needed to actually build/run the robot controller app), Gradle will
+de-duplicate the shared FTC SDK version automatically as long as the versions match.
 
 ## Structure
 
