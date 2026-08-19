@@ -19,7 +19,7 @@ class HaServo(
     id: String,
     val mode: Mode,
     val type: Type
-             ) : HardwareDevice {
+) : HardwareDevice {
 
     // --- servo object declaration ---
     /**
@@ -72,8 +72,7 @@ class HaServo(
             if (!(forwardLimit() && value > 0) && !(reverseLimit() && value < 0)) {
                 field = value
                 servo.position = value.coerceIn(minPercentOutput..maxPercentOutput)
-            }
-            else {
+            } else {
                 robotPrintError("limit reached")
             }
         }

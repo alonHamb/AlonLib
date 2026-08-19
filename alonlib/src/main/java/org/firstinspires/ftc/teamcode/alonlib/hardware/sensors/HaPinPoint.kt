@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.millimeters
 
 class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdometryPods) :
-    HardwareDevice {
+        HardwareDevice {
 
     private var pinPoint: GoBildaPinpointDriver =
         hardwareMap.get(GoBildaPinpointDriver::class.java, id)
@@ -58,7 +58,7 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
         get() = Pose2d(
             Translation2d(pinPoint.position.getX(DistanceUnit.METER), pinPoint.position.getY(DistanceUnit.METER)),
             pinPoint.position.getHeading(AngleUnit.DEGREES).degrees
-                      )
+        )
         set(value) {
             pinPoint.setPosX(value.x, DistanceUnit.METER)
             pinPoint.setPosY(value.y, DistanceUnit.METER)
@@ -117,7 +117,7 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
     fun setEncoderDirections(
         xEncoderDirection: GoBildaPinpointDriver.EncoderDirection,
         yEncoderDirection: GoBildaPinpointDriver.EncoderDirection
-                            ) {
+    ) {
         pinPoint.setEncoderDirections(xEncoderDirection, yEncoderDirection)
     }
 

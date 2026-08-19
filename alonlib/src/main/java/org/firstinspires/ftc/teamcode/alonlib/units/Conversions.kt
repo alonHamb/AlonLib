@@ -117,6 +117,7 @@ fun feetToMeters(feet: Number) = inchesToMeters(feetToInches(feet))
 /** Feet to inches.  */
 fun feetToInches(feet: Number) = feet.toDouble() * 12.0
 
+
 /**
  * @param position - MUST be blue alliance.
  * @param alliance - The current alliance.
@@ -134,11 +135,11 @@ fun mmpsToMps(mmps: Number) = mmps.toDouble() / 1000.0
 fun matchPoseToAlliance(position: Pose2d, alliance: Alliance): Pose2d {
     return when (alliance) {
         Alliance.Blue -> position
-        Alliance.Red ->
+        Alliance.Red  ->
             Pose2d(
                 DECODE_FIELD_LENGTH.asMeters - position.x,
                 position.y,
-                position.rotation.rotateBy(180.degrees)
+                position.rotation + 180.degrees
             )
     }
 }

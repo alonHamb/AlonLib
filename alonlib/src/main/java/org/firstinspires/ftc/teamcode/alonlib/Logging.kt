@@ -23,7 +23,7 @@ enum class TelemetryLevel {
  */
 val TelemetryLevel.transmissionIntervalMs: Int
     get() = when (this) {
-        TelemetryLevel.Testing -> 25
+        TelemetryLevel.Testing     -> 25
         TelemetryLevel.Competition -> 250
     }
 

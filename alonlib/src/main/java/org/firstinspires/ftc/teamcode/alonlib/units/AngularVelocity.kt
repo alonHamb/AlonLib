@@ -15,10 +15,9 @@ import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity.Unit as Angu
  * Can also be converted to:
  * - Meters per Second (Mps)
  */
-class AngularVelocity
-private constructor(velocity: Double, velocityUnit: AngularVelocityUnit) :
-    Comparable<AngularVelocity> {
-    private var rpm = 0.0
+class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
+        Comparable<AngularVelocity> {
+    var rpm = 0.0
         set(value) {
             field = if (value.isNaN()) {
                 robotPrintError("AngularVelocity cannot be NaN.")

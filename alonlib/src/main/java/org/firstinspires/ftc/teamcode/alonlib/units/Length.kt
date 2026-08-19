@@ -45,7 +45,7 @@ class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
         millimeters: Number = 0,
         feet: Number = 0,
         inches: Number = 0,
-               ) : this(0.0, Unit.Meters) {
+    ) : this(0.0, Unit.Meters) {
         this.meters = meters.toDouble() +
                 (centimeters.toDouble() * 100) +
                 (millimeters.toDouble() * 1000) +
@@ -67,8 +67,8 @@ class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
 
     operator fun plus(other: Length) = fromMeters(meters + other.meters)
     operator fun minus(other: Length) = fromMeters(meters - other.meters)
-    operator fun times(other: Double) = fromMeters(meters * other)
-    operator fun div(other: Double) = fromMeters(meters / other)
+    operator fun times(other: Length) = fromMeters(meters * other.meters)
+    operator fun div(other: Length) = fromMeters(meters / other.meters)
 
     enum class Unit {
         Meters,
