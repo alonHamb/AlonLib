@@ -55,6 +55,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             field = value
         }
 
+
     /**
      * the direction the motor to rotates
      * @param Motor.Direction.FORWARD clockwise
@@ -97,8 +98,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             if (!(forwardLimit() && percentOutput > 0) && !(reverseLimit() && percentOutput < 0)) {
                 motor.motor.power = percentOutput.coerceIn(effectiveMinPercentOutput, effectiveMaxPercentOutput)
                 field = percentOutput
-            }
-            else {
+            } else {
                 robotPrintError("limit reached")
             }
 
@@ -386,7 +386,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
                 positionController.calculate(position.degrees) + feedForwardController.calculate(
                     velocity.asRpm,
                     motor.acceleration / motor.cpr
-                                                                                               ) + pidfGains.kFF * error.sign
+                                                                                                ) + pidfGains.kFF * error.sign
 
             RunMode.RawPower        -> {}
         }

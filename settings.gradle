@@ -15,8 +15,11 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url = 'https://maven.brott.dev/' }
         maven { url = "https://repo.dairy.foundation/releases" }
+        // ftc-control-hub-emulator, pulled in by :alonlib-emulator
+        maven { url = 'https://jitpack.io' }
     }
 }
 
 rootProject.name = "AlonLib"
 include ':alonlib'
+include ':alonlib-emulator'

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.alonlib.commands
 
+import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.Action
 import com.seattlesolvers.solverslib.command.Command
@@ -12,14 +13,12 @@ import com.seattlesolvers.solverslib.command.Subsystem
  * [com.seattlesolvers.solverslib.command.SequentialCommandGroup] etc. instead of only being runnable
  * via `Actions.runBlocking` in a plain [com.qualcomm.robotcore.eventloop.opmode.LinearOpMode].
  *
- * Each [execute] call runs the action once -- every loop, so trajectory following stays accurate
- * -- but the resulting telemetry packet is only actually sent to FTC Dashboard at the rate
- * [DashboardTelemetryThrottle] allows, since sending one every loop is a common cause of loop time
- * blowing up. [isFinished] becomes true once the action reports it's done (`run` returns false).
+ * Each [execute] call runs the action once -- every loop, so trajectory following stays accurate --
+ * and the resulting telemetry packet is sent to FTC Dashboard. [isFinished] becomes true once the
+ * action reports it's done (`run` returns false).
  */
 class ActionCommand(private val action: Action, vararg requirements: Subsystem) : CommandBase() {
     private var finished = false
-    private val dashboardThrottle = DashboardTelemetryThrottle()
 
     init {
         addRequirements(*requirements)
@@ -32,7 +31,7 @@ class ActionCommand(private val action: Action, vararg requirements: Subsystem) 
     override fun execute() {
         val packet = TelemetryPacket()
         finished = !action.run(packet)
-        dashboardThrottle.send(packet)
+        FtcDashboard.getInstance().sendTelemetryPacket(packet)
     }
 
     override fun isFinished(): Boolean = finished

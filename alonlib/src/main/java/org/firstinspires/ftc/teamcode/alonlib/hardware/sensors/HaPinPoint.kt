@@ -100,11 +100,19 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
     val headingVelocity: AngularVelocity
         get() = pinPoint.getHeadingVelocity(UnnormalizedAngleUnit.DEGREES).degPs
 
-    val xOffset: Length
+    var xOffset: Length
         get() = pinPoint.getXOffset(DistanceUnit.MM).millimeters
+        set(value) {
+            val currentY = pinPoint.getYOffset(DistanceUnit.MM)
+            pinPoint.setOffsets(value.asMillimeters, currentY.toDouble(), DistanceUnit.MM)
+        }
 
-    val yOffset: Length
+    var yOffset: Length
         get() = pinPoint.getYOffset(DistanceUnit.MM).millimeters
+        set(value) {
+            val currentX = pinPoint.getXOffset(DistanceUnit.MM)
+            pinPoint.setOffsets(currentX.toDouble(), value.asMillimeters, DistanceUnit.MM)
+        }
 
     fun setEncoderDirections(
         xEncoderDirection: GoBildaPinpointDriver.EncoderDirection,

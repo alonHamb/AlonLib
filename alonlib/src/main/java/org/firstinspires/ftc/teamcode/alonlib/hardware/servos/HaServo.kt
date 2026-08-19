@@ -80,35 +80,68 @@ class HaServo(
         get() = servo.position
 
     /**
-     * the maximum [position] to be sent to the servo
+     * half of [Type.range], in degrees -- the most a [Rotation2d] can represent [position] as an
+     * offset from the center of the servo's sweep without exceeding the (-180, 180] domain that
+     * Rotation2d normalizes into (350deg/2 = 175deg, the widest built-in [Type]). [position],
+     * [minPosition], and [maxPosition] are all relative to this center, i.e. 0 degrees is the
+     * middle of the servo's travel, not one end of it.
      */
-    var maxPosition: Rotation2d = type.range
+    private val halfRange = type.range / 2.0
+
+    /**
+     * the maximum [position] to be sent to the servo, relative to the center of its sweep
+     */
+    var maxPosition: Rotation2d = halfRange.degrees
         set(value) {
-            field = value.degrees.coerceIn(0.0..type.range.degrees).degrees
+            field = value.degrees.coerceIn(-halfRange..halfRange).degrees
         }
 
     /**
-     * the minimum [position] to be sent to the motor
+     * the minimum [position] to be sent to the servo, relative to the center of its sweep
      */
-    var minPosition: Rotation2d = 0.0.degrees
+    var minPosition: Rotation2d = (-halfRange).degrees
         set(value) {
-            field = value.degrees.coerceIn(0.0..maxPosition.degrees).degrees
+            field = value.degrees.coerceIn(-halfRange..maxPosition.degrees).degrees
         }
 
+
+    /**
+     * a soft limit, in degrees measured from the low end of the physical sweep -- e.g. straight off
+     * the servo's datasheet -- rather than [position]'s center-relative [Rotation2d]. Restricts how
+     * far [position] can move in the negative direction, on top of (not instead of) [minPosition].
+     * Defaults to 0deg, the physical low end, i.e. no extra restriction.
+     */
+    var minLimit: Double = 0.0
+        set(value) {
+            field = value.coerceIn(0.0..maxLimit)
+        }
+
+    /**
+     * a soft limit, in degrees measured from the low end of the physical sweep -- e.g. straight off
+     * the servo's datasheet -- rather than [position]'s center-relative [Rotation2d]. Restricts how
+     * far [position] can move in the positive direction, on top of (not instead of) [maxPosition].
+     * Defaults to [Type.range], the physical high end, i.e. no extra restriction.
+     */
+    var maxLimit: Double = type.range
+        set(value) {
+            field = value.coerceIn(minLimit..type.range)
+        }
 
     /**
      * when called returns the last [position] that have been sent to the servo
      *
-     * when set sets the [position] you want the servo to go to
+     * when set sets the [position] you want the servo to go to, relative to the center of its
+     * sweep (0 degrees = centered, not one end of travel -- see [halfRange])
      */
     var position: Rotation2d = 0.0.degrees
         set(position) {
             when (mode) {
                 Mode.CR         -> robotPrintError("cannot set position in CR mode")
                 Mode.FULL_RANGE -> {
-                    val clampedDegrees = position.degrees.coerceIn(minPosition.degrees, maxPosition.degrees)
-                    servo.position = clampedDegrees / type.range.degrees
-                    field = type.range * servo.position
+                    val hardwareClampedDegrees = position.degrees.coerceIn(minPosition.degrees, maxPosition.degrees)
+                    val absoluteDegrees = (hardwareClampedDegrees + halfRange).coerceIn(minLimit, maxLimit)
+                    servo.position = absoluteDegrees / type.range
+                    field = (absoluteDegrees - halfRange).degrees
                 }
             }
         }

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
  * - Feet
  * - Inches
  */
-class Length private constructor(length: Number, lengthUnit: Unit) : Comparable<Length> {
+class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
     private var meters = 0.0
         set(value) {
             field = if (value.isNaN()) {
@@ -31,11 +31,11 @@ class Length private constructor(length: Number, lengthUnit: Unit) : Comparable<
 
     init {
         meters = when (lengthUnit) {
-            Unit.Meters -> length.toDouble()
+            Unit.Meters      -> length.toDouble()
             Unit.Centimeters -> length.toDouble() / 100
             Unit.Millimeters -> length.toDouble() / 1000
-            Unit.Feet -> feetToMeters(length)
-            Unit.Inches -> inchesToMeters(length)
+            Unit.Feet        -> feetToMeters(length)
+            Unit.Inches      -> inchesToMeters(length)
         }
     }
 
@@ -45,7 +45,7 @@ class Length private constructor(length: Number, lengthUnit: Unit) : Comparable<
         millimeters: Number = 0,
         feet: Number = 0,
         inches: Number = 0,
-    ) : this(0.0, Unit.Meters) {
+               ) : this(0.0, Unit.Meters) {
         this.meters = meters.toDouble() +
                 (centimeters.toDouble() * 100) +
                 (millimeters.toDouble() * 1000) +
@@ -55,11 +55,11 @@ class Length private constructor(length: Number, lengthUnit: Unit) : Comparable<
 
     private fun inUnit(lengthUnit: Unit) =
         when (lengthUnit) {
-            Unit.Meters -> meters
+            Unit.Meters      -> meters
             Unit.Centimeters -> meters * 100.0
             Unit.Millimeters -> meters * 1000.0
-            Unit.Feet -> metersToFeet(meters)
-            Unit.Inches -> metersToInches(meters)
+            Unit.Feet        -> metersToFeet(meters)
+            Unit.Inches      -> metersToInches(meters)
         }
 
     override fun toString() = "Meters($meters)"

@@ -14,7 +14,6 @@ import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity.Unit as Angu
  *
  * Can also be converted to:
  * - Meters per Second (Mps)
- * - Falcon's Integrated Encoder Ticks per 100ms
  */
 class AngularVelocity
 private constructor(velocity: Double, velocityUnit: AngularVelocityUnit) :
@@ -39,8 +38,8 @@ private constructor(velocity: Double, velocityUnit: AngularVelocityUnit) :
 
     init {
         rpm = when (velocityUnit) {
-            AngularVelocityUnit.Rpm -> velocity
-            AngularVelocityUnit.Rps -> rpsToRpm(velocity)
+            AngularVelocityUnit.Rpm   -> velocity
+            AngularVelocityUnit.Rps   -> rpsToRpm(velocity)
             AngularVelocityUnit.RadPs -> radPsToRpm(velocity)
             AngularVelocityUnit.DegPs -> degPsToRpm(velocity)
         }
@@ -48,8 +47,8 @@ private constructor(velocity: Double, velocityUnit: AngularVelocityUnit) :
 
     private fun inUnit(velocityUnit: AngularVelocityUnit) =
         when (velocityUnit) {
-            AngularVelocityUnit.Rpm -> rpm
-            AngularVelocityUnit.Rps -> rpmToRps(rpm)
+            AngularVelocityUnit.Rpm   -> rpm
+            AngularVelocityUnit.Rps   -> rpmToRps(rpm)
             AngularVelocityUnit.RadPs -> rpmToRadPs(rpm)
             AngularVelocityUnit.DegPs -> rpmToDegPs(rpm)
         }
