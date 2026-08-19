@@ -1,0 +1,78 @@
+//
+// build.gradle for the alonlib-emulator module
+//
+// Lets a consuming project's TeamCode module run its *real, unmodified* OpModes on a desktop
+// emulator (see https://github.com/alonHamb/ftc-control-hub-emulator) instead of a physical REV
+// Control/Expansion Hub. Deliberately kept out of the main `alonlib` module -- it drags in
+// Mockito and ftc-control-hub-emulator (which itself pulls in JNA for gamepad reading), neither of
+// which any real robot build should ship. Only ever add this as a `testImplementation` of your
+// TeamCode module, never `implementation`.
+//
+
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    id 'maven-publish'
+}
+
+android {
+    namespace = 'org.firstinspires.ftc.teamcode.alonlib.emulator'
+    compileSdk = libs.versions.compileSdk.get().toInteger()
+
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // HardwareMap.tryGet() unconditionally touches Device.isRevControlHub(), whose static init
+    // chain reaches an unmocked android.os.Environment method. Consuming projects need the same
+    // option on their TeamCode module -- see the README.
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+        }
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+dependencies {
+    // Brings in the FTC SDK (as `api` from alonlib) plus HaMotor/HaServo so this module's
+    // adapters can be dropped straight into hardware maps built the normal AlonLib way.
+    api project(':alonlib')
+
+    // SimMotor/SimServo/BatteryModel/RunnerShellApp/gamepad reading.
+    api 'com.github.alonHamb:ftc-control-hub-emulator:v1.0.2'
+
+    // Mocks LynxModule's bulk-read data (see EmuLynxModule.kt) -- LynxModule has no way to be
+    // constructed without a real USB-connected hub, so it can't be implemented directly the way
+    // DcMotorEx/Servo are.
+    implementation 'org.mockito:mockito-core:5.12.0'
+
+    testImplementation("junit:junit:4.13.2")
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.alonHamb'
+                artifactId = 'alonlib-emulator'
+            }
+        }
+    }
+}
