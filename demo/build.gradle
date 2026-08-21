@@ -27,5 +27,5 @@ application {
 
 dependencies {
     // Same commit as alonlib-emulator/build.gradle -- see the comment there.
-    implementation 'com.github.alonHamb:ftc-control-hub-emulator:6aa8096758'
+    implementation 'com.github.alonHamb:ftc-control-hub-emulator:7b0dc439ea'
 }
