@@ -54,15 +54,27 @@ dependencies {
     // adapters can be dropped straight into hardware maps built the normal AlonLib way.
     api project(':alonlib')
 
-    // SimMotor/SimServo/BatteryModel/RunnerShellApp/gamepad reading.
-    api 'com.github.alonHamb:ftc-control-hub-emulator:v1.0.2'
+    // SimMotor/SimServo/BatteryModel/RunnerShellApp/gamepad reading, plus emulator.config
+    // (parseRobotConfigXml/buildSimulatedRobot -- see EmulatorAutoLauncher.kt), which landed on
+    // upstream's main after the v1.0.2 tag and hasn't been released as a tagged version yet, so
+    // this pins a specific commit instead -- bump to a real tag once one exists past this commit.
+    api 'com.github.alonHamb:ftc-control-hub-emulator:6aa8096758'
 
     // Mocks LynxModule's bulk-read data (see EmuLynxModule.kt) -- LynxModule has no way to be
     // constructed without a real USB-connected hub, so it can't be implemented directly the way
     // DcMotorEx/Servo are.
     implementation 'org.mockito:mockito-core:5.12.0'
 
-    testImplementation("junit:junit:4.13.2")
+    // Classpath-scans for @TeleOp/@Autonomous OpModes (see EmulatorAutoLauncher.kt) -- runs inside
+    // a consuming project's own test classpath, so this needs to be `implementation`, not
+    // `testImplementation`, to actually be present there.
+    implementation 'io.github.classgraph:classgraph:4.8.180'
+
+    // `api`, not `testImplementation`: EmulatorAutoLauncher.kt (in src/main, so it's usable from a
+    // consumer's own src/test with zero code of their own) references `org.junit.Test` directly,
+    // and this module's own src/test needs it too -- `testImplementation` extends `implementation`,
+    // so declaring it here covers both instead of needing two separate lines.
+    api 'junit:junit:4.13.2'
 }
 
 afterEvaluate {

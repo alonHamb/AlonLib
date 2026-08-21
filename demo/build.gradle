@@ -1,0 +1,31 @@
+//
+// A minimal runnable wiring of ftc-control-hub-emulator's RunnerShellApp, for local development:
+// opens the same desktop emulator window/UI as https://github.com/alonHamb/ftc-control-hub-emulator
+// itself, driven by gamepad1/keyboard. Kept as a plain Kotlin/JVM module -- not an Android module
+// like alonlib/alonlib-emulator -- so it can depend on the library directly and run with a plain
+// `main()`, and kept out of the published JitPack artifacts so consumers never pull in a Swing
+// entrypoint. Run it with `./gradlew :demo:run`.
+//
+plugins {
+    // No version pinned here -- Gradle already resolves this plugin's version from the
+    // kotlin-android plugin applied by alonlib/alonlib-emulator, and re-requesting a version
+    // for a plugin already on the build's classpath fails.
+    id 'org.jetbrains.kotlin.jvm'
+    id 'application'
+}
+
+// mavenCentral()/jitpack are already declared in the root settings.gradle's
+// dependencyResolutionManagement, which every module (including this one) uses.
+
+kotlin {
+    jvmToolchain(17)
+}
+
+application {
+    mainClass = 'org.firstinspires.ftc.teamcode.alonlib.emulator.demo.DemoMainKt'
+}
+
+dependencies {
+    // Same commit as alonlib-emulator/build.gradle -- see the comment there.
+    implementation 'com.github.alonHamb:ftc-control-hub-emulator:6aa8096758'
+}

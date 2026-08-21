@@ -488,14 +488,34 @@ via [ftc-control-hub-emulator](https://github.com/alonHamb/ftc-control-hub-emula
 physical REV Control/Expansion Hub. It backs `hardwareMap.get(DcMotorEx::class.java, ...)`,
 `hardwareMap.get(Servo::class.java, ...)`, and `hardwareMap.get(LynxModule::class.java, "Control
 Hub")` with simulated motor/servo dynamics and a simulated battery, and drives the OpMode lifecycle
-(`init`/`start`/`loop`/`stop`) the same way the Driver Station does. All 7 of its own regression
+(`init`/`start`/`loop`/`stop`) the same way the Driver Station does. All 15 of its own regression
 tests (hardware-map wiring, `LynxModule` bulk data/voltage, `HaMotor`/`HaServo` end-to-end, the
-`OpMode` lifecycle harness, and `HaServo` position-range edge cases) pass against the real FTC SDK
-classes at runtime — see `alonlib-emulator/src/test`.
+`OpMode` lifecycle harness, `HaServo` position-range edge cases, and `EmulatorAutoLauncher`'s config
+discovery/OpMode scanning/drive-wheel guessing) pass against the real FTC SDK classes at runtime —
+see `alonlib-emulator/src/test`.
 
 **Only ever add this to your TeamCode module's `testImplementation`, never `implementation`** — it
 pulls in Mockito and ftc-control-hub-emulator's Swing UI and JNA-based gamepad reading, none of
 which belong in the APK that ships to the robot.
+
+### Trying the emulator window in this repo
+
+`:demo` is a small runnable module (plain Kotlin/JVM, kept out of the published JitPack artifacts
+so consumers never pull in a Swing entrypoint) that opens the exact same `RunnerShellApp` window
+[ftc-control-hub-emulator](https://github.com/alonHamb/ftc-control-hub-emulator)'s own `:demo`
+module does — field view, port monitor, telemetry, and gamepad status — wired to a simulated
+mecanum drivetrain and one servo. It's the fastest way to see the window working before wiring
+`EmulatedRobot` into your own project:
+
+```bash
+./gradlew :demo:run
+```
+
+Click **Init**, then **Start**, then drive with gamepad1 (left stick to translate, right stick X to
+rotate, A/B to open/close the claw) or the keyboard if nothing's plugged in. See
+[`demo/src/main/kotlin/.../DemoMain.kt`](demo/src/main/kotlin/org/firstinspires/ftc/teamcode/alonlib/emulator/demo/DemoMain.kt).
+`EmulatedRobot.launch()` (below) drives this same window against a real OpMode's hardware map
+instead of the hardcoded devices this demo uses.
 
 ### Setup
 
@@ -520,14 +540,64 @@ dependencies {
 (JitPack is already a repository if you're using AlonLib itself — see [Installing](#installing),
 above.)
 
+### Zero-code: `EmulatorAutoLauncher`
+
+You don't need to write anything — no `EmulatorMain.kt`, no `RobotMap` mirroring, no OpMode
+registration. Once the dependency above is added, `EmulatorAutoLauncher` (shipped inside
+`alonlib-emulator`, so it's already sitting on your test classpath) does two things automatically,
+the same way the real Driver Station does:
+
+1. **Finds your hardware config XML itself.** It looks under `src/main/res/xml/` for the one file
+   that declares a `<LynxModule>` — the exact file REV Hardware Client wrote and your project
+   already uploads to the Control Hub — and builds simulated hardware straight from it via
+   `emulator.config.parseRobotConfigXml`/`buildSimulatedRobot`. Add a device to your config and it
+   shows up in the emulator's port monitor next time you launch, with nothing to keep in sync.
+2. **Finds your OpModes itself.** It classpath-scans for every `@TeleOp`/`@Autonomous`-annotated
+   `OpMode` (skipping `@Disabled` ones), the same annotations the real SDK uses to build the Driver
+   Station's OpMode list, and populates the emulator's dropdown from them.
+
+It also makes a best-effort guess at your four mecanum drive motors by name (`frontLeft`,
+`front_left_motor`, `left front motor`, ... — `front`/`back`/`rear` × `left`/`right`, order- and
+separator-insensitive) so the field-pose view moves; if it can't find all four unambiguously, the
+emulator still runs, just without a moving field view.
+
+**Run it:** open `EmulatorAutoLauncher` in your IDE (Android Studio/IntelliJ — `alonlib-emulator`
+ships with `withSourcesJar()`, so this works with nothing of your own on disk) and click the gutter
+arrow next to `launch()`.
+
+**Don't run it via `./gradlew testDebugUnitTest`** (CLI or an IDE run configuration delegated to
+Gradle) — the Android Gradle Plugin forces `-Djava.awt.headless=true` on unit test JVMs, which makes
+the emulator window silently never appear; the task just hangs until you kill it, with no error. If
+you want a CLI-runnable command instead of an IDE click, add a plain `JavaExec` task (not subject to
+that Android-unit-test default) to your `TeamCode/build.gradle`:
+
+```groovy
+tasks.register("runEmulator", JavaExec) {
+    group = "verification"
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "org.firstinspires.ftc.teamcode.alonlib.emulator.EmulatorAutoLauncherKt"
+}
+```
+
+```bash
+./gradlew :TeamCode:runEmulator
+```
+
+If your project doesn't fit the zero-code path — multiple hardware config files, OpModes you don't
+want auto-discovered, a non-mecanum drivetrain — construct `EmulatedRobot` yourself instead; see the
+worked example below.
+
 ### API reference — `alonlib-emulator`
 
 | Symbol | Description |
 | --- | --- |
-| `EmulatedHub(hub: HubId, motors: Map<Int, String> = emptyMap(), servos: Map<Int, String> = emptyMap())` | One physical hub's worth of simulated devices, keyed by REV port index — matching how you'd describe a real robot's wiring. `.motors`/`.servos` expose the underlying `SimMotor`/`SimServo`s (for advancing sim time in tests, e.g. `.update(dt)`); `.devices` lists all of them. |
-| `buildEmulatedHardwareMap(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, batteryVoltage: () -> Double): HardwareMap` | Builds a real `HardwareMap` pre-populated with each hub's devices, so `hardwareMap.get(DcMotorEx::class.java/Servo::class.java/LynxModule::class.java, ...)` all work exactly as they would against real hardware. |
-| `EmulatedRobot(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, driveWheels: DriveWheels? = null)` | Ties one or two `EmulatedHub`s to the emulator UI and drives whichever OpMode is selected through the real OpMode lifecycle. `.hardwareMap` is the resulting fake `HardwareMap`. `DriveWheels(frontLeft, frontRight, backLeft, backRight)` is optional and only powers the emulator's live field-pose display. |
-| `EmulatedRobot.launch(title: String, opModes: Map<String, () -> OpMode>)` | Blocks the calling thread, showing the emulator window, until it's closed. Each map entry is a name shown in the OpMode dropdown → a factory for a fresh instance (matching how the real SDK constructs a new instance on every Init). |
+| `EmulatorAutoLauncher().launch()` | The zero-code entry point above. Also available as a plain `fun main()` in the same file, for the `JavaExec` task above. |
+| `EmulatedHub(hub: HubId, motors: Map<Int, String> = emptyMap(), servos: Map<Int, String> = emptyMap())` | One physical hub's worth of simulated devices, keyed by REV port index — matching how you'd describe a real robot's wiring. `.motors`/`.servos` expose the underlying `SimMotor`/`SimServo`s (for advancing sim time in tests, e.g. `.update(dt)`); `.devices` lists all of them. Only needed if you're wiring `EmulatedRobot` by hand instead of using `EmulatorAutoLauncher`. |
+| `buildEmulatedHardwareMap(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, batteryVoltage: () -> Double): HardwareMap` | Builds a real `HardwareMap` pre-populated with each hand-declared hub's devices, so `hardwareMap.get(DcMotorEx::class.java/Servo::class.java/LynxModule::class.java, ...)` all work exactly as they would against real hardware. |
+| `buildEmulatedHardwareMap(simulatedRobot: emulator.config.SimulatedRobot, batteryVoltage: () -> Double): HardwareMap` | Same, but built straight from a `SimulatedRobot` (i.e. `emulator.config.buildSimulatedRobot(parseRobotConfigXml(...))`) instead of hand-declared hubs — what `EmulatorAutoLauncher` uses under the hood. |
+| `EmulatedRobot(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, driveWheels: DriveWheels? = null)` | Ties one or two hand-declared `EmulatedHub`s to the emulator UI and drives whichever OpMode is selected through the real OpMode lifecycle. `.hardwareMap` is the resulting fake `HardwareMap`. `DriveWheels(frontLeft, frontRight, backLeft, backRight)` is optional and only powers the emulator's live field-pose display. |
+| `EmulatedRobot(simulatedRobot: emulator.config.SimulatedRobot, driveWheels: DriveWheels? = null)` | Same, but built straight from a `SimulatedRobot` — what `EmulatorAutoLauncher` uses under the hood. |
+| `EmulatedRobot.launch(title: String, opModes: Map<String, () -> OpMode>)` | Blocks the calling thread, showing the emulator window, until it's closed. Each map entry is a name shown in the OpMode dropdown → a factory for a fresh instance (matching how the real SDK constructs a new instance on every Init). Same headless-JVM caveat as `EmulatorAutoLauncher` above applies here too. |
 | `EmuDcMotorEx(sim: SimMotor) : DcMotorEx` | A `DcMotorEx` backed by a simulated motor — real code that talks to `DcMotor`/`DcMotorEx` directly, or via SolversLib's `Motor`/`MotorEx` (what `HaMotor` wraps), runs unmodified against simulated dynamics. PID/current-alert configuration is accepted but not modeled, since `HaMotor` runs its own software PIDF loop and writes plain power/voltage. |
 | `emulatedServo(controller: EmuServoController, port: Int): ServoImplEx` | Builds a genuine `ServoImplEx` for one hub port, needed because `HaServo` unconditionally force-casts `Servo` to `ServoImplEx`. |
 | `EmuServoController(portsToSims: Map<Int, SimServo>) : ServoControllerEx` | Backs a hub's worth of simulated servos — the `ServoControllerEx` a real `ServoImplEx` delegates every operation to. |
@@ -535,11 +605,15 @@ above.)
 | `EmuTelemetry() : Telemetry` | A full `Telemetry` implementation that renders into a plain `snapshot(): List<String>` instead of transmitting to a driver station, for the emulator's telemetry panel. |
 | `OpModeHarness(opMode: OpMode)` | Drives an `OpMode` (or `LinearOpMode`) through the same lifecycle hooks the real SDK's `OpModeManagerImpl` uses. `.init(hardwareMap)` wires hardware/telemetry/gamepads and starts the OpMode thread; `.start()` transitions Init → Run; `.tick(gamepad1, gamepad2)` pushes fresh gamepad state and runs one event-loop iteration; `.stop()` requests a stop and blocks until the OpMode thread exits; `.crash: Throwable?` surfaces any exception thrown by user code (`null` if none). `.telemetry: EmuTelemetry` is the telemetry instance wired into the OpMode. |
 
-### A worked example
+### Advanced: wiring `EmulatedRobot` by hand
+
+Skip this if `EmulatorAutoLauncher` above already covers your project. This is for when it doesn't
+— multiple hardware config files, OpModes you don't want auto-discovered, a non-mecanum drivetrain.
 
 Put this in `TeamCode/src/test/java/org/firstinspires/ftc/teamcode/EmulatorMain.kt` (a local unit
-test, run manually from your IDE's gutter/Run button — it opens a window and blocks, so it's not
-meant to run as part of `./gradlew test`). This mirrors a `RobotMap` like:
+test, run manually from your IDE's gutter/Run button — same headless-JVM caveat as
+`EmulatorAutoLauncher` above, so it's not meant to run as part of `./gradlew test`). This mirrors a
+`RobotMap` like:
 
 ```kotlin
 object RobotMap {
@@ -636,6 +710,10 @@ fun `drivetrain moves forward when commanded`() {
   `HardwareMap`/`OpMode` is the SDK's own, real implementation.
 - Same physics simplifications as ftc-control-hub-emulator itself: no IMU noise/drift, no wheel
   slip, ~20 Hz refresh instead of a real Driver Station's ~10-20 ms loop.
+- `EmulatorAutoLauncher` requires exactly one `res/xml/*.xml` declaring a `<LynxModule>` (errors
+  clearly if it finds zero or several) and guesses drive wheels by name — see
+  [Advanced: wiring `EmulatedRobot` by hand](#advanced-wiring-emulatedrobot-by-hand) if either
+  doesn't fit your project.
 
 ## Building locally
 

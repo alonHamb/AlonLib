@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.alonlib.emulator
 
 import com.qualcomm.robotcore.hardware.HardwareMap
+import emulator.config.SimulatedRobot
 import emulator.hardware.HubId
 import emulator.hardware.PortId
 import emulator.hardware.PortType
@@ -83,6 +84,37 @@ fun buildEmulatedHardwareMap(
 
     wireHub(controlHub, "Control Hub")
     expansionHub?.let { wireHub(it, "Expansion Hub") }
+
+    return hardwareMap
+}
+
+/**
+ * Builds an [EmulatedHardwareMapImpl] pre-populated straight from [simulatedRobot] -- everything
+ * [emulator.config.buildSimulatedRobot] resolved from a real hardware config XML file -- the same
+ * way [buildEmulatedHardwareMap] above does for hand-declared [EmulatedHub]s. [HubId.CONTROL] is
+ * always wired up (a real robot always has one), [HubId.EXPANSION] only if [simulatedRobot]
+ * actually has a device on it.
+ *
+ * Only motors and servos back a real `HardwareMap` device type today -- [SimulatedRobot]'s
+ * digital/analog/IMU/I2C devices aren't adapted to `TouchSensor`/`AnalogInput`/`IMU`/etc.
+ * interfaces yet (see the README's "Known limitations"), so they're simulated (visible in the port
+ * monitor, tick along with everything else) but not yet `hardwareMap.get()`-able.
+ */
+fun buildEmulatedHardwareMap(simulatedRobot: SimulatedRobot, batteryVoltage: () -> Double): HardwareMap {
+    val hardwareMap = EmulatedHardwareMapImpl()
+    val hubsPresent = simulatedRobot.allDevices.map { it.port.hub }.toSet() + HubId.CONTROL
+
+    for (hub in hubsPresent) {
+        val motors = simulatedRobot.motors.values.filter { it.port.hub == hub }
+        val servos = simulatedRobot.servos.values.filter { it.port.hub == hub }
+
+        motors.forEach { hardwareMap.put(it.name, EmuDcMotorEx(it)) }
+
+        val servoController = EmuServoController(servos.associateBy { it.port.index })
+        servos.forEach { hardwareMap.put(it.name, emulatedServo(servoController, it.port.index)) }
+
+        hardwareMap.put(hub.label, emulatedLynxModule(motors.associateBy { it.port.index }, batteryVoltage))
+    }
 
     return hardwareMap
 }

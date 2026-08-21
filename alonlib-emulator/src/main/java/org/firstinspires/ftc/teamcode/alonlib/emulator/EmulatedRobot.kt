@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.alonlib.emulator
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeHarness
 import com.qualcomm.robotcore.hardware.Gamepad
+import com.qualcomm.robotcore.hardware.HardwareMap
+import emulator.config.SimulatedRobot
 import emulator.hardware.SimDevice
 import emulator.hardware.SimMotor
 import emulator.input.GamepadSnapshot
@@ -13,25 +15,39 @@ import emulator.ui.PortRowView
 import emulator.ui.runRunnerShellAndBlock
 
 /**
- * Ties one or two [EmulatedHub]s to `emulator.ui.RunnerShellApp` and drives whichever OpMode is
- * selected through the exact same lifecycle a real Driver Station would, via [OpModeHarness]. This
- * is the one class most consumers need to touch -- see the alonlib-emulator README for a full
- * `src/test` example.
+ * Ties a simulated robot -- either one or two [EmulatedHub]s you declared by hand, or a
+ * [SimulatedRobot] built straight from your project's real hardware config XML (see
+ * [EmulatorAutoLauncher], which is the zero-code way to get one of these) -- to
+ * `emulator.ui.RunnerShellApp`, and drives whichever OpMode is selected through the exact same
+ * lifecycle a real Driver Station would, via [OpModeHarness]. This is the one class most consumers
+ * need to touch -- see the alonlib-emulator README for a full `src/test` example.
  */
-class EmulatedRobot(
-    private val controlHub: EmulatedHub,
-    private val expansionHub: EmulatedHub? = null,
-    private val driveWheels: DriveWheels? = null
-) {
+class EmulatedRobot private constructor(private val parts: Parts) {
     /** Which four [SimMotor]s to feed into field-pose tracking; entirely optional. */
     data class DriveWheels(val frontLeft: SimMotor, val frontRight: SimMotor, val backLeft: SimMotor, val backRight: SimMotor)
 
-    private val battery = BatteryModel()
-    private val allDevices: List<SimDevice> = controlHub.devices + (expansionHub?.devices ?: emptyList())
-    private val mecanum = driveWheels?.let { MecanumRobot(it.frontLeft, it.frontRight, it.backLeft, it.backRight) }
+    private class Parts(
+        val hardwareMap: HardwareMap,
+        val allDevices: List<SimDevice>,
+        val battery: BatteryModel,
+        val mecanum: MecanumRobot?
+    )
 
-    /** The fake [com.qualcomm.robotcore.hardware.HardwareMap] every emulated OpMode is given. */
-    val hardwareMap = buildEmulatedHardwareMap(controlHub, expansionHub) { battery.voltage }
+    constructor(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, driveWheels: DriveWheels? = null) : this(
+        buildParts(controlHub.devices + (expansionHub?.devices ?: emptyList()), driveWheels) { battery ->
+            buildEmulatedHardwareMap(controlHub, expansionHub) { battery.voltage }
+        }
+    )
+
+    /** Builds against every device [emulator.config.buildSimulatedRobot] resolved from a real hardware config XML file. */
+    constructor(simulatedRobot: SimulatedRobot, driveWheels: DriveWheels? = null) : this(
+        buildParts(simulatedRobot.allDevices, driveWheels) { battery ->
+            buildEmulatedHardwareMap(simulatedRobot) { battery.voltage }
+        }
+    )
+
+    /** The fake [HardwareMap] every emulated OpMode is given. */
+    val hardwareMap: HardwareMap get() = parts.hardwareMap
 
     /**
      * Blocks the calling thread, showing the emulator window, until it's closed. [opModes] maps a
@@ -41,6 +57,9 @@ class EmulatedRobot(
     fun launch(title: String, opModes: Map<String, () -> OpMode>) {
         require(opModes.isNotEmpty()) { "launch() needs at least one OpMode" }
         val names = opModes.keys.toList()
+        val allDevices = parts.allDevices
+        val battery = parts.battery
+        val mecanum = parts.mecanum
         var harness: OpModeHarness? = null
 
         runRunnerShellAndBlock(
@@ -67,6 +86,14 @@ class EmulatedRobot(
             statusSupplier = { if (harness == null) "STOPPED" else "RUNNING" },
             batteryVoltageSupplier = { battery.voltage }
         )
+    }
+
+    private companion object {
+        private fun buildParts(devices: List<SimDevice>, driveWheels: DriveWheels?, buildMap: (BatteryModel) -> HardwareMap): Parts {
+            val battery = BatteryModel()
+            val mecanum = driveWheels?.let { MecanumRobot(it.frontLeft, it.frontRight, it.backLeft, it.backRight) }
+            return Parts(buildMap(battery), devices, battery, mecanum)
+        }
     }
 }
 
