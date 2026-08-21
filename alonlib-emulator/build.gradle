@@ -58,9 +58,9 @@ dependencies {
     // (parseRobotConfigXml/buildSimulatedRobot -- see EmulatorAutoLauncher.kt), which landed on
     // upstream's main after the v1.0.2 tag and hasn't been released as a tagged version yet, so
     // this pins a specific commit instead -- bump to a real tag once one exists past this commit.
-    // Includes the fix for inverted forward/back on controllers read through the legacy joystick
-    // path (LegacyJoystickController).
-    api 'com.github.alonHamb:ftc-control-hub-emulator:7b0dc439ea'
+    // Includes the fix for RunnerShellApp's tick Timer never being stopped on window close, which
+    // kept the AWT event thread (and so the whole JVM) alive after the emulator window closed.
+    api 'com.github.alonHamb:ftc-control-hub-emulator:7d2981fa05'
 
     // Mocks LynxModule's bulk-read data (see EmuLynxModule.kt) -- LynxModule has no way to be
     // constructed without a real USB-connected hub, so it can't be implemented directly the way
