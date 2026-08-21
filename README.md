@@ -41,11 +41,11 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.alonHamb:AlonLib:v1.2.4'
+    implementation 'com.github.alonHamb:AlonLib:v11.1.1'
 }
 ```
 
-Use a specific tag (recommended, e.g. `v1.2.4`), a commit hash, or `<branch>-SNAPSHOT` to track a
+Use a specific tag (recommended, e.g. `v11.1.1`), a commit hash, or `<branch>-SNAPSHOT` to track a
 branch directly.
 
 ## Requirements
@@ -533,7 +533,7 @@ android {
 
 dependencies {
     // Same tag as AlonLib itself -- both modules are published together.
-    testImplementation 'com.github.alonHamb:alonlib-emulator:v1.2.4'
+    testImplementation 'com.github.alonHamb.AlonLib:alonlib-emulator:v11.1.1'
 }
 ```
 
@@ -574,7 +574,8 @@ that Android-unit-test default) to your `TeamCode/build.gradle`:
 ```groovy
 tasks.register("runEmulator", JavaExec) {
     group = "verification"
-    classpath = sourceSets.test.runtimeClasspath
+    dependsOn("assembleDebugUnitTest") // compiles test sources without running them
+    classpath = tasks.named("testDebugUnitTest", Test).get().classpath
     mainClass = "org.firstinspires.ftc.teamcode.alonlib.emulator.EmulatorAutoLauncherKt"
 }
 ```
@@ -582,6 +583,9 @@ tasks.register("runEmulator", JavaExec) {
 ```bash
 ./gradlew :TeamCode:runEmulator
 ```
+
+(Swap `Debug` for your build type/variant name in both places if you're not building the `debug`
+variant.)
 
 If your project doesn't fit the zero-code path — multiple hardware config files, OpModes you don't
 want auto-discovered, a non-mecanum drivetrain — construct `EmulatedRobot` yourself instead; see the
