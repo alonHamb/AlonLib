@@ -1,10 +1,31 @@
 package org.firstinspires.ftc.teamcode.alonlib.hardware
 
+import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 
 object Data {
+
+    object Motors {
+        /** The direction the motor rotates. */
+        enum class Direction(val multiplier: Int) { FORWARD(1), REVERSE(-1) }
+
+        /** GoBILDA yellow-jacket gearbox presets -- ticks/rev and free-run RPM per ratio. */
+        enum class GoBILDA(val cpr: Double, val rpm: Double) {
+            RPM_30(5264.0, 30.0), RPM_43(3892.0, 43.0), RPM_60(2786.0, 60.0), RPM_84(1993.6, 84.0),
+            RPM_117(1425.2, 117.0), RPM_223(753.2, 223.0), RPM_312(537.6, 312.0), RPM_435(383.6, 435.0),
+            RPM_1150(145.6, 1150.0), RPM_1620(103.6, 1620.0), BARE(28.0, 6000.0),
+        }
+
+        enum class RunMode { VELOCITY_CONTROL, POSITION_CONTROL, RAW_POWER }
+
+        enum class ZeroPowerBehavior(val sdkBehavior: DcMotor.ZeroPowerBehavior) {
+            UNKNOWN(DcMotor.ZeroPowerBehavior.UNKNOWN),
+            BRAKE(DcMotor.ZeroPowerBehavior.BRAKE),
+            FLOAT(DcMotor.ZeroPowerBehavior.FLOAT),
+        }
+    }
 
     object Servos {
         enum class Mode {

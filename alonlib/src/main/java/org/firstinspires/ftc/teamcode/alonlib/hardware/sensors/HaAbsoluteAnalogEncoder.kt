@@ -1,11 +1,12 @@
-package org.firstinspires.ftc.teamcode.alonlib.hardware
+package org.firstinspires.ftc.teamcode.alonlib.hardware.sensors
 
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.teamcode.alonlib.hardware.HardwareDevice
 
 /** An absolute analog encoder (e.g. an Axon servo's feedback wire) read through an [AnalogInput], normalized to `[0, max)` of [angleUnit]. */
-open class AbsoluteAnalogEncoder(
+open class HaAbsoluteAnalogEncoder(
     private val encoder: AnalogInput,
     private val id: String = "",
     private val range: Double = DEFAULT_RANGE,

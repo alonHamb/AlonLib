@@ -17,9 +17,9 @@ import emulator.hardware.ZeroPowerBehavior as SimZeroPowerBehavior
 
 /**
  * A [DcMotorEx] backed by a [SimMotor] from ftc-control-hub-emulator, so real code that talks to
- * `DcMotor`/`DcMotorEx` -- directly, or via SolversLib's `Motor`/`MotorEx` (which is what
- * [org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor] wraps) -- runs completely
- * unmodified against simulated dynamics instead of a real motor controller.
+ * `DcMotor`/`DcMotorEx` -- directly, or via
+ * [org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor], which wraps one -- runs
+ * completely unmodified against simulated dynamics instead of a real motor controller.
  *
  * PID/current-alert configuration is accepted but not modeled: [HaMotor] runs its own PIDF loop in
  * software and writes the result as [setPower]/[setVelocity], so the motor-controller-side PIDF

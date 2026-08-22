@@ -1,22 +1,23 @@
 package org.firstinspires.ftc.teamcode.alonlib.drives
 
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import kotlin.math.cos
 import kotlin.math.sin
 
 /** A holonomic drivebase, either the classic 3-motor "H-drive" (two angled drive wheels plus a perpendicular slide wheel) or, given four motors, a mecanum-like layout. */
 class HDrive(
-    private val motors: Array<Motor>,
+    private val motors: Array<HaMotor>,
     private val leftMotorAngleRadians: Double = DEFAULT_LEFT_MOTOR_ANGLE,
     private val rightMotorAngleRadians: Double = DEFAULT_RIGHT_MOTOR_ANGLE,
     private val slideMotorAngleRadians: Double = DEFAULT_SLIDE_MOTOR_ANGLE,
 ) : RobotDrive() {
 
-    constructor(left: Motor, right: Motor, slide: Motor, leftMotorAngleRadians: Double = DEFAULT_LEFT_MOTOR_ANGLE, rightMotorAngleRadians: Double = DEFAULT_RIGHT_MOTOR_ANGLE, slideMotorAngleRadians: Double = DEFAULT_SLIDE_MOTOR_ANGLE) :
+    constructor(left: HaMotor, right: HaMotor, slide: HaMotor, leftMotorAngleRadians: Double = DEFAULT_LEFT_MOTOR_ANGLE, rightMotorAngleRadians: Double = DEFAULT_RIGHT_MOTOR_ANGLE, slideMotorAngleRadians: Double = DEFAULT_SLIDE_MOTOR_ANGLE) :
             this(arrayOf(left, right, slide), leftMotorAngleRadians, rightMotorAngleRadians, slideMotorAngleRadians)
 
-    override fun stop() = motors.forEach { it.stopMotor() }
+    override fun stop() = motors.forEach { it.stop() }
 
     fun driveFieldCentric(strafeSpeed: Double, forwardSpeed: Double, turn: Double, headingRadians: Double) {
         val strafe = clipRange(strafeSpeed)
@@ -42,9 +43,9 @@ class HDrive(
 
             // Matches upstream SolversLib exactly -- the left/right slots are swapped here (not a
             // transcription error in this port).
-            motors[MotorType.LEFT.value].set(speeds[MotorType.RIGHT.value] * maxOutput)
-            motors[MotorType.RIGHT.value].set(speeds[MotorType.LEFT.value] * maxOutput)
-            motors[MotorType.SLIDE.value].set(speeds[MotorType.SLIDE.value] * maxOutput)
+            motors[MotorType.LEFT.value].percentOutput = (speeds[MotorType.RIGHT.value] * maxOutput).fraction
+            motors[MotorType.RIGHT.value].percentOutput = (speeds[MotorType.LEFT.value] * maxOutput).fraction
+            motors[MotorType.SLIDE.value].percentOutput = (speeds[MotorType.SLIDE.value] * maxOutput).fraction
         } else {
             speeds[MotorType.FRONT_LEFT.value] = sin(theta + Math.PI / 4)
             speeds[MotorType.FRONT_RIGHT.value] = sin(theta - Math.PI / 4)
@@ -58,10 +59,10 @@ class HDrive(
             speeds[MotorType.BACK_LEFT.value] += turnClipped
             speeds[MotorType.BACK_RIGHT.value] -= turnClipped
 
-            motors[MotorType.FRONT_LEFT.value].set(speeds[MotorType.FRONT_LEFT.value] * maxOutput)
-            motors[MotorType.FRONT_RIGHT.value].set(speeds[MotorType.FRONT_RIGHT.value] * -maxOutput)
-            motors[MotorType.BACK_LEFT.value].set(speeds[MotorType.BACK_LEFT.value] * maxOutput)
-            motors[MotorType.BACK_RIGHT.value].set(speeds[MotorType.BACK_RIGHT.value] * -maxOutput)
+            motors[MotorType.FRONT_LEFT.value].percentOutput = (speeds[MotorType.FRONT_LEFT.value] * maxOutput).fraction
+            motors[MotorType.FRONT_RIGHT.value].percentOutput = (speeds[MotorType.FRONT_RIGHT.value] * -maxOutput).fraction
+            motors[MotorType.BACK_LEFT.value].percentOutput = (speeds[MotorType.BACK_LEFT.value] * maxOutput).fraction
+            motors[MotorType.BACK_RIGHT.value].percentOutput = (speeds[MotorType.BACK_RIGHT.value] * -maxOutput).fraction
         }
     }
 

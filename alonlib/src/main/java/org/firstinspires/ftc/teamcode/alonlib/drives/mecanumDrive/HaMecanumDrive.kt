@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode.alonlib.drives.mecanumDrive
 
 import org.firstinspires.ftc.teamcode.alonlib.drives.RobotDrive
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import kotlin.math.sin
 
 class HaMecanumDrive(
-    var motors: Array<Motor>,
+    var motors: Array<HaMotor>,
     var rightSideMultiplier: Double = -1.0
                     ) : RobotDrive() {
     /**
@@ -20,12 +20,7 @@ class HaMecanumDrive(
      * @param backRight  the back right motor
      */
     constructor(frontLeft: HaMotor, frontRight: HaMotor, backLeft: HaMotor, backRight: HaMotor) : this(
-        arrayOf<Motor>(
-            frontLeft.motor,
-            frontRight.motor,
-            backLeft.motor,
-            backRight.motor
-               ), -1.0
+        arrayOf(frontLeft, frontRight, backLeft, backRight), -1.0
                                                                                                       )
 
 
@@ -52,7 +47,7 @@ class HaMecanumDrive(
      */
     override fun stop() {
         for (x in motors) {
-            x.stopMotor()
+            x.stop()
         }
     }
 
@@ -175,13 +170,13 @@ class HaMecanumDrive(
                             ) {
 
         motors[MotorType.FRONT_LEFT.value]
-            .set(frontLeftSpeed * maxOutput)
+            .percentOutput = (frontLeftSpeed * maxOutput).fraction
         motors[MotorType.FRONT_RIGHT.value]
-            .set(frontRightSpeed * rightSideMultiplier * maxOutput)
+            .percentOutput = (frontRightSpeed * rightSideMultiplier * maxOutput).fraction
         motors[MotorType.BACK_LEFT.value]
-            .set(backLeftSpeed * maxOutput)
+            .percentOutput = (backLeftSpeed * maxOutput).fraction
         motors[MotorType.BACK_RIGHT.value]
-            .set(backRightSpeed * rightSideMultiplier * maxOutput)
+            .percentOutput = (backRightSpeed * rightSideMultiplier * maxOutput).fraction
     }
 
 }

@@ -1,42 +1,65 @@
 package org.firstinspires.ftc.teamcode.alonlib.hardware.motors
 
 import com.qualcomm.hardware.lynx.LynxModule
+import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotorEx
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
-import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
-import org.firstinspires.ftc.teamcode.alonlib.math.control.SimpleMotorFeedforward
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor.RunMode
-import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.Direction
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.GoBILDA
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.RunMode
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.ZeroPowerBehavior.FLOAT
 import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
+import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
+import org.firstinspires.ftc.teamcode.alonlib.math.control.SimpleMotorFeedforward
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.Percentage
 import org.firstinspires.ftc.teamcode.alonlib.units.compareTo
-import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
+import kotlin.math.abs
 import kotlin.math.sign
 
-class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : HardwareDevice {
-    constructor(hardwareMap: HardwareMap, id: String, type: Motor.GoBILDA) : this(
+/**
+ * AlonLib's motor hardware wrapper -- owns an SDK [DcMotorEx] directly (encoder position/velocity
+ * read via [hub]'s bulk data, not the SDK's own per-call reads), with its own software PIDF loop
+ * for [RunMode.POSITION_CONTROL]/[RunMode.VELOCITY_CONTROL] and software current limiting.
+ *
+ * Optional [followers] mirror this motor's [percentOutput] every time it's set (directly, or via
+ * [voltage]/[update]) -- construct each one the way you want it to run (direction, zero-power
+ * behavior, ...) and pass it in here; they never run their own PID.
+ */
+class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number, private vararg val followers: HaMotor) : HardwareDevice {
+    constructor(hardwareMap: HardwareMap, id: String, type: GoBILDA, vararg followers: HaMotor) : this(
         hardwareMap,
         id,
         type.cpr,
-        type.rpm
-                                                                                 )
+        type.rpm,
+        *followers
+    )
 
-    /** The direction the motor rotates -- moved here from the (now SDK-`setInverted`-based) ported [Motor] class, kept for API compatibility. */
-    enum class Direction(val multiplier: Int) { FORWARD(1), REVERSE(-1) }
 
     // --- hardware declaration ---
+    private val ticksPerRev: Double = cpr.toDouble()
+
+    /** This motor's configured free-run RPM (the [GoBILDA] preset's, or whatever was passed to the raw `cpr`/`rpm` constructor). */
+    val maxRpm: Double = rpm.toDouble()
+
     val hub: LynxModule = hardwareMap.get(LynxModule::class.java, "Control Hub")
-    val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble()).apply {
-        setRunMode(RunMode.RAW_POWER)
+    val motor: DcMotorEx = hardwareMap.get(DcMotorEx::class.java, id).apply {
+        val configType = motorType.clone()
+        configType.maxRPM = maxRpm
+        configType.ticksPerRev = ticksPerRev
+        motorType = configType
     }
     private val batteryVoltage: Double
         get() = hub.getInputVoltage(VoltageUnit.VOLTS)
@@ -45,14 +68,24 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     val positionController = PIDFController(0.0, 0.0, 0.0, 0.0, 0.0, position.normalizedDegrees)
     var feedForwardController = SimpleMotorFeedforward(0.0, 0.0, 0.0)
 
+    private var lastWrittenPower = 0.0
+    private var lastVelocityRotationsPerSecond = 0.0
+    private var lastAccelerationTimestamp = System.nanoTime() / 1e9
+
     // --- motor configurations ---
+
+    /**
+     * the minimum power delta (or exactly zero) before [percentOutput]'s setter actually writes to the motor
+     */
+    var cachingTolerance = 0.0001
 
     /**
     sets the behavior of the motor when stop() is called or when you set [percentOutput] to zero
      */
-    var zeroPowerBehavior = Motor.ZeroPowerBehavior.FLOAT
+    var zeroPowerBehavior = FLOAT
         set(value) {
-            motor.setZeroPowerBehavior(value)
+            motor.zeroPowerBehavior = value.sdkBehavior
+            followers.forEach { it.zeroPowerBehavior = value }
             field = value
         }
 
@@ -64,15 +97,15 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      */
     var runningDirection: Direction
         get() {
-            return when (motor.getInverted()) {
-                true  -> Direction.REVERSE
-                false -> Direction.FORWARD
+            return when (motor.direction) {
+                DcMotorSimple.Direction.REVERSE -> Direction.REVERSE
+                else                            -> Direction.FORWARD
             }
         }
         set(value) {
-            when (value) {
-                Direction.FORWARD -> motor.setInverted(false)
-                Direction.REVERSE -> motor.setInverted(true)
+            motor.direction = when (value) {
+                Direction.FORWARD -> DcMotorSimple.Direction.FORWARD
+                Direction.REVERSE -> DcMotorSimple.Direction.REVERSE
             }
         }
 
@@ -92,19 +125,29 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * is clamped between properties [minPercentOutput] and [maxPercentOutput],
      * further scaled down by [currentLimitScalar] when [currentLimit] is active.
      * default is -1.0 and 1.0
+     *
+     * mirrored to every one of [followers] once applied here.
      */
     var percentOutput: Percentage = 0.fraction
-        get() = motor.motor.power.fraction
+        get() = motor.power.fraction
         set(percentOutput) {
             if (!(forwardLimit() && percentOutput.asFraction > 0.0) && !(reverseLimit() && percentOutput.asFraction < 0.0)) {
                 val clamped = percentOutput.coerceIn(effectiveMinPercentOutput, effectiveMaxPercentOutput)
-                motor.motor.power = clamped.asFraction
+                writePower(clamped.asFraction)
                 field = clamped
+                followers.forEach { it.percentOutput = clamped }
             } else {
                 robotPrintError("limit reached")
             }
 
         }
+
+    private fun writePower(power: Double) {
+        if (abs(power - lastWrittenPower) > cachingTolerance || (power == 0.0 && lastWrittenPower != 0.0)) {
+            motor.power = power
+            lastWrittenPower = power
+        }
+    }
 
     /**
      * the voltage sent to the motor
@@ -192,7 +235,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * when set sets the position [setPoint] of the motor
      */
     var position: Rotation2d
-        get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.motor.portNumber) / motor.cpr)).rotations
+        get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev)).rotations
         set(position) {
             setPoint = position.degrees.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
         }
@@ -203,16 +246,30 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * when set sets the velocity [setPoint] of the motor
      */
     var velocity: AngularVelocity
-        get() = (runningDirection.multiplier * (hub.bulkData.getMotorVelocity(motor.motor.portNumber) / motor.cpr * 60)).rpm
+        get() = (runningDirection.multiplier * (hub.bulkData.getMotorVelocity(motor.portNumber) / ticksPerRev * 60)).rpm
         set(velocity) {
             when (velocity) {
                 0.rpm -> {
-                    motor.motor.power = 0.0
+                    motor.power = 0.0
                 }
 
-                else  -> setPoint = velocity.coerceIn((-motor.maxRpm).rpm, motor.maxRpm.rpm).asRpm
+                else  -> setPoint = velocity.coerceIn((-maxRpm).rpm, maxRpm.rpm).asRpm
             }
         }
+
+    /**
+     * rotations/second^2, estimated from consecutive [velocity] reads across [update] calls -- fed
+     * into [feedForwardController]'s acceleration term.
+     */
+    private fun estimateAcceleration(): Double {
+        val now = System.nanoTime() / 1e9
+        val dt = now - lastAccelerationTimestamp
+        val velocityRotationsPerSecond = velocity.asRpm / 60.0
+        val acceleration = if (dt > 1e-4) (velocityRotationsPerSecond - lastVelocityRotationsPerSecond) / dt else 0.0
+        lastVelocityRotationsPerSecond = velocityRotationsPerSecond
+        lastAccelerationTimestamp = now
+        return acceleration
+    }
 
     // --- pid properties ---
 
@@ -251,7 +308,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
 
 
                 RunMode.VELOCITY_CONTROL -> {
-                    velocityController.setPoint = setPoint.coerceIn(-motor.maxRpm, motor.maxRpm)
+                    velocityController.setPoint = setPoint.coerceIn(-maxRpm, maxRpm)
                     field = setPoint
                 }
 
@@ -363,11 +420,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     /**
      * stops the motor
      *
-     * does the same as setting [percentOutput] to 0.0
+     * does the same as setting [percentOutput] to 0.0, and stops every one of [followers] too.
      */
     fun stop() {
         percentOutput = 0.fraction
-        motor.stopMotor()
+        motor.power = 0.0
+        lastWrittenPower = 0.0
+        followers.forEach { it.stop() }
     }
 
     /**
@@ -381,14 +440,14 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
             RunMode.VELOCITY_CONTROL -> voltage =
                 velocityController.calculate(velocity.asRpm) + feedForwardController.calculate(
                     velocity.asRpm,
-                    motor.getAcceleration() / motor.cpr
-                                                                                              ) + pidfGains.kFF * error.sign
+                    estimateAcceleration()
+                ) + pidfGains.kFF * error.sign
 
             RunMode.POSITION_CONTROL -> voltage =
                 positionController.calculate(position.degrees) + feedForwardController.calculate(
                     velocity.asRpm,
-                    motor.getAcceleration() / motor.cpr
-                                                                                                ) + pidfGains.kFF * error.sign
+                    estimateAcceleration()
+                ) + pidfGains.kFF * error.sign
 
             RunMode.RAW_POWER        -> {}
         }
@@ -413,11 +472,14 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     }
 
     override fun resetDeviceConfigurationForOpMode() {
-        motor.stopAndResetEncoder()
+        motor.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        followers.forEach { it.resetDeviceConfigurationForOpMode() }
     }
 
     override fun close() {
-        motor.disable()
+        motor.close()
+        followers.forEach { it.close() }
     }
 
 

@@ -4,21 +4,29 @@ import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.ServoControllerEx
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.Direction
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Mode
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Type
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
+import kotlin.math.abs
 
+/**
+ * Optional [followers] mirror this servo's raw `[0, 1]` position every time it's written (via
+ * [percentOutput]/[position]/[velocity]) -- construct each one the way you want it to run and pass
+ * it in here.
+ */
 class HaServo(
     hardwareMap: HardwareMap,
     id: String,
     val mode: Mode,
-    val type: Type
+    val type: Type,
+    private vararg val followers: HaServo,
 ) : HardwareDevice {
 
     // --- servo object declaration ---
@@ -32,6 +40,22 @@ class HaServo(
     init {
         (servo as ServoImplEx).apply {
             pwmRange = (PwmControl.PwmRange(500.0, 2500.0))
+        }
+    }
+
+    fun setPwm(pwmRange: PwmControl.PwmRange) = apply { controller.setServoPwmRange(servo.portNumber, pwmRange) }
+
+    val controller: ServoControllerEx get() = servo.controller as ServoControllerEx
+
+    /** the minimum position delta (or exactly zero) before a write actually reaches the servo */
+    var cachingTolerance = 0.0001
+    private var lastWrittenPosition = Double.NaN
+
+    private fun writePosition(pos: Double) {
+        if (lastWrittenPosition.isNaN() || abs(pos - lastWrittenPosition) > cachingTolerance) {
+            servo.position = pos
+            lastWrittenPosition = pos
+            followers.forEach { it.writePosition(pos) }
         }
     }
 
@@ -71,7 +95,7 @@ class HaServo(
         set(value) {
             if (!(forwardLimit() && value > 0) && !(reverseLimit() && value < 0)) {
                 field = value
-                servo.position = value.coerceIn(minPercentOutput..maxPercentOutput)
+                writePosition(value.coerceIn(minPercentOutput..maxPercentOutput))
             } else {
                 robotPrintError("limit reached")
             }
@@ -139,7 +163,7 @@ class HaServo(
                 Mode.FULL_RANGE -> {
                     val hardwareClampedDegrees = position.degrees.coerceIn(minPosition.degrees, maxPosition.degrees)
                     val absoluteDegrees = (hardwareClampedDegrees + halfRange).coerceIn(minLimit, maxLimit)
-                    servo.position = absoluteDegrees / type.range
+                    writePosition(absoluteDegrees / type.range)
                     field = (absoluteDegrees - halfRange).degrees
                 }
             }
@@ -170,7 +194,7 @@ class HaServo(
         set(value) {
             when (mode) {
                 Mode.CR         -> {
-                    servo.position = (value.asRpm.coerceIn(minVelocity.asRpm..maxVelocity.asRpm) / type.maxSpeed.asRpm)
+                    writePosition(value.asRpm.coerceIn(minVelocity.asRpm..maxVelocity.asRpm) / type.maxSpeed.asRpm)
                     field = value
                 }
 
@@ -182,17 +206,17 @@ class HaServo(
     /**
      * the direction of the servo
      */
-    var runningDirection: HaMotor.Direction
+    var runningDirection: Direction
         get() {
             return when (servo.direction) {
-                Servo.Direction.FORWARD -> HaMotor.Direction.REVERSE
-                Servo.Direction.REVERSE -> HaMotor.Direction.FORWARD
+                Servo.Direction.FORWARD -> Direction.REVERSE
+                Servo.Direction.REVERSE -> Direction.FORWARD
             }
         }
         set(runningDirection) {
             when (runningDirection) {
-                HaMotor.Direction.FORWARD -> servo.direction = Servo.Direction.FORWARD
-                HaMotor.Direction.REVERSE -> servo.direction = Servo.Direction.REVERSE
+                Direction.FORWARD -> servo.direction = Servo.Direction.FORWARD
+                Direction.REVERSE -> servo.direction = Servo.Direction.REVERSE
             }
         }
 
@@ -201,6 +225,7 @@ class HaServo(
             Mode.CR         -> percentOutput = 0.0
             Mode.FULL_RANGE -> {}
         }
+        followers.forEach { it.stop() }
     }
 
     override fun getManufacturer(): HardwareDevice.Manufacturer {
@@ -224,6 +249,7 @@ class HaServo(
 
     override fun close() {
         servo.close()
+        followers.forEach { it.close() }
     }
 
 

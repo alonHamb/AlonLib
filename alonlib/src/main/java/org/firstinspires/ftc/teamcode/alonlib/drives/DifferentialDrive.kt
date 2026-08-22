@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode.alonlib.drives
 
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 
 /**
- * A two-side (tank) drivebase: [left]/[right] motors (or [org.firstinspires.ftc.teamcode.alonlib.hardware.motors.MotorGroup]s)
- * driven together per side. Invert a motor yourself before passing it in if needed; the right
- * side is inverted by default (see [autoInvert]/[setRightSideInverted]).
+ * A two-side (tank) drivebase: [left]/[right] motors (each optionally an [HaMotor] with its own
+ * followers) driven together per side. Invert a motor yourself before passing it in if needed; the
+ * right side is inverted by default (see [autoInvert]/[setRightSideInverted]).
  */
-class DifferentialDrive(private val left: Motor, private val right: Motor, autoInvert: Boolean = true) : RobotDrive() {
+class DifferentialDrive(private val left: HaMotor, private val right: HaMotor, autoInvert: Boolean = true) : RobotDrive() {
 
     private var rightSideMultiplier = if (autoInvert) -1.0 else 1.0
 
@@ -18,8 +19,8 @@ class DifferentialDrive(private val left: Motor, private val right: Motor, autoI
     }
 
     override fun stop() {
-        left.stopMotor()
-        right.stopMotor()
+        left.stop()
+        right.stop()
     }
 
     /** [forwardSpeed] drives both sides equally; [turnSpeed] adds to the left and subtracts from the right. */
@@ -30,8 +31,8 @@ class DifferentialDrive(private val left: Motor, private val right: Motor, autoI
         val wheelSpeeds = doubleArrayOf(forward + turn, forward - turn)
         normalize(wheelSpeeds)
 
-        left.set(maxOutput * wheelSpeeds[0])
-        right.set(rightSideMultiplier * maxOutput * wheelSpeeds[1])
+        left.percentOutput = (maxOutput * wheelSpeeds[0]).fraction
+        right.percentOutput = (rightSideMultiplier * maxOutput * wheelSpeeds[1]).fraction
     }
 
     /** [leftSpeed]/[rightSpeed] drive their respective side directly. */
@@ -42,8 +43,8 @@ class DifferentialDrive(private val left: Motor, private val right: Motor, autoI
         val wheelSpeeds = doubleArrayOf(leftClipped, rightClipped)
         normalize(wheelSpeeds)
 
-        left.set(wheelSpeeds[0] * maxOutput)
-        right.set(wheelSpeeds[1] * rightSideMultiplier * maxOutput)
+        left.percentOutput = (wheelSpeeds[0] * maxOutput).fraction
+        right.percentOutput = (wheelSpeeds[1] * rightSideMultiplier * maxOutput).fraction
     }
 
     private fun clip(value: Double, square: Boolean) = if (square) clipRange(squareInput(value)) else clipRange(value)

@@ -1,15 +1,16 @@
 package org.firstinspires.ftc.teamcode.alonlib.drives
 
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import kotlin.math.sin
 
 /** A four-wheel mecanum drivebase. See https://www.youtube.com/watch?v=8rhAkjViHEQ for the kinematics derivation. */
 class MecanumDrive(
-    private val frontLeft: Motor,
-    private val frontRight: Motor,
-    private val backLeft: Motor,
-    private val backRight: Motor,
+    private val frontLeft: HaMotor,
+    private val frontRight: HaMotor,
+    private val backLeft: HaMotor,
+    private val backRight: HaMotor,
     autoInvert: Boolean = true,
 ) : RobotDrive() {
 
@@ -22,7 +23,7 @@ class MecanumDrive(
         rightSideMultiplier = if (isInverted) -1.0 else 1.0
     }
 
-    override fun stop() = motors.forEach { it.stopMotor() }
+    override fun stop() = motors.forEach { it.stop() }
 
     /** Robot-relative: forward always drives the way the robot's currently facing. */
     fun driveRobotCentric(strafeSpeed: Double, forwardSpeed: Double, turnSpeed: Double, squareInputs: Boolean = false) {
@@ -66,10 +67,10 @@ class MecanumDrive(
     }
 
     fun driveWithMotorPowers(frontLeftSpeed: Double, frontRightSpeed: Double, backLeftSpeed: Double, backRightSpeed: Double) {
-        frontLeft.set(frontLeftSpeed * maxOutput)
-        frontRight.set(frontRightSpeed * rightSideMultiplier * maxOutput)
-        backLeft.set(backLeftSpeed * maxOutput)
-        backRight.set(backRightSpeed * rightSideMultiplier * maxOutput)
+        frontLeft.percentOutput = (frontLeftSpeed * maxOutput).fraction
+        frontRight.percentOutput = (frontRightSpeed * rightSideMultiplier * maxOutput).fraction
+        backLeft.percentOutput = (backLeftSpeed * maxOutput).fraction
+        backRight.percentOutput = (backRightSpeed * rightSideMultiplier * maxOutput).fraction
     }
 
     private fun clip(value: Double, square: Boolean) = if (square) clipRange(squareInput(value)) else clipRange(value)

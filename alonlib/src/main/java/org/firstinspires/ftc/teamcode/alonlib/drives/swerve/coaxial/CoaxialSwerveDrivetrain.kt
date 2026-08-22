@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.alonlib.drives.swerve.coaxial
 
 import org.firstinspires.ftc.teamcode.alonlib.drives.RobotDrive
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.CRServoEx
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.MotorEx
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.RunMode
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.ZeroPowerBehavior
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaCRServo
 import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
 import org.firstinspires.ftc.teamcode.alonlib.math.kinematics.ChassisSpeeds
@@ -22,16 +23,16 @@ class CoaxialSwerveDrivetrain(
     private val wheelBase: Double,
     private val maxSpeed: Double,
     swervoPidf: PIDFController,
-    motors: Array<MotorEx>,
-    swervos: Array<CRServoEx>,
+    motors: Array<HaMotor>,
+    swervos: Array<HaCRServo>,
 ) : RobotDrive() {
 
     init {
         require(motors.size == 4 && swervos.size == 4) { "Hardware lists for swerve modules must have exactly 4 objects each" }
         require(trackWidth > 0 && wheelBase > 0 && maxSpeed > 0) { "trackWidth, wheelBase, and maxSpeed must have positive values" }
         for (motor in motors) {
-            motor.setRunMode(Motor.RunMode.RAW_POWER)
-            motor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE)
+            motor.runMode = RunMode.RAW_POWER
+            motor.zeroPowerBehavior = ZeroPowerBehavior.BRAKE
         }
     }
 

@@ -8,7 +8,6 @@ import emulator.hardware.HubId
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.fraction
@@ -67,7 +66,7 @@ class RuntimeSmokeTest {
         val controlHub = hub()
         val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
 
-        val haMotor = HaMotor(hardwareMap, "front left motor", Motor.GoBILDA.RPM_435)
+        val haMotor = HaMotor(hardwareMap, "front left motor", Data.Motors.GoBILDA.RPM_435)
         haMotor.percentOutput = 0.4.fraction
         haMotor.update()
         controlHub.motors.getValue(0).update(0.2)

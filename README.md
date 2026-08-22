@@ -83,7 +83,6 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.seattlesolvers.solverslib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.drives.mecanumDrive.HaMecanumDrive
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
@@ -93,10 +92,10 @@ import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 @TeleOp(name = "Quick Start Teleop")
 class QuickStartTeleop : LinearOpMode() {
     override fun runOpMode() {
-        val frontLeft = HaMotor(hardwareMap, "front left motor", Motor.GoBILDA.RPM_435)
-        val frontRight = HaMotor(hardwareMap, "front right motor", Motor.GoBILDA.RPM_435)
-        val backLeft = HaMotor(hardwareMap, "back left motor", Motor.GoBILDA.RPM_435)
-        val backRight = HaMotor(hardwareMap, "back right motor", Motor.GoBILDA.RPM_435)
+        val frontLeft = HaMotor(hardwareMap, "front left motor", HaMotor.GoBILDA.RPM_435)
+        val frontRight = HaMotor(hardwareMap, "front right motor", HaMotor.GoBILDA.RPM_435)
+        val backLeft = HaMotor(hardwareMap, "back left motor", HaMotor.GoBILDA.RPM_435)
+        val backRight = HaMotor(hardwareMap, "back right motor", HaMotor.GoBILDA.RPM_435)
         val drive = HaMecanumDrive(frontLeft, frontRight, backLeft, backRight)
 
         val hood = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FULL_RANGE, Data.Servos.Type.Speed)
@@ -125,10 +124,10 @@ Notes:
 - `HaMotor.update()` must be called every loop for any of its closed-loop `runMode`s
   (`PositionControl`/`VelocityControl`) or current limiting to actually take effect — see
   [`HaMotor`](#hamotor).
-- `HaMecanumDrive` built from four `HaMotor`s drives their underlying SolversLib `Motor` objects
-  directly with `set(power)`, bypassing `HaMotor`'s own PID/current-limiting layer — use it for
-  simple stick-driven teleop, and drive the individual `HaMotor`s yourself (`percentOutput`,
-  `velocity`, or `position`) when you need closed-loop control per wheel.
+- `HaMecanumDrive` built from four `HaMotor`s drives their `percentOutput` directly, bypassing each
+  `HaMotor`'s own PID/current-limiting layer — use it for simple stick-driven teleop, and drive the
+  individual `HaMotor`s yourself (`percentOutput`, `velocity`, or `position`) when you need
+  closed-loop control per wheel.
 - See [`units/`](#units) for why `30.0.degrees` is a `Rotation2d`, not a raw `Double`.
 
 ## API reference
@@ -295,29 +294,35 @@ memory, use a separate instance per input stream.**
 
 #### `HaMotor`
 
-`hardware/motors/HaMotor.kt` — wraps a SolversLib `MotorEx` plus its own software PIDF loop
+`hardware/motors/HaMotor.kt` — owns an SDK `DcMotorEx` directly plus its own software PIDF loop
 (position/velocity control run in software and written out as voltage, not the motor
 controller's own onboard PID) and software current limiting. Implements `HardwareDevice`.
 
 ```kotlin
-class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number)
+class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number, vararg followers: HaMotor)
 // or, from a known GoBILDA part:
-HaMotor(hardwareMap: HardwareMap, id: String, type: Motor.GoBILDA)
+HaMotor(hardwareMap: HardwareMap, id: String, type: GoBILDA, vararg followers: HaMotor)
 ```
 
 Requires a `LynxModule` named `"Control Hub"` in the hardware map (bulk-reads position/velocity from
 it, and battery voltage for its voltage-based `percentOutput` conversion).
 
+Optional `followers` mirror this motor's `percentOutput` every time it's set (directly, or via
+`voltage`/`update()`) — construct each one the way you want it to run (direction, zero-power
+behavior, ...) and pass it in here; they never run their own PID. This replaces the old, separate
+`MotorGroup`/leader-follower classes.
+
 | Symbol | Description |
 | --- | --- |
 | `.hub: LynxModule` | The `"Control Hub"` `LynxModule` this motor bulk-reads from. |
-| `.motor: MotorEx` | The underlying SolversLib motor. Runs in `RunMode.RawPower` internally — `HaMotor` always drives it via raw power, whatever its own `runMode` is. |
+| `.motor: DcMotorEx` | The underlying SDK motor — escape hatch, not meant for normal use. |
 | `.velocityController` / `.positionController: PIDFController` | The software PID loops backing `RunMode.VelocityControl`/`RunMode.PositionControl`. |
 | `.feedForwardController: SimpleMotorFeedforward` | Rebuilt from `pidfGains.kS/KV/Ka` whenever `pidfGains` is set. |
-| `.zeroPowerBehavior: Motor.ZeroPowerBehavior` | `FLOAT` (default) or `BRAKE`; forwarded to the underlying motor. |
-| `.runningDirection: Motor.Direction` | `FORWARD`/`REVERSE`; backed by `motor.inverted`. |
+| `.cachingTolerance: Double` | The minimum power delta (default `0.0001`) before `percentOutput`'s setter actually writes to `motor`. |
+| `.zeroPowerBehavior: ZeroPowerBehavior` | `FLOAT` (default) or `BRAKE`; forwarded to the underlying motor and every one of `followers`. |
+| `.runningDirection: Direction` | `FORWARD`/`REVERSE`; backed by `motor.direction`. |
 | `.runMode: RunMode` | `RawPower` (default, `update()` is a no-op), `PositionControl`, or `VelocityControl` — selects what `setPoint`/`update()` do. |
-| `.percentOutput: PercentOutput` | Direct `[-1, 1]` power. Clamped to `[minPercentOutput, maxPercentOutput]`, further scaled by `currentLimitScalar`. Refuses to move past a tripped `forwardLimit`/`reverseLimit` (logs instead). |
+| `.percentOutput: PercentOutput` | Direct `[-1, 1]` power. Clamped to `[minPercentOutput, maxPercentOutput]`, further scaled by `currentLimitScalar`. Refuses to move past a tripped `forwardLimit`/`reverseLimit` (logs instead). Mirrored to every one of `followers` once applied. |
 | `.voltage: Double` | Get: `batteryVoltage * percentOutput`. Set: converts a target voltage to `percentOutput` given current battery voltage (floored at 1.0V to avoid divide-by-near-zero). |
 | `.current: Double` | Motor current in milliamps. |
 | `.currentLimit: Double` | Milliamps; `<= 0.0` disables current limiting entirely (default). |
@@ -325,7 +330,7 @@ it, and battery voltage for its voltage-based `percentOutput` conversion).
 | `.currentLimitScalar: Double` (read-only) | Current derating factor in `[0, 1]`; `1.0` = no derating. |
 | `.forwardLimit` / `.reverseLimit: () -> Boolean` | Software limit-switch callbacks, checked by `percentOutput`'s setter only (default `{ false }`). |
 | `.position: Rotation2d` | Get: current encoder position. Set: sets the PID `setPoint` (in `PositionControl` mode), clamped to `[minimumPosition, maximumPosition]`. |
-| `.velocity: AngularVelocity` | Get: current encoder velocity. Set: sets the PID `setPoint` (in `VelocityControl` mode); `0.rpm` instead directly zeroes `motor.motor.power`. Clamped to `±motor.maxRPM`. |
+| `.velocity: AngularVelocity` | Get: current encoder velocity. Set: sets the PID `setPoint` (in `VelocityControl` mode); `0.rpm` instead directly zeroes `motor.power`. Clamped to `±maxRpm`. |
 | `.pidfGains: PIDFGains` | Applying this pushes `kP/kI/kD` into both PID controllers and rebuilds `feedForwardController` from `kS/KV/Ka`. |
 | `.setPoint: Double` | The active controller's raw setpoint (degrees in `PositionControl`, RPM in `VelocityControl`); resets both PID controllers first if either has nonzero `i`. Clamped to the relevant min/max. |
 | `.error: Double` (read-only) | Active controller's position error; `0.0` in `RawPower`. |
@@ -333,9 +338,9 @@ it, and battery voltage for its voltage-based `percentOutput` conversion).
 | `.inTolerance: Boolean` (read-only) | Active controller's `atSetPoint()`; always `true` in `RawPower`. |
 | `.minPercentOutput` / `.maxPercentOutput: Double` | Default `-1.0`/`1.0`; each is coerced to stay on the correct side of the other. |
 | `.maximumPosition` / `.minimumPosition: Rotation2d` | Default `±180°`; rejects (logs, doesn't apply) a value that would invert the min/max ordering. |
-| `.stop()` | Sets `percentOutput = 0.0` and calls `motor.stopMotor()`. |
+| `.stop()` | Sets `percentOutput = 0.0`, zeroes `motor.power` directly, and stops every one of `followers` too. |
 | `.update()` | **Call every loop.** Runs `limitCurrent()`, then — in `VelocityControl`/`PositionControl` — computes `voltage` from the active PID controller + feedforward + `kFF * sign(error)`. No-op in `RawPower`. |
-| `HardwareDevice` overrides | `getManufacturer()` (`Unknown`), `getDeviceName()` (`"HaMotor"`), `getConnectionInfo()` (`""`), `getVersion()` (`1`), `resetDeviceConfigurationForOpMode()` (stops+resets encoder), `close()` (disables the motor). |
+| `HardwareDevice` overrides | `getManufacturer()` (`Unknown`), `getDeviceName()` (`"HaMotor"`), `getConnectionInfo()` (`""`), `getVersion()` (`1`), `resetDeviceConfigurationForOpMode()` (stops+resets encoder, propagated to `followers`), `close()` (closes the motor, propagated to `followers`). |
 
 #### `HaServo`
 
@@ -357,7 +362,7 @@ class HaServo(hardwareMap: HardwareMap, id: String, mode: Data.Servos.Mode, type
 | `.position: Rotation2d` | `Mode.FULL_RANGE` only (`Mode.CR` logs an error and does nothing). Set: clamps to `[minPosition, maxPosition]`, converts to an absolute physical angle, clamps again to `[minLimit, maxLimit]`, then writes `servo.position` as a `[0, 1]` fraction of `type.range`. |
 | `.maxVelocity` / `.minVelocity: AngularVelocity` | Default `type.maxSpeed`/`0.rpm`, each coerced within `[0, type.maxSpeed]`. |
 | `.velocity: AngularVelocity` | `Mode.CR` only (`Mode.FULL_RANGE` logs an error and does nothing). Set: maps `[minVelocity, maxVelocity]` onto the servo's raw `[?, 1]` CR range. |
-| `.runningDirection: Motor.Direction` | `FORWARD`/`REVERSE`; backed by `servo.direction` (inverted, since SolversLib's `Motor.Direction` and the FTC SDK's `Servo.Direction` disagree on sense). |
+| `.runningDirection: HaMotor.Direction` | `FORWARD`/`REVERSE`; backed by `servo.direction` (inverted, since `HaMotor.Direction` and the FTC SDK's `Servo.Direction` disagree on sense). |
 | `.stop()` | `Mode.CR`: sets `percentOutput = 0.0`. `Mode.FULL_RANGE`: no-op (a positional servo has no "stop"). |
 | `HardwareDevice` overrides | `getManufacturer()` (`Unknown`), `getDeviceName()` (`"HaServo"`), `getConnectionInfo()` (`""`), `getVersion()` (`1`), `resetDeviceConfigurationForOpMode()` (no-op), `close()` (closes the underlying servo). |
 
@@ -422,18 +427,18 @@ class HaPinPoint(hardwareMap: HardwareMap, id: String, pod: GoBildaPinpointDrive
 
 ### `drives/mecanumDrive/`
 
-`HaMecanumDrive.kt` — a mecanum drivetrain subsystem extending SolversLib's `RobotDrive`, driving
-raw SolversLib `Motor` objects (bypassing any individual `HaMotor`'s PID/current-limiting layer).
+`HaMecanumDrive.kt` — a mecanum drivetrain subsystem extending AlonLib's own `RobotDrive`, driving
+`HaMotor.percentOutput` directly (bypassing any individual `HaMotor`'s PID/current-limiting layer).
 
 ```kotlin
-class HaMecanumDrive(motors: Array<Motor>, rightSideMultiplier: Double = -1.0)
+class HaMecanumDrive(motors: Array<HaMotor>, rightSideMultiplier: Double = -1.0)
 // or, from four HaMotors (front-left, front-right, back-left, back-right), right side auto-inverted:
 HaMecanumDrive(frontLeft: HaMotor, frontRight: HaMotor, backLeft: HaMotor, backRight: HaMotor)
 ```
 
 | Symbol | Description |
 | --- | --- |
-| `.motors: Array<Motor>` | The four wheel motors, indexed by `MotorType` (`kFrontLeft`, `kFrontRight`, `kBackLeft`, `kBackRight`). |
+| `.motors: Array<HaMotor>` | The four wheel motors, indexed by `MotorType` (`kFrontLeft`, `kFrontRight`, `kBackLeft`, `kBackRight`). |
 | `.rightSideMultiplier: Double` | `-1.0` (inverted, default) or `1.0`. |
 | `.isRightSideInverted(): Boolean` | `rightSideMultiplier == -1.0`. |
 | `.setRightSideInverted(isInverted: Boolean)` | Sets `rightSideMultiplier` to `-1.0`/`1.0`. |
@@ -602,7 +607,7 @@ worked example below.
 | `EmulatedRobot(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, driveWheels: DriveWheels? = null)` | Ties one or two hand-declared `EmulatedHub`s to the emulator UI and drives whichever OpMode is selected through the real OpMode lifecycle. `.hardwareMap` is the resulting fake `HardwareMap`. `DriveWheels(frontLeft, frontRight, backLeft, backRight)` is optional and only powers the emulator's live field-pose display. |
 | `EmulatedRobot(simulatedRobot: emulator.config.SimulatedRobot, driveWheels: DriveWheels? = null)` | Same, but built straight from a `SimulatedRobot` — what `EmulatorAutoLauncher` uses under the hood. |
 | `EmulatedRobot.launch(title: String, opModes: Map<String, () -> OpMode>)` | Blocks the calling thread, showing the emulator window, until it's closed. Each map entry is a name shown in the OpMode dropdown → a factory for a fresh instance (matching how the real SDK constructs a new instance on every Init). Same headless-JVM caveat as `EmulatorAutoLauncher` above applies here too. |
-| `EmuDcMotorEx(sim: SimMotor) : DcMotorEx` | A `DcMotorEx` backed by a simulated motor — real code that talks to `DcMotor`/`DcMotorEx` directly, or via SolversLib's `Motor`/`MotorEx` (what `HaMotor` wraps), runs unmodified against simulated dynamics. PID/current-alert configuration is accepted but not modeled, since `HaMotor` runs its own software PIDF loop and writes plain power/voltage. |
+| `EmuDcMotorEx(sim: SimMotor) : DcMotorEx` | A `DcMotorEx` backed by a simulated motor — real code that talks to `DcMotor`/`DcMotorEx` directly, or via `HaMotor` (which wraps one), runs unmodified against simulated dynamics. PID/current-alert configuration is accepted but not modeled, since `HaMotor` runs its own software PIDF loop and writes plain power/voltage. |
 | `emulatedServo(controller: EmuServoController, port: Int): ServoImplEx` | Builds a genuine `ServoImplEx` for one hub port, needed because `HaServo` unconditionally force-casts `Servo` to `ServoImplEx`. |
 | `EmuServoController(portsToSims: Map<Int, SimServo>) : ServoControllerEx` | Backs a hub's worth of simulated servos — the `ServoControllerEx` a real `ServoImplEx` delegates every operation to. |
 | `emulatedLynxModule(motorsByPort: Map<Int, SimMotor>, batteryVoltage: () -> Double): LynxModule` | A Mockito-backed `LynxModule` whose bulk-read motor data and input voltage come from simulated motors/battery instead of a real REV hub over USB — `LynxModule` has no way to be constructed directly. |
@@ -689,7 +694,7 @@ fun `drivetrain moves forward when commanded`() {
     val controlHub = EmulatedHub(HubId.CONTROL, motors = mapOf(0 to "front left motor"))
     val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 } // simulated battery voltage
 
-    val motor = HaMotor(hardwareMap, "front left motor", Motor.GoBILDA.RPM_435)
+    val motor = HaMotor(hardwareMap, "front left motor", HaMotor.GoBILDA.RPM_435)
     motor.percentOutput = 0.5
     motor.update()
     controlHub.motors.getValue(0).update(0.5) // advance simulated dynamics by 0.5s
