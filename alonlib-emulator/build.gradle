@@ -60,17 +60,17 @@ dependencies {
     // this pins a specific commit instead -- bump to a real tag once one exists past this commit.
     // Includes the fix for RunnerShellApp's tick Timer never being stopped on window close, which
     // kept the AWT event thread (and so the whole JVM) alive after the emulator window closed.
-    api 'com.github.alonHamb:ftc-control-hub-emulator:v1.0.3'
+    api libs.ftc.control.hub.emulator
 
     // Mocks LynxModule's bulk-read data (see EmuLynxModule.kt) -- LynxModule has no way to be
     // constructed without a real USB-connected hub, so it can't be implemented directly the way
     // DcMotorEx/Servo are.
-    implementation 'org.mockito:mockito-core:5.12.0'
+    implementation 'org.mockito:mockito-core:5.23.0'
 
     // Classpath-scans for @TeleOp/@Autonomous OpModes (see EmulatorAutoLauncher.kt) -- runs inside
     // a consuming project's own test classpath, so this needs to be `implementation`, not
     // `testImplementation`, to actually be present there.
-    implementation 'io.github.classgraph:classgraph:4.8.180'
+    implementation 'io.github.classgraph:classgraph:4.8.193'
 
     // `api`, not `testImplementation`: EmulatorAutoLauncher.kt (in src/main, so it's usable from a
     // consumer's own src/test with zero code of their own) references `org.junit.Test` directly,

@@ -1,23 +1,25 @@
 [versions]
-agp = "9.1.0"
-kotlin = "1.9.24"
+agp = "9.1.1"
+ftcControlHubEmulator = "v1.0.3"
+kotlin = "2.4.10"
 ftc-sdk = "11.1.0"
 dashboard = "0.5.1"
-appcompat = "1.7.1"
-core-ktx = "1.15.0"
+appcompat = "1.8.0"
+core-ktx = "1.19.0"
 solverslib = "0.3.4"
 roadrunner-core = "1.0.1"
 roadrunner-actions = "1.0.1"
 roadrunner-ftc = "0.1.25"
 
 # SDK Versions
-compileSdk = "35"
+compileSdk = "36"
 minSdk = "24"
 #noinspection ExpiredTargetSdkVersion
 targetSdk = "34"
 
 [libraries]
 # FTC SDK
+ftc-control-hub-emulator = { module = "com.github.alonHamb:ftc-control-hub-emulator", version.ref = "ftcControlHubEmulator" }
 ftc-inspection = { group = "org.firstinspires.ftc", name = "Inspection", version.ref = "ftc-sdk" }
 ftc-blocks = { group = "org.firstinspires.ftc", name = "Blocks", version.ref = "ftc-sdk" }
 ftc-robotcore = { group = "org.firstinspires.ftc", name = "RobotCore", version.ref = "ftc-sdk" }
