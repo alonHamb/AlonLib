@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 abstract class CommandOpMode : LinearOpMode() {
 
     fun reset() = CommandScheduler.reset()
-    fun run() = CommandScheduler.run()
+    open fun run() = CommandScheduler.run()
     fun schedule(vararg commands: Command) = CommandScheduler.schedule(true, *commands)
     fun register(vararg subsystems: Subsystem) = CommandScheduler.registerSubsystem(*subsystems)
 
