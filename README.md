@@ -41,11 +41,11 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.alonHamb:AlonLib:v11.2'
+    implementation 'com.github.alonHamb:AlonLib:v11.2.1'
 }
 ```
 
-Use a specific tag (recommended, e.g. `v11.2`), a commit hash, or `<branch>-SNAPSHOT` to track a
+Use a specific tag (recommended, e.g. `v11.2.1`), a commit hash, or `<branch>-SNAPSHOT` to track a
 branch directly.
 
 ## Requirements
@@ -541,7 +541,7 @@ android {
 
 dependencies {
     // Same tag as AlonLib itself -- both modules are published together.
-    testImplementation 'com.github.alonHamb.AlonLib:alonlib-emulator:v11.2'
+    testImplementation 'com.github.alonHamb.AlonLib:alonlib-emulator:v11.2.1'
 }
 ```
 
