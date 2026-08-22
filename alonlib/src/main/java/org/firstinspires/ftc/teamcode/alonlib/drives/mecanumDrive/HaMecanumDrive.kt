@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.alonlib.drives.mecanumDrive
 
-import com.seattlesolvers.solverslib.drivebase.RobotDrive
-import com.seattlesolvers.solverslib.geometry.Vector2d
-import com.seattlesolvers.solverslib.hardware.motors.Motor
+import org.firstinspires.ftc.teamcode.alonlib.drives.RobotDrive
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
 import kotlin.math.sin
 
 class HaMecanumDrive(
@@ -20,7 +20,7 @@ class HaMecanumDrive(
      * @param backRight  the back right motor
      */
     constructor(frontLeft: HaMotor, frontRight: HaMotor, backLeft: HaMotor, backRight: HaMotor) : this(
-        arrayOf(
+        arrayOf<Motor>(
             frontLeft.motor,
             frontRight.motor,
             backLeft.motor,
@@ -117,25 +117,25 @@ class HaMecanumDrive(
         val theta = input.angle()
 
         val wheelSpeeds = DoubleArray(4)
-        wheelSpeeds[MotorType.kFrontLeft.value] = sin(theta + Math.PI / 4)
-        wheelSpeeds[MotorType.kFrontRight.value] = sin(theta - Math.PI / 4)
-        wheelSpeeds[MotorType.kBackLeft.value] = sin(theta - Math.PI / 4)
-        wheelSpeeds[MotorType.kBackRight.value] = sin(theta + Math.PI / 4)
+        wheelSpeeds[MotorType.FRONT_LEFT.value] = sin(theta + Math.PI / 4)
+        wheelSpeeds[MotorType.FRONT_RIGHT.value] = sin(theta - Math.PI / 4)
+        wheelSpeeds[MotorType.BACK_LEFT.value] = sin(theta - Math.PI / 4)
+        wheelSpeeds[MotorType.BACK_RIGHT.value] = sin(theta + Math.PI / 4)
 
         normalize(wheelSpeeds, input.magnitude())
 
-        wheelSpeeds[MotorType.kFrontLeft.value] += turnSpeed
-        wheelSpeeds[MotorType.kFrontRight.value] -= turnSpeed
-        wheelSpeeds[MotorType.kBackLeft.value] += turnSpeed
-        wheelSpeeds[MotorType.kBackRight.value] -= turnSpeed
+        wheelSpeeds[MotorType.FRONT_LEFT.value] += turnSpeed
+        wheelSpeeds[MotorType.FRONT_RIGHT.value] -= turnSpeed
+        wheelSpeeds[MotorType.BACK_LEFT.value] += turnSpeed
+        wheelSpeeds[MotorType.BACK_RIGHT.value] -= turnSpeed
 
         normalize(wheelSpeeds)
 
         driveWithMotorPowers(
-            wheelSpeeds[MotorType.kFrontLeft.value],
-            wheelSpeeds[MotorType.kFrontRight.value],
-            wheelSpeeds[MotorType.kBackLeft.value],
-            wheelSpeeds[MotorType.kBackRight.value]
+            wheelSpeeds[MotorType.FRONT_LEFT.value],
+            wheelSpeeds[MotorType.FRONT_RIGHT.value],
+            wheelSpeeds[MotorType.BACK_LEFT.value],
+            wheelSpeeds[MotorType.BACK_RIGHT.value]
                             )
     }
 
@@ -174,13 +174,13 @@ class HaMecanumDrive(
         backLeftSpeed: Double, backRightSpeed: Double
                             ) {
 
-        motors[MotorType.kFrontLeft.value]
+        motors[MotorType.FRONT_LEFT.value]
             .set(frontLeftSpeed * maxOutput)
-        motors[MotorType.kFrontRight.value]
+        motors[MotorType.FRONT_RIGHT.value]
             .set(frontRightSpeed * rightSideMultiplier * maxOutput)
-        motors[MotorType.kBackLeft.value]
+        motors[MotorType.BACK_LEFT.value]
             .set(backLeftSpeed * maxOutput)
-        motors[MotorType.kBackRight.value]
+        motors[MotorType.BACK_RIGHT.value]
             .set(backRightSpeed * rightSideMultiplier * maxOutput)
     }
 

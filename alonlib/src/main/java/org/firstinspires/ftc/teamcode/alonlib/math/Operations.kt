@@ -94,6 +94,71 @@ fun mapRange(value: Int, startMin: Int, startMax: Int, endMin: Int, endMax: Int)
     ).toInt()
 }
 
+/**
+ * Linearly interpolates between [startValue] and [endValue] by [t].
+ *
+ * - [t] = 0 returns [startValue], [t] = 1 returns [endValue]. Not clamped -- [t] outside
+ *   [[0, 1]] extrapolates.
+ */
+fun interpolate(startValue: Double, endValue: Double, t: Double): Double {
+    return startValue + (endValue - startValue) * t
+}
+
+/**
+ * Wraps [angle] (in radians) to the range [[-pi, pi]].
+ */
+fun angleModulus(angle: Double): Double {
+    return inputModulus(angle, -Math.PI, Math.PI)
+}
+
+/**
+ * Wraps [value] to stay within the range [[minimumInput], [maximumInput]].
+ *
+ * Useful for continuous inputs like angles, where -180 and 180 degrees are equivalent.
+ */
+fun inputModulus(value: Double, minimumInput: Double, maximumInput: Double): Double {
+    if (minimumInput >= maximumInput) {
+        robotPrintError("minimumInput is equal/bigger than maximumInput")
+        return value
+    }
+
+    val modulus = maximumInput - minimumInput
+    val numMax = ((value - minimumInput) / modulus).toInt()
+    var result = (value - minimumInput) - numMax * modulus + minimumInput
+    if (result < minimumInput) result += modulus
+    return result
+}
+
+/**
+ * @returns true if [value] is within [tolerance] of [expected].
+ *
+ * [tolerance] must be non-negative.
+ */
+fun isNear(expected: Double, value: Double, tolerance: Double): Boolean {
+    if (tolerance < 0.0) {
+        robotPrintError("tolerance is negative")
+        return false
+    }
+    return abs(expected - value) < tolerance
+}
+
+/**
+ * @returns true if [value] is within [tolerance] of [expected], wrapping both around the
+ * continuous range [[minimumInput], [maximumInput]] first (e.g. so 179 and -179 degrees read
+ * as 2 degrees apart, not 358).
+ *
+ * [tolerance] must be non-negative.
+ */
+fun isNear(expected: Double, value: Double, tolerance: Double, minimumInput: Double, maximumInput: Double): Boolean {
+    if (tolerance < 0.0) {
+        robotPrintError("tolerance is negative")
+        return false
+    }
+    val errorBound = (maximumInput - minimumInput) / 2.0
+    val error = inputModulus(expected - value, -errorBound, errorBound)
+    return abs(error) < tolerance
+}
+
 fun median(collection: Collection<Double>): Double {
     return median(collection.toDoubleArray())
 }

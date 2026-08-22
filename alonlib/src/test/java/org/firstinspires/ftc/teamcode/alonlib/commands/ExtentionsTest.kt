@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.alonlib.commands
 
-import com.seattlesolvers.solverslib.command.CommandBase
-import com.seattlesolvers.solverslib.command.InstantCommand
-import com.seattlesolvers.solverslib.command.Subsystem
-import com.seattlesolvers.solverslib.command.SubsystemBase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -21,7 +17,7 @@ class ExtentionsTest {
         val command = NeverEndingCommand() until { true }
         command.initialize()
         command.execute()
-        assertTrue(command.isFinished)
+        assertTrue(command.isFinished())
     }
 
     @Test
@@ -29,7 +25,7 @@ class ExtentionsTest {
         val command = NeverEndingCommand() until { false }
         command.initialize()
         command.execute()
-        assertTrue(!command.isFinished)
+        assertTrue(!command.isFinished())
     }
 
     @Test

@@ -6,7 +6,7 @@ ftc-sdk = "11.1.0"
 dashboard = "0.5.1"
 appcompat = "1.8.0"
 core-ktx = "1.19.0"
-solverslib = "0.3.4"
+ejml = "0.44.0"
 roadrunner-core = "1.0.1"
 roadrunner-actions = "1.0.1"
 roadrunner-ftc = "0.1.25"
@@ -37,7 +37,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 
 # Others
-solverslib-core = { group = "org.solverslib", name = "core", version.ref = "solverslib" }
+ejml-simple = { group = "org.ejml", name = "ejml-simple", version.ref = "ejml" }
 
 # RoadRunner
 roadrunner-core = { group = "com.acmerobotics.roadrunner", name = "core", version.ref = "roadrunner-core" }

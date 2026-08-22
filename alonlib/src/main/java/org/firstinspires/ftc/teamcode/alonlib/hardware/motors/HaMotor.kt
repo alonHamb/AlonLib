@@ -4,19 +4,18 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
-import com.seattlesolvers.solverslib.controller.PIDFController
-import com.seattlesolvers.solverslib.controller.wpilibcontroller.SimpleMotorFeedforward
-import com.seattlesolvers.solverslib.geometry.Rotation2d
-import com.seattlesolvers.solverslib.hardware.motors.Motor
-import com.seattlesolvers.solverslib.hardware.motors.Motor.RunMode
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx
+import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
+import org.firstinspires.ftc.teamcode.alonlib.math.control.SimpleMotorFeedforward
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor.RunMode
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
 import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
-import org.firstinspires.ftc.teamcode.alonlib.units.PercentOutput
+import org.firstinspires.ftc.teamcode.alonlib.units.Percentage
 import org.firstinspires.ftc.teamcode.alonlib.units.compareTo
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
@@ -31,11 +30,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
         type.rpm
                                                                                  )
 
+    /** The direction the motor rotates -- moved here from the (now SDK-`setInverted`-based) ported [Motor] class, kept for API compatibility. */
+    enum class Direction(val multiplier: Int) { FORWARD(1), REVERSE(-1) }
 
     // --- hardware declaration ---
     val hub: LynxModule = hardwareMap.get(LynxModule::class.java, "Control Hub")
     val motor = MotorEx(hardwareMap, id, cpr.toDouble(), rpm.toDouble()).apply {
-        runMode = RunMode.RawPower
+        setRunMode(RunMode.RAW_POWER)
     }
     private val batteryVoltage: Double
         get() = hub.getInputVoltage(VoltageUnit.VOLTS)
@@ -58,30 +59,30 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
 
     /**
      * the direction the motor to rotates
-     * @param Motor.Direction.FORWARD clockwise
-     * @param Motor.Direction.REVERSE counterclockwise
+     * @param Direction.FORWARD clockwise
+     * @param Direction.REVERSE counterclockwise
      */
-    var runningDirection: Motor.Direction
+    var runningDirection: Direction
         get() {
-            return when (motor.inverted) {
-                true  -> Motor.Direction.REVERSE
-                false -> Motor.Direction.FORWARD
+            return when (motor.getInverted()) {
+                true  -> Direction.REVERSE
+                false -> Direction.FORWARD
             }
         }
         set(value) {
             when (value) {
-                Motor.Direction.FORWARD -> motor.inverted = false
-                Motor.Direction.REVERSE -> motor.inverted = true
+                Direction.FORWARD -> motor.setInverted(false)
+                Direction.REVERSE -> motor.setInverted(true)
             }
         }
 
     /**
      * the way the [update] function is used to control the motor.
-     * @param RunMode.RawPower doesn't do anything
-     * @param RunMode.PositionControl sends [setPoint] to the pid controller as degrees between [minimumPosition] and [maximumPosition]
-     * @param RunMode.VelocityControl sends [setPoint] to the pid controller as rpm between -[rpm] and [rpm]
+     * @param RunMode.RAW_POWER doesn't do anything
+     * @param RunMode.POSITION_CONTROL sends [setPoint] to the pid controller as degrees between [minimumPosition] and [maximumPosition]
+     * @param RunMode.VELOCITY_CONTROL sends [setPoint] to the pid controller as rpm between -[rpm] and [rpm]
      */
-    var runMode: RunMode = RunMode.RawPower
+    var runMode: RunMode = RunMode.RAW_POWER
 
 
     // --- state getters and setters ---
@@ -92,12 +93,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * further scaled down by [currentLimitScalar] when [currentLimit] is active.
      * default is -1.0 and 1.0
      */
-    var percentOutput: PercentOutput = 0.0
-        get() = motor.motor.power
+    var percentOutput: Percentage = 0.fraction
+        get() = motor.motor.power.fraction
         set(percentOutput) {
-            if (!(forwardLimit() && percentOutput > 0) && !(reverseLimit() && percentOutput < 0)) {
-                motor.motor.power = percentOutput.coerceIn(effectiveMinPercentOutput, effectiveMaxPercentOutput)
-                field = percentOutput
+            if (!(forwardLimit() && percentOutput.asFraction > 0.0) && !(reverseLimit() && percentOutput.asFraction < 0.0)) {
+                val clamped = percentOutput.coerceIn(effectiveMinPercentOutput, effectiveMaxPercentOutput)
+                motor.motor.power = clamped.asFraction
+                field = clamped
             } else {
                 robotPrintError("limit reached")
             }
@@ -109,11 +111,11 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      */
     var voltage: Double
         get() {
-            return batteryVoltage * percentOutput
+            return batteryVoltage * percentOutput.asFraction
         }
         set(value) {
             val batteryVoltage = batteryVoltage.coerceAtLeast(1.0)
-            percentOutput = (((value / batteryVoltage).coerceIn(minPercentOutput, maxPercentOutput)))
+            percentOutput = (value / batteryVoltage).fraction.coerceIn(minPercentOutput, maxPercentOutput)
         }
 
     /**
@@ -208,7 +210,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
                     motor.motor.power = 0.0
                 }
 
-                else  -> setPoint = velocity.coerceIn((-motor.maxRPM).rpm, motor.maxRPM.rpm).asRpm
+                else  -> setPoint = velocity.coerceIn((-motor.maxRpm).rpm, motor.maxRpm.rpm).asRpm
             }
         }
 
@@ -228,7 +230,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     /**
     the current [setPoint] for the motors pid controller
 
-    if the run mode is [RunMode.PositionControl] the unit is degrees if the run mode is [RunMode.VelocityControl] the unit is rpm
+    if the run mode is [RunMode.POSITION_CONTROL] the unit is degrees if the run mode is [RunMode.VELOCITY_CONTROL] the unit is rpm
      */
     var setPoint: Double = 0.0
         set(setPoint) {
@@ -241,19 +243,19 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
                 false -> {}
             }
             when (this.runMode) {
-                RunMode.PositionControl -> {
+                RunMode.POSITION_CONTROL -> {
                     positionController.setPoint =
                         setPoint.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
                     field = setPoint
                 }
 
 
-                RunMode.VelocityControl -> {
-                    velocityController.setPoint = setPoint.coerceIn(-motor.maxRPM, motor.maxRPM)
+                RunMode.VELOCITY_CONTROL -> {
+                    velocityController.setPoint = setPoint.coerceIn(-motor.maxRpm, motor.maxRpm)
                     field = setPoint
                 }
 
-                RunMode.RawPower        -> {}
+                RunMode.RAW_POWER        -> {}
             }
         }
 
@@ -265,15 +267,15 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     val error: Double
         get() {
             return when (runMode) {
-                RunMode.PositionControl -> {
+                RunMode.POSITION_CONTROL -> {
                     positionController.positionError
                 }
 
-                RunMode.VelocityControl -> {
+                RunMode.VELOCITY_CONTROL -> {
                     velocityController.positionError
                 }
 
-                RunMode.RawPower        -> {
+                RunMode.RAW_POWER        -> {
                     0.0
                 }
             }
@@ -288,9 +290,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     var tolerance: Double = 0.0
         set(value) {
             when (runMode) {
-                RunMode.PositionControl -> positionController.setTolerance(value)
-                RunMode.VelocityControl -> velocityController.setTolerance(value)
-                RunMode.RawPower        -> {}
+                RunMode.POSITION_CONTROL -> positionController.setTolerance(value)
+                RunMode.VELOCITY_CONTROL -> velocityController.setTolerance(value)
+                RunMode.RAW_POWER        -> {}
             }
         }
 
@@ -300,15 +302,15 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     val inTolerance: Boolean
         get() {
             return when (runMode) {
-                RunMode.PositionControl -> {
+                RunMode.POSITION_CONTROL -> {
                     positionController.atSetPoint()
                 }
 
-                RunMode.VelocityControl -> {
+                RunMode.VELOCITY_CONTROL -> {
                     velocityController.atSetPoint()
                 }
 
-                RunMode.RawPower        -> {
+                RunMode.RAW_POWER        -> {
                     true
                 }
             }
@@ -319,17 +321,17 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     /**
      * the smallest number you can sed to the motor with the [percentOutput] property
      */
-    var minPercentOutput = -1.0
+    var minPercentOutput = (-1).fraction
         set(percentOutput) {
-            field = percentOutput.coerceIn(-1.0, maxPercentOutput)
+            field = percentOutput.coerceIn((-1).fraction, maxPercentOutput)
         }
 
     /**
      * the largest number you can send to the motor with the [percentOutput] property
      */
-    var maxPercentOutput = 1.0
+    var maxPercentOutput = 1.fraction
         set(percentOutput) {
-            field = percentOutput.coerceIn(minPercentOutput, 1.0)
+            field = percentOutput.coerceIn(minPercentOutput, 1.fraction)
         }
 
 
@@ -364,7 +366,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
      * does the same as setting [percentOutput] to 0.0
      */
     fun stop() {
-        percentOutput = 0.0
+        percentOutput = 0.fraction
         motor.stopMotor()
     }
 
@@ -376,19 +378,19 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number) : 
     fun update() {
         limitCurrent()
         when (this.runMode) {
-            RunMode.VelocityControl -> voltage =
+            RunMode.VELOCITY_CONTROL -> voltage =
                 velocityController.calculate(velocity.asRpm) + feedForwardController.calculate(
                     velocity.asRpm,
-                    motor.acceleration / motor.cpr
+                    motor.getAcceleration() / motor.cpr
                                                                                               ) + pidfGains.kFF * error.sign
 
-            RunMode.PositionControl -> voltage =
+            RunMode.POSITION_CONTROL -> voltage =
                 positionController.calculate(position.degrees) + feedForwardController.calculate(
                     velocity.asRpm,
-                    motor.acceleration / motor.cpr
+                    motor.getAcceleration() / motor.cpr
                                                                                                 ) + pidfGains.kFF * error.sign
 
-            RunMode.RawPower        -> {}
+            RunMode.RAW_POWER        -> {}
         }
     }
 

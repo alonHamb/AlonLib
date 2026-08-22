@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.alonlib.commands
 
-import com.seattlesolvers.solverslib.command.InstantCommand
-import com.seattlesolvers.solverslib.command.WaitCommand
-import com.seattlesolvers.solverslib.command.WaitUntilCommand
+import org.firstinspires.ftc.teamcode.alonlib.units.milliseconds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -11,7 +9,7 @@ class FactoriesTest {
 
     @Test
     fun `wait builds a WaitCommand for the given duration`() {
-        val command = wait(500L)
+        val command = wait(500.milliseconds)
         assertTrue(command is WaitCommand)
     }
 

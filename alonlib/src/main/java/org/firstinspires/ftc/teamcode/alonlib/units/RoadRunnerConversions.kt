@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.alonlib.units
 
-import com.seattlesolvers.solverslib.geometry.Pose2d as SolversPose2d
-import com.seattlesolvers.solverslib.geometry.Rotation2d as SolversRotation2d
-import com.seattlesolvers.solverslib.geometry.Translation2d
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Pose2d
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Translation2d
 import com.acmerobotics.roadrunner.Pose2d as RoadRunnerPose2d
 import com.acmerobotics.roadrunner.Rotation2d as RoadRunnerRotation2d
 
@@ -13,11 +13,11 @@ import com.acmerobotics.roadrunner.Rotation2d as RoadRunnerRotation2d
  * SolversLib's types while RoadRunner-specific code (drive/localizer/trajectories) uses its own.
  */
 
-fun SolversRotation2d.toRoadRunner(): RoadRunnerRotation2d = RoadRunnerRotation2d.exp(this.radians)
+fun Rotation2d.toRoadRunner(): RoadRunnerRotation2d = RoadRunnerRotation2d.exp(this.radians)
 
-fun RoadRunnerRotation2d.toSolversLib(): SolversRotation2d = SolversRotation2d(this.log())
+fun RoadRunnerRotation2d.toRotation2d(): Rotation2d = Rotation2d.fromRadians(this.log())
 
-fun SolversPose2d.toRoadRunner(): RoadRunnerPose2d = RoadRunnerPose2d(this.x, this.y, this.rotation.radians)
+fun Pose2d.toRoadRunner(): RoadRunnerPose2d = RoadRunnerPose2d(this.x, this.y, this.rotation.radians)
 
-fun RoadRunnerPose2d.toSolversLib(): SolversPose2d =
-    SolversPose2d(Translation2d(this.position.x, this.position.y), SolversRotation2d(this.heading.log()))
+fun RoadRunnerPose2d.toPose2d(): Pose2d =
+    Pose2d(Translation2d(this.position.x, this.position.y), Rotation2d(this.heading.log()))

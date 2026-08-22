@@ -112,6 +112,81 @@ class OperationsTest {
         assertEquals(33, mapRange(1, 0, 3, 0, 100))
     }
 
+    // -- interpolate -----------------------------------------------------------------------------
+
+    @Test
+    fun `interpolate at t=0 returns startValue and at t=1 returns endValue`() {
+        assertEquals(0.0, interpolate(0.0, 10.0, 0.0), 1e-9)
+        assertEquals(10.0, interpolate(0.0, 10.0, 1.0), 1e-9)
+    }
+
+    @Test
+    fun `interpolate at t=0,5 returns the midpoint`() {
+        assertEquals(5.0, interpolate(0.0, 10.0, 0.5), 1e-9)
+    }
+
+    @Test
+    fun `interpolate extrapolates outside t=0 to t=1`() {
+        assertEquals(-10.0, interpolate(0.0, 10.0, -1.0), 1e-9)
+        assertEquals(20.0, interpolate(0.0, 10.0, 2.0), 1e-9)
+    }
+
+    // -- inputModulus ------------------------------------------------------------------------------
+
+    @Test
+    fun `inputModulus wraps a value above the range back into it`() {
+        assertEquals(-170.0, inputModulus(190.0, -180.0, 180.0), 1e-9)
+    }
+
+    @Test
+    fun `inputModulus wraps a value below the range back into it`() {
+        assertEquals(170.0, inputModulus(-190.0, -180.0, 180.0), 1e-9)
+    }
+
+    @Test
+    fun `inputModulus leaves a value already inside the range unchanged`() {
+        assertEquals(90.0, inputModulus(90.0, -180.0, 180.0), 1e-9)
+    }
+
+    @Test
+    fun `inputModulus returns the value unchanged when minimumInput is not less than maximumInput`() {
+        assertEquals(5.0, inputModulus(5.0, 10.0, 0.0), 1e-9)
+    }
+
+    // -- angleModulus --------------------------------------------------------------------------
+
+    @Test
+    fun `angleModulus wraps radians into the range -pi to pi`() {
+        assertEquals(-Math.PI / 2.0, angleModulus(Math.PI * 1.5), 1e-9)
+        assertEquals(Math.PI / 2.0, angleModulus(-Math.PI * 1.5), 1e-9)
+        assertEquals(0.0, angleModulus(Math.PI * 2.0), 1e-9)
+    }
+
+    // -- isNear ------------------------------------------------------------------------------------
+
+    @Test
+    fun `isNear (plain) is true within tolerance and false outside it`() {
+        assertEquals(true, isNear(5.0, 5.5, 1.0))
+        assertEquals(false, isNear(5.0, 7.0, 1.0))
+    }
+
+    @Test
+    fun `isNear (plain) returns false when tolerance is negative`() {
+        assertEquals(false, isNear(5.0, 5.0, -1.0))
+    }
+
+    @Test
+    fun `isNear (wraparound) treats values across the wrap point as close`() {
+        // 179deg and -179deg are only 2deg apart once wrapped.
+        assertEquals(true, isNear(179.0, -179.0, 5.0, -180.0, 180.0))
+        assertEquals(false, isNear(179.0, -179.0, 1.0, -180.0, 180.0))
+    }
+
+    @Test
+    fun `isNear (wraparound) returns false when tolerance is negative`() {
+        assertEquals(false, isNear(0.0, 0.0, -1.0, -180.0, 180.0))
+    }
+
     // -- median --------------------------------------------------------------------------------
 
     @Test

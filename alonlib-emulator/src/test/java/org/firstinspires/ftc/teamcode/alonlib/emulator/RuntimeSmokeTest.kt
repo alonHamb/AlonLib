@@ -4,13 +4,14 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import com.seattlesolvers.solverslib.hardware.motors.Motor
 import emulator.hardware.HubId
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.Motor
 import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -67,7 +68,7 @@ class RuntimeSmokeTest {
         val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
 
         val haMotor = HaMotor(hardwareMap, "front left motor", Motor.GoBILDA.RPM_435)
-        haMotor.percentOutput = 0.4
+        haMotor.percentOutput = 0.4.fraction
         haMotor.update()
         controlHub.motors.getValue(0).update(0.2)
         // Reading through HaMotor exercises hub.bulkData.getMotorCurrentPosition/Velocity.

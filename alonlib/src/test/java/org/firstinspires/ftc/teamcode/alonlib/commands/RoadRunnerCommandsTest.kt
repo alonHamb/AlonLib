@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.alonlib.commands
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.Action
-import com.seattlesolvers.solverslib.command.SubsystemBase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -39,13 +38,13 @@ class RoadRunnerCommandsTest {
     @Test
     fun `isFinished defaults to false before the command has run`() {
         val command = FakeAction(true).asCommand()
-        assertFalse(command.isFinished)
+        assertFalse(command.isFinished())
     }
 
     @Test
     fun `initialize resets isFinished to false`() {
         val command = FakeAction(true).asCommand()
         command.initialize()
-        assertFalse(command.isFinished)
+        assertFalse(command.isFinished())
     }
 }

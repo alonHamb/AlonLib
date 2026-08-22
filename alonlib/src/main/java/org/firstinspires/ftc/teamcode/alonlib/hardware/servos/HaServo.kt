@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import com.seattlesolvers.solverslib.geometry.Rotation2d
-import com.seattlesolvers.solverslib.hardware.motors.Motor
+import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Mode
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Type
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
@@ -182,17 +182,17 @@ class HaServo(
     /**
      * the direction of the servo
      */
-    var runningDirection: Motor.Direction
+    var runningDirection: HaMotor.Direction
         get() {
             return when (servo.direction) {
-                Servo.Direction.FORWARD -> Motor.Direction.REVERSE
-                Servo.Direction.REVERSE -> Motor.Direction.FORWARD
+                Servo.Direction.FORWARD -> HaMotor.Direction.REVERSE
+                Servo.Direction.REVERSE -> HaMotor.Direction.FORWARD
             }
         }
         set(runningDirection) {
             when (runningDirection) {
-                Motor.Direction.FORWARD -> servo.direction = Servo.Direction.FORWARD
-                Motor.Direction.REVERSE -> servo.direction = Servo.Direction.REVERSE
+                HaMotor.Direction.FORWARD -> servo.direction = Servo.Direction.FORWARD
+                HaMotor.Direction.REVERSE -> servo.direction = Servo.Direction.REVERSE
             }
         }
 

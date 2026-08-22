@@ -6,9 +6,9 @@ import com.qualcomm.hardware.limelightvision.LLStatus
 import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
-import com.seattlesolvers.solverslib.geometry.Pose2d
-import com.seattlesolvers.solverslib.geometry.Rotation2d
-import com.seattlesolvers.solverslib.geometry.Translation2d
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Pose2d
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
+import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Translation2d
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 
 class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {

@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.alonlib.math
 
-import com.seattlesolvers.solverslib.controller.PIDController
+import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDController
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

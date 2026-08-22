@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode.alonlib.commands
 
-import com.seattlesolvers.solverslib.command.Command
-import com.seattlesolvers.solverslib.command.InstantCommand
-import com.seattlesolvers.solverslib.command.WaitCommand
-import com.seattlesolvers.solverslib.command.WaitUntilCommand
-import org.firstinspires.ftc.teamcode.alonlib.units.Mills
+import org.firstinspires.ftc.teamcode.alonlib.units.Time
 
-fun wait(duration: Mills) = WaitCommand(duration)
+fun wait(duration: Time) = WaitCommand(duration.asMilliseconds.toLong())
 fun waitUntil(until: () -> Boolean) = WaitUntilCommand(until)
 fun instantCommand(toRun: () -> Unit) = InstantCommand(toRun)
 

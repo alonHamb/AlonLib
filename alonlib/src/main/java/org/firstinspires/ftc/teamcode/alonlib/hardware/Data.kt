@@ -14,7 +14,7 @@ object Data {
 
         /**
          * @param range the servo's total mechanical sweep, in degrees. Stored as a plain [Double]
-         * rather than a [com.seattlesolvers.solverslib.geometry.Rotation2d] because every built-in
+         * rather than a [org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d] because every built-in
          * servo's sweep (300deg/350deg) exceeds the (-180, 180] domain that Rotation2d normalizes into,
          * which would silently corrupt the value (e.g. 300deg -> -60deg).
          */

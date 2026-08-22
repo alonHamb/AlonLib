@@ -38,7 +38,10 @@ dependencies {
     // AlonLib, instead of having to declare it themselves.
     api libs.bundles.ftc.sdk
 
-    api libs.solverslib.core
+    // Backs the internal Matrix wrapper (math.system) used by the ported LQR/Kalman/
+    // LinearSystem code -- implementation-only so it doesn't leak onto consumers' classpath
+    // unless they touch the estimator/system package.
+    implementation libs.ejml.simple
 
     api libs.bundles.roadrunner
     api libs.acmerobotics.dashboard
