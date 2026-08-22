@@ -2,7 +2,7 @@
 
 A Kotlin utility library for FTC (*FIRST* Tech Challenge) robot code: unit-safe wrappers for
 motors/servos/sensors, a units system (`Length`, `AngularVelocity`, `Rotation2d` extensions),
-PID/feedforward helpers, moving-window filters, SolversLib command-based extensions, a mecanum
+PID/feedforward helpers, moving-window filters, a full command-based framework, a mecanum
 drivetrain, and a desktop hardware emulator so OpModes can be run and debugged without a robot.
 
 ## Table of contents
@@ -50,9 +50,11 @@ branch directly.
 
 ## Requirements
 
-The FTC SDK (`org.firstinspires.ftc:*`, v11.1.0), SolversLib (`org.solverslib:core`), RoadRunner
-(`com.acmerobotics.roadrunner:*`), and FTC Dashboard are bundled as `api` dependencies, so they come
-along transitively — you don't need to declare any of them yourself just to use AlonLib's classes.
+The FTC SDK (`org.firstinspires.ftc:*`, v11.1.0), RoadRunner (`com.acmerobotics.roadrunner:*`), and
+FTC Dashboard are bundled as `api` dependencies, so they come along transitively — you don't need to
+declare any of them yourself just to use AlonLib's classes. AlonLib's command framework, geometry
+types, and PID/feedforward controllers are its own reimplementation (no `org.solverslib:core`
+dependency).
 If your project also depends on `FtcRobotController` directly (the usual FTC project setup, needed
 to actually build/run the robot controller app), Gradle will de-duplicate the shared FTC SDK version
 automatically as long as the versions match.
@@ -66,8 +68,8 @@ Everything lives under `alonlib/src/main/java/org/firstinspires/ftc/teamcode/alo
 - `math/` — PID/feedforward gains, deadband/interpolation helpers, moving-window filters
 - `hardware/` — `HaMotor`, `HaServo`, `HaLimelight3A`, `HaPinPoint`
 - `drives/` — `HaMecanumDrive`, a mecanum drivetrain subsystem
-- `commands/` — SolversLib `Command` extensions, factories, and a RoadRunner `Action` → `Command`
-  bridge
+- `commands/` — a full command-based framework (`Command`, `CommandScheduler`, `Subsystem`,
+  composite commands, ...), extensions, factories, and a RoadRunner `Action` → `Command` bridge
 
 `alonlib-emulator/src/main/java` has the desktop-emulator adapters (`EmulatedRobot`, `EmulatedHub`,
 `EmuDcMotorEx`, ...) — see [Running on a desktop emulator instead of a robot](#running-on-a-desktop-emulator-instead-of-a-robot),
@@ -132,9 +134,10 @@ Notes:
 
 ## API reference
 
-Every public class, function, and property in `alonlib`, grouped by package/file. Types from other
-libraries (SolversLib's `Rotation2d`/`Pose2d`/`Command`, the FTC SDK's `HardwareMap`/`Telemetry`,
-RoadRunner's `Action`) are linked out to context rather than re-documented.
+Every public class, function, and property in `alonlib`, grouped by package/file. Types not
+exhaustively covered here — this library's own `Rotation2d`/`Pose2d`/`Command` (see
+`math/geometry`/`commands`), the FTC SDK's `HardwareMap`/`Telemetry`, RoadRunner's `Action` — are
+linked out to context instead.
 
 ### Root — `alonlib`
 
@@ -193,7 +196,7 @@ self-documenting signatures):
 | NaN/infinite guard | Same behavior as `Length`. |
 
 `Extensions.kt` — numeric literal builders and `Rotation2d`/`Pose2d` helpers built on top of
-`Length`/`AngularVelocity`/SolversLib's geometry types:
+`Length`/`AngularVelocity`/this library's own geometry types:
 
 | Symbol | Description |
 | --- | --- |
@@ -202,8 +205,8 @@ self-documenting signatures):
 | `Number.degrees / .radians / .rotations: Rotation2d` | e.g. `90.degrees`. |
 | `Rotation2d.absoluteValue: Rotation2d` | `abs()` on the degree value, preserving the type. |
 | `Rotation2d.rotations: Double` | Degrees ÷ 360. |
-| `Rotation2d.normalizedDegrees / .normalizedRadians / .normalizedRotations: Double` | Normalized (via SolversLib `MathUtils`) into a consistent range. |
-| `+`, `-`, `* Double`, `/ Double`, `..` (`rangeTo`), `compareTo` on `Rotation2d` | Operator overloads SolversLib's `Rotation2d` doesn't provide itself. |
+| `Rotation2d.normalizedDegrees / .normalizedRadians / .normalizedRotations: Double` | Normalized into a consistent range. |
+| `+`, `-`, `* Double`, `/ Double`, `..` (`rangeTo`), `compareTo` on `Rotation2d` | Arithmetic and ordering. |
 | `Pose2d.xDistanceTo(other) / .yDistanceTO(other): Double` | Signed axis-aligned distance to another pose. |
 | `Pose2d.distanceTo(other) / .horizontalDistanceTo(other): Double` | Euclidean distance (both are the same calculation). |
 | `Pose2d.horizontalAngleTo(other): Rotation2d` | Bearing from this pose to another, via `atan`. |
@@ -225,16 +228,16 @@ All `...ToMps`/`mpsTo...` conversions log via `robotPrintError` and return `0.0`
 isn't positive.
 
 `RoadRunnerConversions.kt` — RoadRunner has its own `Pose2d`/`Rotation2d` geometry types, separate
-from the SolversLib ones used everywhere else in AlonLib. These convert between them at the
-boundary, so hardware wrappers stay on SolversLib's types while RoadRunner-specific code
-(drive/localizer/trajectories) uses its own:
+from the ones AlonLib uses everywhere else (its own `math.geometry.Rotation2d`/`Pose2d`). These
+convert between them at the boundary, so hardware wrappers stay on AlonLib's types while
+RoadRunner-specific code (drive/localizer/trajectories) uses its own:
 
 | Symbol | Description |
 | --- | --- |
-| `SolversLib Rotation2d.toRoadRunner(): RoadRunner Rotation2d` | Via `RoadRunnerRotation2d.exp(radians)`. |
-| `RoadRunner Rotation2d.toSolversLib(): SolversLib Rotation2d` | Via `.log()`. |
-| `SolversLib Pose2d.toRoadRunner(): RoadRunner Pose2d` | |
-| `RoadRunner Pose2d.toSolversLib(): SolversLib Pose2d` | |
+| `Rotation2d.toRoadRunner(): RoadRunner Rotation2d` | Via `RoadRunnerRotation2d.exp(radians)`. |
+| `RoadRunner Rotation2d.toRotation2d(): Rotation2d` | Via `.log()`. |
+| `Pose2d.toRoadRunner(): RoadRunner Pose2d` | |
+| `RoadRunner Pose2d.toPose2d(): Pose2d` | |
 
 ### `math/`
 
@@ -252,7 +255,7 @@ boundary, so hardware wrappers stay on SolversLib's types while RoadRunner-speci
 | --- | --- |
 | `PIDFGains(kP, kI, kD, kFF, kS, KV, Ka, kIZone)` | All `Double`, all default `0.0`. Bundles a PID controller's gains plus feedforward (`kS`/`KV`/`Ka`) and an integral zone. |
 | `.toString()` | `"(kP: .. ,kI: .. ,Kd: .. ,kFF: .. ,kS:.. ,kV: .. ,kA:.. )"`. |
-| `PIDController.configPID(gains: PIDFGains)` | Applies `gains.kP/kI/kD` to a SolversLib `PIDController`'s `p`/`i`/`d`. |
+| `PIDController.configPID(gains: PIDFGains)` | Applies `gains.kP/kI/kD` to a `PIDController`'s `p`/`i`/`d`. |
 
 `Operations.kt`
 
@@ -451,7 +454,7 @@ HaMecanumDrive(frontLeft: HaMotor, frontRight: HaMotor, backLeft: HaMotor, backR
 
 ### `commands/`
 
-`Extentions.kt` — infix/extension sugar over SolversLib's `Command`:
+`Extentions.kt` — infix/extension sugar over this library's own `Command`:
 
 | Symbol | Description |
 | --- | --- |
@@ -476,7 +479,7 @@ HaMecanumDrive(frontLeft: HaMotor, frontRight: HaMotor, backLeft: HaMotor, backR
 | `(() -> Unit).asInstantCommand: Command` | Same as `instantCommand`, as an extension property. **Requires no subsystems** — don't use it for an action that needs to claim one. |
 
 `RoadRunnerCommands.kt` — bridges a RoadRunner `Action` (e.g. a trajectory from
-`MecanumDrive.actionBuilder(...).build()`) into a SolversLib `Command`, so it can be scheduled as a
+`MecanumDrive.actionBuilder(...).build()`) into a `Command`, so it can be scheduled as a
 default/triggered command or combined with `SequentialCommandGroup` etc., instead of only being
 runnable via `Actions.runBlocking` in a plain `LinearOpMode`:
 
