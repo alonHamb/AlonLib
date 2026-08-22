@@ -50,4 +50,7 @@ fun Pose2d.yDistanceTO(other: Pose2d) = other.y - this.y
 fun Pose2d.distanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
 fun Pose2d.horizontalDistanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
 
-fun Pose2d.horizontalAngleTo(other: Pose2d): Rotation2d = atan(this.yDistanceTO(other) / this.xDistanceTo(other)).degrees
+// atan() returns radians, so this must go through .radians, not .degrees -- .degrees would treat
+// the raw radian value as if it were already in degrees (e.g. atan(1) == pi/4 becoming "0.785deg"
+// instead of 45deg).
+fun Pose2d.horizontalAngleTo(other: Pose2d): Rotation2d = atan(this.yDistanceTO(other) / this.xDistanceTo(other)).radians
