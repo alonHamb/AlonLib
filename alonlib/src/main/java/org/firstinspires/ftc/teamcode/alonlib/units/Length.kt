@@ -39,20 +39,6 @@ class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
         }
     }
 
-    constructor(
-        meters: Number = 0,
-        centimeters: Number = 0,
-        millimeters: Number = 0,
-        feet: Number = 0,
-        inches: Number = 0,
-    ) : this(0.0, Unit.Meters) {
-        this.meters = meters.toDouble() +
-                (centimeters.toDouble() * 100) +
-                (millimeters.toDouble() * 1000) +
-                feetToMeters(feet) +
-                inchesToMeters(inches)
-    }
-
     private fun inUnit(lengthUnit: Unit) =
         when (lengthUnit) {
             Unit.Meters      -> meters
