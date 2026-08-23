@@ -47,13 +47,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number, pr
         *followers
     )
 
-
-    // --- hardware declaration ---
+    // --- motor parameters ---
     private val ticksPerRev: Double = cpr.toDouble()
 
     /** This motor's configured free-run RPM (the [GoBILDA] preset's, or whatever was passed to the raw `cpr`/`rpm` constructor). */
     val maxRpm: Double = rpm.toDouble()
 
+    // --- hardware declaration ---
     val hub: LynxModule = hardwareMap.get(LynxModule::class.java, "Control Hub")
     val motor: DcMotorEx = hardwareMap.get(DcMotorEx::class.java, id).apply {
         val configType = motorType.clone()
@@ -61,6 +61,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, cpr: Number, rpm: Number, pr
         configType.ticksPerRev = ticksPerRev
         motorType = configType
     }
+    
     private val batteryVoltage: Double
         get() = hub.getInputVoltage(VoltageUnit.VOLTS)
 
