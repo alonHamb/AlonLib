@@ -493,14 +493,16 @@ runnable via `Actions.runBlocking` in a plain `LinearOpMode`:
 `alonlib-emulator` lets your OpModes — real, unmodified `LinearOpMode`/`OpMode`/`CommandOpMode`
 subclasses, exactly as they'll run on the robot — run against simulated hardware on your desktop
 via [ftc-control-hub-emulator](https://github.com/alonHamb/ftc-control-hub-emulator), instead of a
-physical REV Control/Expansion Hub. It backs `hardwareMap.get(DcMotorEx::class.java, ...)`,
-`hardwareMap.get(Servo::class.java, ...)`, and `hardwareMap.get(LynxModule::class.java, "Control
-Hub")` with simulated motor/servo dynamics and a simulated battery, and drives the OpMode lifecycle
-(`init`/`start`/`loop`/`stop`) the same way the Driver Station does. All 15 of its own regression
-tests (hardware-map wiring, `LynxModule` bulk data/voltage, `HaMotor`/`HaServo` end-to-end, the
-`OpMode` lifecycle harness, `HaServo` position-range edge cases, and `EmulatorAutoLauncher`'s config
-discovery/OpMode scanning/drive-wheel guessing) pass against the real FTC SDK classes at runtime —
-see `alonlib-emulator/src/test`.
+physical REV Control/Expansion Hub. It backs every hardware type the emulator itself models —
+`hardwareMap.get(...)` for `DcMotorEx`, `Servo`/`CRServo`, `TouchSensor`/`DigitalChannel`,
+`AnalogInput`/`OpticalDistanceSensor`, `IMU`, `ColorSensor`/`NormalizedColorSensor`/
+`DistanceSensor`/`CompassSensor`, and `LynxModule` (bulk data, input voltage) — with simulated
+motor/servo dynamics and a simulated battery, and drives the OpMode lifecycle
+(`init`/`start`/`loop`/`stop`) the same way the Driver Station does. Its regression tests
+(hardware-map wiring for every device type above, `LynxModule` bulk data/voltage, `HaMotor`/
+`HaServo` end-to-end, the `OpMode` lifecycle harness, `HaServo` position-range edge cases, and
+`EmulatorAutoLauncher`'s config discovery/OpMode scanning/drive-wheel guessing) pass against the
+real FTC SDK classes at runtime — see `alonlib-emulator/src/test`.
 
 **Only ever add this to your TeamCode module's `testImplementation`, never `implementation`** — it
 pulls in Mockito and ftc-control-hub-emulator's Swing UI and JNA-based gamepad reading, none of
@@ -604,7 +606,7 @@ worked example below.
 | Symbol | Description |
 | --- | --- |
 | `EmulatorAutoLauncher().launch()` | The zero-code entry point above. Also available as a plain `fun main()` in the same file, for the `JavaExec` task above. |
-| `EmulatedHub(hub: HubId, motors: Map<Int, String> = emptyMap(), servos: Map<Int, String> = emptyMap())` | One physical hub's worth of simulated devices, keyed by REV port index — matching how you'd describe a real robot's wiring. `.motors`/`.servos` expose the underlying `SimMotor`/`SimServo`s (for advancing sim time in tests, e.g. `.update(dt)`); `.devices` lists all of them. Only needed if you're wiring `EmulatedRobot` by hand instead of using `EmulatorAutoLauncher`. |
+| `EmulatedHub(hub: HubId, motors: Map<Int, String> = emptyMap(), servos: Map<Int, String> = emptyMap(), digitalDevices: Map<Int, String> = emptyMap(), analogDevices: Map<Int, String> = emptyMap(), imus: Map<Int, String> = emptyMap(), i2cDevices: Map<Int, String> = emptyMap())` | One physical hub's worth of simulated devices, keyed by REV port index (or I2C bus, for `imus`/`i2cDevices`) — matching how you'd describe a real robot's wiring. `.motors`/`.servos`/`.digitalDevices`/`.analogDevices`/`.imus`/`.i2cDevices` expose the underlying `Sim*` devices (for advancing sim time or setting readings in tests, e.g. `.update(dt)`/`.setReading(...)`); `.devices` lists all of them. Only needed if you're wiring `EmulatedRobot` by hand instead of using `EmulatorAutoLauncher`. |
 | `buildEmulatedHardwareMap(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, batteryVoltage: () -> Double): HardwareMap` | Builds a real `HardwareMap` pre-populated with each hand-declared hub's devices, so `hardwareMap.get(DcMotorEx::class.java/Servo::class.java/LynxModule::class.java, ...)` all work exactly as they would against real hardware. |
 | `buildEmulatedHardwareMap(simulatedRobot: emulator.config.SimulatedRobot, batteryVoltage: () -> Double): HardwareMap` | Same, but built straight from a `SimulatedRobot` (i.e. `emulator.config.buildSimulatedRobot(parseRobotConfigXml(...))`) instead of hand-declared hubs — what `EmulatorAutoLauncher` uses under the hood. |
 | `EmulatedRobot(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, driveWheels: DriveWheels? = null)` | Ties one or two hand-declared `EmulatedHub`s to the emulator UI and drives whichever OpMode is selected through the real OpMode lifecycle. `.hardwareMap` is the resulting fake `HardwareMap`. `DriveWheels(frontLeft, frontRight, backLeft, backRight)` is optional and only powers the emulator's live field-pose display. |
@@ -613,7 +615,13 @@ worked example below.
 | `EmuDcMotorEx(sim: SimMotor) : DcMotorEx` | A `DcMotorEx` backed by a simulated motor — real code that talks to `DcMotor`/`DcMotorEx` directly, or via `HaMotor` (which wraps one), runs unmodified against simulated dynamics. PID/current-alert configuration is accepted but not modeled, since `HaMotor` runs its own software PIDF loop and writes plain power/voltage. |
 | `emulatedServo(controller: EmuServoController, port: Int): ServoImplEx` | Builds a genuine `ServoImplEx` for one hub port, needed because `HaServo` unconditionally force-casts `Servo` to `ServoImplEx`. |
 | `EmuServoController(portsToSims: Map<Int, SimServo>) : ServoControllerEx` | Backs a hub's worth of simulated servos — the `ServoControllerEx` a real `ServoImplEx` delegates every operation to. |
+| `EmuCRServo(sim: SimServo) : CRServo` | A `CRServo` backed by the same `SimServo` a positional `Servo` adapter uses for that device name — the config format doesn't distinguish the two either, so both get registered and whichever interface your OpMode asks for is what it gets. Only tracks the last commanded power (real CR servos have no position feedback); doesn't drive `SimServo`'s positional slew dynamics. |
 | `emulatedLynxModule(motorsByPort: Map<Int, SimMotor>, batteryVoltage: () -> Double): LynxModule` | A Mockito-backed `LynxModule` whose bulk-read motor data and input voltage come from simulated motors/battery instead of a real REV hub over USB — `LynxModule` has no way to be constructed directly. |
+| `EmuTouchSensor(sim: SimDigitalDevice) : TouchSensor`, `EmuDigitalChannel(sim: SimDigitalDevice) : DigitalChannel` | Both read/write the same `SimDigitalDevice.state`, registered under the same device name — set it directly from your test to simulate a sensor input, or read it back after your OpMode writes it as an output. |
+| `emulatedAnalogInput(sim: SimAnalogDevice): AnalogInput`, `EmuOpticalDistanceSensor(sim: SimAnalogDevice) : OpticalDistanceSensor` | Both read the same `SimAnalogDevice.voltage` (0-3.3V), registered under the same device name. `AnalogInput` is a concrete SDK class (like `ServoImplEx`), so `emulatedAnalogInput` only overrides `getDeviceName()` to avoid its real implementation's `AppUtil` crash. |
+| `EmuImu(sim: SimImu) : IMU` | Reports `SimImu.headingRad` as yaw (pitch/roll always read zero, matching `SimImu`'s own shape), relative to whatever heading was set the last time `resetYaw()` was called — mirror your simulated chassis's heading onto `SimImu.headingRad` in your `onTick` the way a real IMU tracks the robot. |
+| `EmuColorSensor(sim: SimI2cDevice) : NormalizedColorSensor, ColorSensor, DistanceSensor` | Reads `sim.getReading("red"/"green"/"blue"/"alpha")` (normalized `[0,1)`) and `sim.getReading("distanceMm")` — matches a real REV Color Sensor V3, which `HaColorSensor` force-casts to both `ColorSensor` and `DistanceSensor`. |
+| `EmuCompassSensor(sim: SimI2cDevice) : CompassSensor` | Reads `sim.getReading("headingDeg")`, normalized to `[0, 360)`. Registered under the same device name as `EmuColorSensor` for every generic I2C device, since the config format can't tell which one a real sensor actually is. |
 | `EmuTelemetry() : Telemetry` | A full `Telemetry` implementation that renders into a plain `snapshot(): List<String>` instead of transmitting to a driver station, for the emulator's telemetry panel. |
 | `OpModeHarness(opMode: OpMode)` | Drives an `OpMode` (or `LinearOpMode`) through the same lifecycle hooks the real SDK's `OpModeManagerImpl` uses. `.init(hardwareMap)` wires hardware/telemetry/gamepads and starts the OpMode thread; `.start()` transitions Init → Run; `.tick(gamepad1, gamepad2)` pushes fresh gamepad state and runs one event-loop iteration; `.stop()` requests a stop and blocks until the OpMode thread exits; `.crash: Throwable?` surfaces any exception thrown by user code (`null` if none). `.telemetry: EmuTelemetry` is the telemetry instance wired into the OpMode. |
 
@@ -709,12 +717,25 @@ fun `drivetrain moves forward when commanded`() {
 ### Known limitations
 
 - **Anything that reaches `AppUtil`/a real Android `Context`** — `FtcDashboard.getInstance()`,
-  vision pipelines, most sensor drivers other than `DcMotorEx`/`Servo`/`LynxModule` — isn't
-  emulated and will throw or crash, since there's no real Android runtime underneath. Guard those
-  calls (e.g. behind a flag) if your OpMode uses them, the way `BlueMainTeleop`/`RedMainTeleop` in a
-  Decode-Robot-shaped project need to for `FtcDashboard.getInstance()`.
-- I2C sensors (`HaLimelight3A`, `HaPinPoint`, IMUs, ...) aren't backed by anything — only
-  `DcMotorEx`/`Servo`/`LynxModule` bulk data and input voltage are simulated.
+  camera-based vision pipelines (`VisionPortal`/EasyOpenCV), vendor-specific sensor drivers that do
+  their own I2C bring-up (`HaLimelight3A`, `HaPinPoint`, `HaOctoQuad`, `HaOTOS`, `HaHuskyLens`, ...)
+  — isn't emulated and will throw or crash, since there's no real Android runtime underneath. Guard
+  those calls (e.g. behind a flag) if your OpMode uses them, the way `BlueMainTeleop`/`RedMainTeleop`
+  in a Decode-Robot-shaped project need to for `FtcDashboard.getInstance()`.
+- **Everything `SimulatedRobot`/`EmulatedHub` can represent does back a real `HardwareMap` type**:
+  `DcMotorEx`, `Servo`/`CRServo`, `TouchSensor`/`DigitalChannel`, `AnalogInput`/
+  `OpticalDistanceSensor`, `IMU`, `ColorSensor`/`NormalizedColorSensor`/`DistanceSensor`,
+  `CompassSensor`, and `LynxModule` (bulk data, input voltage). A generic I2C sensor tag your config
+  doesn't specifically name (a color sensor, a distance sensor, a compass, ...) gets *both* an
+  `EmuColorSensor`-shaped adapter and an `EmuCompassSensor` adapter under the same device name,
+  since the config format alone can't tell which one a real sensor is — drive whichever
+  `SimI2cDevice.setReading(...)` keys match the SDK interface your OpMode actually asks for
+  (`"red"`/`"green"`/`"blue"`/`"alpha"`, `"distanceMm"`, or `"headingDeg"` — see `EmuColorSensor`/
+  `EmuCompassSensor`'s doc comments). None of these model real sensor dynamics (no color/distance
+  physics, no IMU drift) -- they're values your test/adapter code drives directly, same as the
+  underlying `SimDigitalDevice`/`SimAnalogDevice`/`SimImu`/`SimI2cDevice` they're backed by. Webcams
+  and other USB devices aren't adapted to any SDK interface (no camera frames are simulated either,
+  so there'd be nothing for a vision pipeline to see).
 - `EmulatedHardwareMapImpl` reimplements `HardwareMap.get`/`tryGet` rather than inheriting them
   (see its doc comment for why) and `OpModeHarness.init` reimplements `internalInit()`'s thread
   spawn for the same class of reason (both touch Android-only code with no desktop implementation
