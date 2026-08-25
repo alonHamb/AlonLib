@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.alonlib.math.geometry
 
 import org.firstinspires.ftc.teamcode.alonlib.math.interpolation.Interpolatable
+import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.sign
 import kotlin.math.sin
 
 /**
@@ -17,7 +19,7 @@ import kotlin.math.sin
  * `Number.x` bridges for this type live in `units/WpilibConversions.kt`.
  */
 class Rotation2d private constructor(val radians: Double, val cos: Double, val sin: Double) :
-        Interpolatable<Rotation2d> {
+    Interpolatable<Rotation2d> {
 
     constructor(radians: Double = 0.0) : this(radians, cos(radians), sin(radians))
 
@@ -37,6 +39,20 @@ class Rotation2d private constructor(val radians: Double, val cos: Double, val s
     operator fun unaryMinus() = Rotation2d(-radians, cos, -sin)
     operator fun times(scalar: Double) = Rotation2d(radians * scalar)
     operator fun div(scalar: Double) = Rotation2d(radians / scalar)
+    fun coerceIn(min: Rotation2d, max: Rotation2d): Rotation2d {
+        if (min.radians <= max.radians) {
+            robotPrintError("min must be <= max")
+        }
+        return fromRadians(radians.coerceIn(min.radians, max.radians))
+    }
+
+    val normalizdDegrees
+        get() = if (this.degrees.sign == -1.0) {
+            this.degrees + 360.0
+        } else {
+            this.degrees
+        }
+
 
     /**
      * Composes this rotation with [other] (i.e. rotates this by [other]).

@@ -4,17 +4,15 @@ import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.hardware.ServoControllerEx
 import com.qualcomm.robotcore.hardware.ServoImplEx
-import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.Direction
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Mode
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Servos.Type
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Rotation2d
+import org.firstinspires.ftc.teamcode.alonlib.math.mapRange
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
-import kotlin.math.abs
 
 /**
  * Optional [followers] mirror this servo's raw `[0, 1]` position every time it's written (via
@@ -30,36 +28,17 @@ class HaServo(
 ) : HardwareDevice {
 
     // --- servo object declaration ---
-    /**
-     * the base [servo] object
-     *
-     * NOT TO BE USED UNLESS YOU KNOW WHAT YOU ARE DOING
-     */
-    var servo: Servo = hardwareMap.get(Servo::class.java, id)
+
+    private var servo: Servo = hardwareMap.get(Servo::class.java, id)
 
     init {
         (servo as ServoImplEx).apply {
-            pwmRange = (PwmControl.PwmRange(500.0, 2500.0))
+            pwmRange = when (mode) {
+                Mode.CR         -> PwmControl.PwmRange(type.crPwmRange.first.asMicroseconds, type.crPwmRange.second.asMicroseconds)
+                Mode.FULL_RANGE -> PwmControl.PwmRange(type.fullRangePwmRange.first.asMicroseconds, type.fullRangePwmRange.second.asMicroseconds)
+            }
         }
     }
-
-    fun setPwm(pwmRange: PwmControl.PwmRange) = apply { controller.setServoPwmRange(servo.portNumber, pwmRange) }
-
-    val controller: ServoControllerEx get() = servo.controller as ServoControllerEx
-
-    /** the minimum position delta (or exactly zero) before a write actually reaches the servo */
-    var cachingTolerance = 0.0001
-    private var lastWrittenPosition = Double.NaN
-
-    private fun writePosition(pos: Double) {
-        if (lastWrittenPosition.isNaN() || abs(pos - lastWrittenPosition) > cachingTolerance) {
-            servo.position = pos
-            lastWrittenPosition = pos
-            followers.forEach { it.writePosition(pos) }
-        }
-    }
-
-
     // --- state getters and setters ---
 
     /**
@@ -86,6 +65,7 @@ class HaServo(
     var minPercentOutput = 0.0
         set(value) {
             field = value.coerceIn(0.0..maxPercentOutput)
+
         }
 
     /**
@@ -95,7 +75,7 @@ class HaServo(
         set(value) {
             if (!(forwardLimit() && value > 0) && !(reverseLimit() && value < 0)) {
                 field = value
-                writePosition(value.coerceIn(minPercentOutput..maxPercentOutput))
+                value.coerceIn(minPercentOutput..maxPercentOutput)
             } else {
                 robotPrintError("limit reached")
             }
@@ -112,43 +92,23 @@ class HaServo(
     private val halfRange = type.range / 2.0
 
     /**
-     * the maximum [position] to be sent to the servo, relative to the center of its sweep
+     * the maximum [position] to be sent to the servo
      */
-    var maxPosition: Rotation2d = halfRange.degrees
+    var maxPosition: Rotation2d = halfRange
         set(value) {
-            field = value.degrees.coerceIn(-halfRange..halfRange).degrees
+            field = value.degrees.coerceIn(-halfRange.normalizdDegrees..halfRange.normalizdDegrees).degrees
+            followers.forEach { it.maxPosition = field }
         }
 
     /**
-     * the minimum [position] to be sent to the servo, relative to the center of its sweep
+     * the minimum [position] to be sent to the servo
      */
-    var minPosition: Rotation2d = (-halfRange).degrees
+    var minPosition: Rotation2d = (-halfRange)
         set(value) {
-            field = value.degrees.coerceIn(-halfRange..maxPosition.degrees).degrees
+            field = value.degrees.coerceIn(-halfRange.normalizdDegrees..maxPosition.normalizdDegrees).degrees
+            followers.forEach { it.minPosition = field }
         }
 
-
-    /**
-     * a soft limit, in degrees measured from the low end of the physical sweep -- e.g. straight off
-     * the servo's datasheet -- rather than [position]'s center-relative [Rotation2d]. Restricts how
-     * far [position] can move in the negative direction, on top of (not instead of) [minPosition].
-     * Defaults to 0deg, the physical low end, i.e. no extra restriction.
-     */
-    var minLimit: Double = 0.0
-        set(value) {
-            field = value.coerceIn(0.0..maxLimit)
-        }
-
-    /**
-     * a soft limit, in degrees measured from the low end of the physical sweep -- e.g. straight off
-     * the servo's datasheet -- rather than [position]'s center-relative [Rotation2d]. Restricts how
-     * far [position] can move in the positive direction, on top of (not instead of) [maxPosition].
-     * Defaults to [Type.range], the physical high end, i.e. no extra restriction.
-     */
-    var maxLimit: Double = type.range
-        set(value) {
-            field = value.coerceIn(minLimit..type.range)
-        }
 
     /**
      * when called returns the last [position] that have been sent to the servo
@@ -161,10 +121,16 @@ class HaServo(
             when (mode) {
                 Mode.CR         -> robotPrintError("cannot set position in CR mode")
                 Mode.FULL_RANGE -> {
-                    val hardwareClampedDegrees = position.degrees.coerceIn(minPosition.degrees, maxPosition.degrees)
-                    val absoluteDegrees = (hardwareClampedDegrees + halfRange).coerceIn(minLimit, maxLimit)
-                    writePosition(absoluteDegrees / type.range)
-                    field = (absoluteDegrees - halfRange).degrees
+                    field = position
+                    servo.position = mapRange(
+                        position.normalizdDegrees.coerceIn(minPosition.normalizdDegrees, maxPosition.normalizdDegrees),
+                        0.0,
+                        type.range.normalizdDegrees,
+                        0.0,
+                        1.0
+                    )
+                    followers.forEach { it.position = position }
+
                 }
             }
         }
@@ -175,6 +141,7 @@ class HaServo(
     var maxVelocity: AngularVelocity = type.maxSpeed
         set(value) {
             field = value.asRpm.coerceIn(0.0..type.maxSpeed.asRpm).rpm
+            followers.forEach { it.maxVelocity = value }
         }
 
     /**
@@ -183,6 +150,7 @@ class HaServo(
     var minVelocity: AngularVelocity = 0.0.rpm
         set(value) {
             field = value.asRpm.coerceIn(0.0..maxVelocity.asRpm).rpm
+            followers.forEach { it.minVelocity = value }
         }
 
     /**
@@ -194,8 +162,9 @@ class HaServo(
         set(value) {
             when (mode) {
                 Mode.CR         -> {
-                    writePosition(value.asRpm.coerceIn(minVelocity.asRpm..maxVelocity.asRpm) / type.maxSpeed.asRpm)
+                    servo.position = mapRange(value.asRpm, minVelocity.asRpm, maxVelocity.asRpm, 0.0, 1.0)
                     field = value
+                    followers.forEach { it.velocity = value }
                 }
 
                 Mode.FULL_RANGE -> robotPrintError("cannot set velocity in full range mode")
@@ -203,22 +172,6 @@ class HaServo(
             }
         }
 
-    /**
-     * the direction of the servo
-     */
-    var runningDirection: Direction
-        get() {
-            return when (servo.direction) {
-                Servo.Direction.FORWARD -> Direction.REVERSE
-                Servo.Direction.REVERSE -> Direction.FORWARD
-            }
-        }
-        set(runningDirection) {
-            when (runningDirection) {
-                Direction.FORWARD -> servo.direction = Servo.Direction.FORWARD
-                Direction.REVERSE -> servo.direction = Servo.Direction.REVERSE
-            }
-        }
 
     fun stop() {
         when (mode) {

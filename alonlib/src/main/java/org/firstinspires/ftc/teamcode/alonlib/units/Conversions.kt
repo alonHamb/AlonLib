@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.alonlib.units
 
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Pose2d
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
+import kotlin.math.PI
 
 const val INCHES_IN_METER = 39.3700787402
 val DECODE_FIELD_LENGTH = Length.fromMeters(3.585719)
@@ -26,6 +27,9 @@ fun rpmToRadPs(rpm: Number) = rpm.toDouble() / 60.0 * (Math.PI * 2.0)
 /** Rotations per minute to degrees per seconds. */
 fun rpmToDegPs(rpm: Number) = rpm.toDouble() / 60.0 * 360.0
 
+/** Rotations per minute to seconds per sixty degrees*/
+fun rpmToSecondsPerSixtyDegrees(rpm: Number) = (rpm.toDouble() / 6) / 60
+
 /** Rotations per second to rotations per minute. */
 fun rpsToRpm(rps: Number) = rps.toDouble() * 60.0
 
@@ -34,6 +38,10 @@ fun rpsToRadPs(rps: Number) = rps.toDouble() * Math.PI * 2.0
 
 /** Rotations per second to degrees per second. */
 fun rpsToDegPs(rps: Number) = rps.toDouble() * 360.0
+
+/** Rotations per second to seconds per sixty degree. */
+fun rpsToSecondsPerSixtyDegrees(rps: Number) = 1 / (rps.toDouble() / 6)
+
 
 /** Radians per second to rotations per minute. */
 fun radPsToRpm(radPs: Number) = radPs.toDouble() / (Math.PI * 2.0) * 60.0
@@ -44,6 +52,9 @@ fun radPsToRps(radPs: Number) = radPs.toDouble() / (Math.PI * 2.0)
 /** Radians per second to degrees per second. */
 fun radPsToDegPs(radPs: Number) = Math.toDegrees(radPs.toDouble())
 
+/** Radians per second to seconds Per sixty degrees. */
+fun radPsToSecondsPerSixtyDegrees(radPs: Number) = (PI / 3) / radPs.toDouble()
+
 /** Degrees per second to rotations per minute. */
 fun degPsToRpm(degPs: Number) = degPs.toDouble() / 360.0 * 60.0
 
@@ -52,6 +63,18 @@ fun degPsToRps(degPs: Number) = degPs.toDouble() / 360.0
 
 /** Degrees per second to radians per second. */
 fun degPsToRadPs(degPs: Number) = Math.toRadians(degPs.toDouble())
+
+/** Degrees per second to seconds per sixty degrees. */
+fun degPsToSecondsPerSixtyDegrees(degPs: Number) = 1 / (degPs.toDouble() * 60)
+
+/** seconds per sixty degrees to radians per seconds. */
+fun secondsPerSixtyDegreesToRadPs(secondsPerSixtyDegrees: Number) = secondsPerSixtyDegrees.toDouble() * (PI / 180)
+
+/** seconds per sixty degrees to degrees per second. */
+fun secondsPerSixtyDegreesToDegPs(secondsPerSixtyDegrees: Number) = 1 / (secondsPerSixtyDegrees.toDouble() * 6)
+
+/** seconds per sixty degrees to revolutions per minute. */
+fun secondsPerSixtyDegreesToRpm(secondsPerSixtyDegrees: Number) = 1 / secondsPerSixtyDegrees.toDouble() * 6
 
 /// --- Angular Velocities to Linear Velocity Conversions ---
 

@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity.Unit as Angu
  * - Meters per Second (Mps)
  */
 class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
-        Comparable<AngularVelocity> {
+    Comparable<AngularVelocity> {
     var rpm = 0.0
         set(value) {
             field = if (value.isNaN()) {
@@ -33,23 +33,27 @@ class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
     val asRadPs get() = this.inUnit(AngularVelocityUnit.RadPs)
     val asDegPs get() = this.inUnit(AngularVelocityUnit.DegPs)
 
+    val asSecondsPerSixtyDegrees get() = this.inUnit(AngularVelocityUnit.SecondsPerSixtyDegrtees)
+
     fun asMps(wheelRadius: Length) = rpmToMps(rpm, wheelRadius)
 
     init {
         rpm = when (velocityUnit) {
-            AngularVelocityUnit.Rpm   -> velocity
-            AngularVelocityUnit.Rps   -> rpsToRpm(velocity)
-            AngularVelocityUnit.RadPs -> radPsToRpm(velocity)
-            AngularVelocityUnit.DegPs -> degPsToRpm(velocity)
+            AngularVelocityUnit.Rpm                     -> velocity
+            AngularVelocityUnit.Rps                     -> rpsToRpm(velocity)
+            AngularVelocityUnit.RadPs                   -> radPsToRpm(velocity)
+            AngularVelocityUnit.DegPs                   -> degPsToRpm(velocity)
+            AngularVelocityUnit.SecondsPerSixtyDegrtees -> secondsPerSixtyDegreesToRpm(velocity)
         }
     }
 
     private fun inUnit(velocityUnit: AngularVelocityUnit) =
         when (velocityUnit) {
-            AngularVelocityUnit.Rpm   -> rpm
-            AngularVelocityUnit.Rps   -> rpmToRps(rpm)
-            AngularVelocityUnit.RadPs -> rpmToRadPs(rpm)
-            AngularVelocityUnit.DegPs -> rpmToDegPs(rpm)
+            AngularVelocityUnit.Rpm                     -> rpm
+            AngularVelocityUnit.Rps                     -> rpmToRps(rpm)
+            AngularVelocityUnit.RadPs                   -> rpmToRadPs(rpm)
+            AngularVelocityUnit.DegPs                   -> rpmToDegPs(rpm)
+            AngularVelocityUnit.SecondsPerSixtyDegrtees -> rpmToSecondsPerSixtyDegrees(rpm)
         }
 
     val absoluteValue get() = fromRpm(rpm.absoluteValue)
@@ -67,6 +71,8 @@ class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
         Rps,
         RadPs,
         DegPs,
+        SecondsPerSixtyDegrtees,
+
     }
 
     companion object {
