@@ -44,13 +44,15 @@ class Voltage(voltage: Number, voltageUnit: Unit) : Comparable<Voltage> {
             Unit.Kilovolts  -> volts / 1_000.0
         }
 
-    override fun toString() = "Volts($volts)"
+    override fun toString() = "$volts Volts"
     override fun compareTo(other: Voltage) = volts.compareTo(other.volts)
 
     operator fun plus(other: Voltage) = fromVolts(volts + other.volts)
     operator fun minus(other: Voltage) = fromVolts(volts - other.volts)
-    operator fun times(scalar: Double) = fromVolts(volts * scalar)
-    operator fun div(scalar: Double) = fromVolts(volts / scalar)
+    operator fun times(other: Voltage) = fromVolts(volts * other.volts)
+    operator fun div(other: Voltage) = fromVolts(volts / other.volts)
+    operator fun times(scalar: Number) = fromVolts(volts * scalar.toDouble())
+    operator fun div(scalar: Number) = fromVolts(volts / scalar.toDouble())
     operator fun unaryMinus() = fromVolts(-volts)
 
     enum class Unit {

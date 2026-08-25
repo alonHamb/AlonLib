@@ -65,6 +65,7 @@ class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
     operator fun minus(other: AngularVelocity) = fromRpm(rpm - other.rpm)
     operator fun times(ratio: Double) = fromRpm(rpm * ratio)
     operator fun div(ratio: Double) = fromRpm(rpm / ratio)
+    operator fun unaryMinus() = fromRpm(-rpm)
 
     enum class Unit {
         Rpm,
