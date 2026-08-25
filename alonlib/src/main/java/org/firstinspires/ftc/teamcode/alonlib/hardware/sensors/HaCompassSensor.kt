@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.alonlib.hardware.sensors
 
 import com.qualcomm.robotcore.hardware.CompassSensor
+import com.qualcomm.robotcore.hardware.CompassSensor.CompassMode
+
 import com.qualcomm.robotcore.hardware.HardwareMap
 
 class HaCompassSensor(val sensor: CompassSensor) : com.qualcomm.robotcore.hardware.HardwareDevice by sensor {
@@ -10,5 +12,11 @@ class HaCompassSensor(val sensor: CompassSensor) : com.qualcomm.robotcore.hardwa
     val direction get() = sensor.direction
     val calibrationFailed get() = sensor.calibrationFailed()
 
-    fun setMode(mode: CompassSensor.CompassMode) = sensor.setMode(mode)
+    var mode: CompassMode = CompassMode.MEASUREMENT_MODE
+        set(value) {
+            field = value
+            sensor.setMode(value)
+        }
+
+    fun setMode(mode: CompassMode) = sensor.setMode(mode)
 }
