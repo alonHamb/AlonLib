@@ -53,12 +53,12 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.alonHamb:AlonLib:v11.2.1'
+    implementation 'com.github.alonHamb:AlonLib:<version>'
 }
 ```
 
-Use a specific tag (recommended, e.g. `v11.2.1`), a commit hash, or `<branch>-SNAPSHOT` to track a
-branch directly.
+Replace `<version>` with the [latest release tag](https://github.com/alonHamb/AlonLib/tags) (recommended),
+a commit hash, or `<branch>-SNAPSHOT` to track a branch directly.
 
 ## Requirements
 
@@ -3524,18 +3524,15 @@ android {
 
 dependencies {
     // Same tag as AlonLib itself -- both modules are published together.
-    testImplementation 'com.github.alonHamb.AlonLib:alonlib-emulator:v11.2.1'
+    testImplementation 'com.github.alonHamb.AlonLib:alonlib-emulator:<version>'
 }
 ```
 
-(JitPack is already a repository if you're using AlonLib itself — see [Installing](#installing),
-above.)
+Replace `<version>` with the [latest release tag](https://github.com/alonHamb/AlonLib/tags), same as
+[Installing](#installing), above (JitPack is already a repository if you're using AlonLib itself).
 
-> **Note:** the newest tag published as of this writing is `v11.2.1`, cut before the digital/
-> analog/IMU/I2C/CR-servo device adapters documented below (`EmuAnalogInput`, `EmuCRServo`,
-> `EmuDigitalDevice`, `EmuI2cSensors`, `EmuImu`) existed. If you need them ahead of the next tagged
-> release, depend on `master-SNAPSHOT` (or a specific commit hash) instead — see
-> [Installing](#installing) for that syntax.
+> **Note:** if a feature documented below isn't in the latest tag yet, depend on `master-SNAPSHOT`
+> (or a specific commit hash) instead — see [Installing](#installing) for that syntax.
 
 ### Zero-code: `EmulatorAutoLauncher`
 
