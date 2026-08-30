@@ -2101,7 +2101,7 @@ HaCompassSensor(hardwareMap: HardwareMap, id: String)
 | `.sensor: CompassSensor` | The underlying SDK sensor. |
 | `.direction` (read-only) | `sensor.direction`. |
 | `.calibrationFailed` (read-only) | `sensor.calibrationFailed()`. |
-| `.setMode(mode: CompassSensor.CompassMode)` | `sensor.setMode(mode)`. |
+| `.mode: CompassSensor.CompassMode` | Setting it calls `sensor.setMode(mode)`. |
 | `HardwareDevice` overrides | All forwarded via delegation to `sensor`. |
 
 #### `HaDigitalChannel`

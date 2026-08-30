@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.alonlib.emulator
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.ColorSensor
 import com.qualcomm.robotcore.hardware.CompassSensor
@@ -23,8 +24,9 @@ import org.junit.Test
 /**
  * Regression suite for the non-motor/servo-position device adapters (`EmuCRServo`,
  * `EmuTouchSensor`/`EmuDigitalChannel`, `emulatedAnalogInput`/`EmuOpticalDistanceSensor`, `EmuImu`,
- * `EmuColorSensor`/`EmuCompassSensor`) -- these back every device category `SimulatedRobot` resolves
- * that isn't a motor or servo, wired in by `wireDevices` inside `buildEmulatedHardwareMap`.
+ * `EmuColorSensor`/`EmuCompassSensor`/`emulatedPinpointDriver`) -- these back every device category
+ * `SimulatedRobot` resolves that isn't a motor or servo, wired in by `wireDevices` inside
+ * `buildEmulatedHardwareMap`.
  */
 class EmulatedDeviceTypesTest {
 
@@ -140,6 +142,53 @@ class EmulatedDeviceTypesTest {
         val compass = hardwareMap.get(CompassSensor::class.java, "color sensor")
         assertEquals(330.0, compass.direction, 1e-9)
         assertFalse(compass.calibrationFailed())
+    }
+
+    @Test
+    fun `GoBildaPinpointDriver reports position, heading, and velocity from the same SimI2cDevice readings`() {
+        val controlHub = hub()
+        val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
+        val sim = controlHub.i2cDevices.getValue(1)
+
+        sim.setReading("xPositionMm", 100.0)
+        sim.setReading("yPositionMm", 50.0)
+        sim.setReading("headingRad", Math.PI / 4)
+        sim.setReading("xVelocityMmPerSec", 200.0)
+        sim.setReading("yVelocityMmPerSec", -25.0)
+
+        val pinpoint = hardwareMap.get(GoBildaPinpointDriver::class.java, "color sensor")
+        pinpoint.update()
+
+        assertEquals(100.0, pinpoint.getPosX(DistanceUnit.MM), 1e-4)
+        assertEquals(50.0, pinpoint.getPosY(DistanceUnit.MM), 1e-4)
+        assertEquals(Math.PI / 4, pinpoint.getHeading(AngleUnit.RADIANS), 1e-6)
+        assertEquals(200.0, pinpoint.getVelX(DistanceUnit.MM), 1e-4)
+        assertEquals(-25.0, pinpoint.getVelY(DistanceUnit.MM), 1e-4)
+        assertEquals(GoBildaPinpointDriver.DeviceStatus.READY, pinpoint.deviceStatus)
+    }
+
+    @Test
+    fun `GoBildaPinpointDriver setPosition and resetPosAndIMU re-zero relative to the current SimI2cDevice reading`() {
+        val controlHub = hub()
+        val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
+        val sim = controlHub.i2cDevices.getValue(1)
+
+        sim.setReading("xPositionMm", 100.0)
+        sim.setReading("headingRad", Math.PI / 2)
+
+        val pinpoint = hardwareMap.get(GoBildaPinpointDriver::class.java, "color sensor")
+        pinpoint.setPosX(0.0, DistanceUnit.MM)
+        pinpoint.update()
+        assertEquals(0.0, pinpoint.getPosX(DistanceUnit.MM), 1e-4)
+
+        sim.setReading("xPositionMm", 110.0) // robot moved 10mm after the reset
+        pinpoint.update()
+        assertEquals(10.0, pinpoint.getPosX(DistanceUnit.MM), 1e-4)
+
+        pinpoint.resetPosAndIMU()
+        pinpoint.update()
+        assertEquals(0.0, pinpoint.getPosX(DistanceUnit.MM), 1e-4)
+        assertEquals(0.0, pinpoint.getHeading(AngleUnit.RADIANS), 1e-6)
     }
 
     @Test

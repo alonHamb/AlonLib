@@ -85,8 +85,8 @@ private class EmulatedHardwareMapImpl : HardwareMap(null, null) {
  * `hardwareMap.get(Servo::class.java, "name")`, `hardwareMap.get(CRServo::class.java, "name")`,
  * `hardwareMap.get(TouchSensor::class.java, "name")` (and `DigitalChannel`, `AnalogInput`,
  * `OpticalDistanceSensor`, `IMU`, `ColorSensor`/`NormalizedColorSensor`/`DistanceSensor`,
- * `CompassSensor`), and `hardwareMap.get(LynxModule::class.java, "Control Hub")` all work exactly
- * as they would against real hardware -- see [wireDevices].
+ * `CompassSensor`, `GoBildaPinpointDriver`), and `hardwareMap.get(LynxModule::class.java, "Control
+ * Hub")` all work exactly as they would against real hardware -- see [wireDevices].
  */
 fun buildEmulatedHardwareMap(
     controlHub: EmulatedHub,
@@ -120,7 +120,7 @@ fun buildEmulatedHardwareMap(
  * ask for (a `<Servo>`/`<CRServo>` tag, or an unrecognized I2C sensor tag) -- `hardwareMap.get`
  * simply returns whichever one matches the requested class; see [EmuCRServo], [EmuTouchSensor]/
  * [EmuDigitalChannel], [emulatedAnalogInput]/[EmuOpticalDistanceSensor], and [EmuColorSensor]/
- * [EmuCompassSensor].
+ * [EmuCompassSensor]/[emulatedPinpointDriver].
  */
 private fun wireDevices(
     hardwareMap: EmulatedHardwareMapImpl,
@@ -143,6 +143,7 @@ private fun wireDevices(
     i2cDevices.forEach { sim ->
         hardwareMap.put(sim.name, EmuColorSensor(sim))
         hardwareMap.put(sim.name, EmuCompassSensor(sim))
+        hardwareMap.put(sim.name, emulatedPinpointDriver(sim))
     }
 }
 

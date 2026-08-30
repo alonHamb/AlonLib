@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.alonlib.drives.swerve.coaxial
 
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaCRServo
+import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.math.angleModulus
 import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
@@ -14,13 +14,16 @@ import kotlin.math.sign
 import kotlin.math.sin
 
 /**
- * One coaxial swerve module: a drive [motor] plus a pod-rotation [swervo] (a [HaCRServo] with an
- * absolute encoder configured so 0 means "wheel facing forward, positive motor power drives the
- * robot forward"). [offset] is this module's position relative to the robot's center, in inches.
+ * One coaxial swerve module: a drive [motor] plus a pod-rotation [swervo] (a [HaServo] in
+ * [HaServo.Mode.CR]) steered in software towards [absolutePositionRadians] (an absolute encoder
+ * reading -- e.g. an Axon servo's feedback wire -- where 0 means "wheel facing forward, positive
+ * motor power drives the robot forward"). [offset] is this module's position relative to the
+ * robot's center, in inches.
  */
 class CoaxialSwerveModule(
     private val motor: HaMotor,
-    private val swervo: HaCRServo,
+    private val swervo: HaServo,
+    private val absolutePositionRadians: () -> Double,
     offset: Vector2d,
     private val maxSpeed: Double,
     swervoPidf: PIDFController,
@@ -55,7 +58,7 @@ class CoaxialSwerveModule(
     /** Drives the hardware to follow [targetVelocity] (set via [setTargetVelocity] or [updateModuleWithVelocity]). */
     fun updateModule() {
         wheelFlipped = false
-        angleError = angleModulus(angleModulus(targetVelocity.angle()) - swervo.getAbsolutePositionRadians())
+        angleError = angleModulus(angleModulus(targetVelocity.angle()) - absolutePositionRadians())
         if (abs(angleError) > PI / 2) {
             angleError += PI * -sign(angleError)
             wheelFlipped = true
@@ -75,12 +78,7 @@ class CoaxialSwerveModule(
         motor.stop()
     }
 
-    fun setCachingTolerance(motorCachingTolerance: Double, swervoCachingTolerance: Double) = apply {
-        motor.cachingTolerance = motorCachingTolerance
-        swervo.cachingTolerance = swervoCachingTolerance
-    }
-
-    fun getPowerTelemetry() = "Motor=${"%.3f".format(motor.percentOutput.asFraction)},Servo=${"%.3f".format(swervo.percentOutput)},Absolute Encoder=${"%.3f".format(swervo.getAbsolutePositionRadians())}"
+    fun getPowerTelemetry() = "Motor=${"%.3f".format(motor.percentOutput.asFraction)},Servo=${"%.3f".format(swervo.percentOutput)},Absolute Encoder=${"%.3f".format(absolutePositionRadians())}"
 
     fun setSwervoPidf(pidf: PIDFController) {
         swervoPidf = pidf

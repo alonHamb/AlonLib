@@ -4,7 +4,7 @@ import org.firstinspires.ftc.teamcode.alonlib.drives.RobotDrive
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.RunMode
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.ZeroPowerBehavior
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
-import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaCRServo
+import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
 import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
 import org.firstinspires.ftc.teamcode.alonlib.math.kinematics.ChassisSpeeds
@@ -16,7 +16,8 @@ import kotlin.math.sin
 
 /**
  * A standard 4-module coaxial swerve drivetrain: 4 drive motors + 4 pod-rotation servos (Axon-style,
- * with absolute encoders). [motors]/[swervos] are ordered starting from front-right, going counterclockwise.
+ * with absolute encoders read via [swervoAngles]). [motors]/[swervos]/[swervoAngles] are ordered
+ * starting from front-right, going counterclockwise.
  */
 class CoaxialSwerveDrivetrain(
     private val trackWidth: Double,
@@ -24,11 +25,12 @@ class CoaxialSwerveDrivetrain(
     private val maxSpeed: Double,
     swervoPidf: PIDFController,
     motors: Array<HaMotor>,
-    swervos: Array<HaCRServo>,
+    swervos: Array<HaServo>,
+    swervoAngles: Array<() -> Double>,
 ) : RobotDrive() {
 
     init {
-        require(motors.size == 4 && swervos.size == 4) { "Hardware lists for swerve modules must have exactly 4 objects each" }
+        require(motors.size == 4 && swervos.size == 4 && swervoAngles.size == 4) { "Hardware lists for swerve modules must have exactly 4 objects each" }
         require(trackWidth > 0 && wheelBase > 0 && maxSpeed > 0) { "trackWidth, wheelBase, and maxSpeed must have positive values" }
         for (motor in motors) {
             motor.runMode = RunMode.RAW_POWER
@@ -39,18 +41,14 @@ class CoaxialSwerveDrivetrain(
     private val maxAngularSpeed = maxSpeed / hypot(trackWidth / 2, wheelBase / 2)
 
     val modules = arrayOf(
-        CoaxialSwerveModule(motors[0], swervos[0], Vector2d(trackWidth / 2, wheelBase / 2), maxSpeed, swervoPidf),
-        CoaxialSwerveModule(motors[1], swervos[1], Vector2d(-trackWidth / 2, wheelBase / 2), maxSpeed, swervoPidf),
-        CoaxialSwerveModule(motors[2], swervos[2], Vector2d(-trackWidth / 2, -wheelBase / 2), maxSpeed, swervoPidf),
-        CoaxialSwerveModule(motors[3], swervos[3], Vector2d(trackWidth / 2, -wheelBase / 2), maxSpeed, swervoPidf),
+        CoaxialSwerveModule(motors[0], swervos[0], swervoAngles[0], Vector2d(trackWidth / 2, wheelBase / 2), maxSpeed, swervoPidf),
+        CoaxialSwerveModule(motors[1], swervos[1], swervoAngles[1], Vector2d(-trackWidth / 2, wheelBase / 2), maxSpeed, swervoPidf),
+        CoaxialSwerveModule(motors[2], swervos[2], swervoAngles[2], Vector2d(-trackWidth / 2, -wheelBase / 2), maxSpeed, swervoPidf),
+        CoaxialSwerveModule(motors[3], swervos[3], swervoAngles[3], Vector2d(trackWidth / 2, -wheelBase / 2), maxSpeed, swervoPidf),
     )
 
     var targetVelocity = ChassisSpeeds()
         private set
-
-    fun setCachingTolerance(motorCachingTolerance: Double, swervoCachingTolerance: Double) = apply {
-        modules.forEach { it.setCachingTolerance(motorCachingTolerance, swervoCachingTolerance) }
-    }
 
     /** Sets the robot-centric target velocity, scaled down (preserving direction) if it exceeds [maxSpeed]/[getMaxSpeed]. */
     fun setTargetVelocity(velocity: ChassisSpeeds) {

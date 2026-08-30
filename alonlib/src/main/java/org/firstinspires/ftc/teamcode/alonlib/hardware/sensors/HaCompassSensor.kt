@@ -17,6 +17,4 @@ class HaCompassSensor(val sensor: CompassSensor) : com.qualcomm.robotcore.hardwa
             field = value
             sensor.setMode(value)
         }
-
-    fun setMode(mode: CompassMode) = sensor.setMode(mode)
 }
