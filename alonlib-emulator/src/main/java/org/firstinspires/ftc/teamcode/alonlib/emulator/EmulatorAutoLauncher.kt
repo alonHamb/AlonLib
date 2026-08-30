@@ -30,25 +30,39 @@ import java.io.File
  * command instead of an IDE click, add a `JavaExec` task pointed at [main] (see the README) -- a
  * `JavaExec` JVM isn't subject to that Android-unit-test default.
  *
- * If your robot doesn't fit this -- multiple config files, OpModes you don't want auto-discovered,
- * non-mecanum drive -- construct [EmulatedRobot] yourself instead; see the README's worked example.
+ * If your robot doesn't fit the XML-based path -- multiple config files, OpModes you don't want
+ * auto-discovered, non-mecanum drive -- construct [EmulatedRobot] yourself and pass it to the
+ * [launch] overload below instead, which still gets you OpMode auto-discovery without needing a
+ * hardware config XML on disk at all; see the README's worked example.
  */
 class EmulatorAutoLauncher {
     @Test
     fun launch() {
         val configFile = findHardwareConfigXml()
         val simulatedRobot = buildSimulatedRobot(parseRobotConfigXml(configFile))
+
+        launch(
+            EmulatedRobot(simulatedRobot, driveWheels = guessDriveWheels(simulatedRobot)),
+            title = "${configFile.nameWithoutExtension} Emulator"
+        )
+    }
+
+    /**
+     * Same OpMode auto-discovery as the no-arg [launch] above, but against a hardware map you
+     * already built yourself -- e.g. an [EmulatedRobot] constructed from hand-declared
+     * [EmulatedHub]s -- instead of requiring a hardware config XML file under `res/xml` to exist
+     * on disk. Use this when your project doesn't have one, or you don't want auto-discovery to
+     * depend on it, but still want OpModes picked up automatically.
+     */
+    fun launch(emulatedRobot: EmulatedRobot, title: String = "Emulator") {
         val opModes = discoverOpModes()
 
         require(opModes.isNotEmpty()) {
             "No @TeleOp/@Autonomous OpMode classes found on the classpath. Add one (and make sure " +
-                "it isn't @Disabled), or construct EmulatedRobot yourself -- see the README."
+                "it isn't @Disabled)."
         }
 
-        EmulatedRobot(simulatedRobot, driveWheels = guessDriveWheels(simulatedRobot)).launch(
-            title = "${configFile.nameWithoutExtension} Emulator",
-            opModes = opModes
-        )
+        emulatedRobot.launch(title = title, opModes = opModes)
     }
 }
 

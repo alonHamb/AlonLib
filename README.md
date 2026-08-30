@@ -3581,15 +3581,34 @@ tasks.register("runEmulator", JavaExec) {
 (Swap `Debug` for your build type/variant name in both places if you're not building the `debug`
 variant.)
 
-If your project doesn't fit the zero-code path — multiple hardware config files, OpModes you don't
-want auto-discovered, a non-mecanum drivetrain — construct `EmulatedRobot` yourself instead; see the
-worked example below.
+If your project doesn't have a hardware config XML at all (or you'd rather not depend on one), but
+still want OpMode auto-discovery, construct `EmulatedRobot` yourself (from hand-declared
+`EmulatedHub`s — see the worked example below) and pass it to `EmulatorAutoLauncher().launch(...)`
+instead of calling the no-arg `launch()`:
+
+```kotlin
+class EmulatorMain {
+    @Test
+    fun launch() {
+        val controlHub = EmulatedHub(HubId.CONTROL, motors = mapOf(0 to "front left motor"))
+        EmulatorAutoLauncher().launch(EmulatedRobot(controlHub), title = "My Robot Emulator")
+    }
+}
+```
+
+This still classpath-scans for your `@TeleOp`/`@Autonomous` OpModes exactly like the no-arg
+`launch()` does — only the hardware-config-XML lookup is skipped.
+
+If OpMode auto-discovery itself doesn't fit either — multiple hardware config files, OpModes you
+don't want auto-discovered, a non-mecanum drivetrain — construct `EmulatedRobot` yourself and call
+its own `.launch(title, opModes)` directly instead; see the worked example below.
 
 ### API reference — `alonlib-emulator`
 
 | Symbol | Description |
 | --- | --- |
 | `EmulatorAutoLauncher().launch()` | The zero-code entry point above. Also available as a plain `fun main()` in the same file, for the `JavaExec` task above. |
+| `EmulatorAutoLauncher().launch(emulatedRobot: EmulatedRobot, title: String = "Emulator")` | Same OpMode auto-discovery as the no-arg `launch()`, but against a hardware map you already built yourself (e.g. an `EmulatedRobot` from hand-declared `EmulatedHub`s) instead of requiring a hardware config XML on disk. |
 | `EmulatedHub(hub: HubId, motors: Map<Int, String> = emptyMap(), servos: Map<Int, String> = emptyMap(), digitalDevices: Map<Int, String> = emptyMap(), analogDevices: Map<Int, String> = emptyMap(), imus: Map<Int, String> = emptyMap(), i2cDevices: Map<Int, String> = emptyMap())` | One physical hub's worth of simulated devices, keyed by REV port index (or I2C bus, for `imus`/`i2cDevices`) — matching how you'd describe a real robot's wiring. `.motors`/`.servos`/`.digitalDevices`/`.analogDevices`/`.imus`/`.i2cDevices` expose the underlying `Sim*` devices (for advancing sim time or setting readings in tests, e.g. `.update(dt)`/`.setReading(...)`); `.devices` lists all of them. Only needed if you're wiring `EmulatedRobot` by hand instead of using `EmulatorAutoLauncher`. |
 | `buildEmulatedHardwareMap(controlHub: EmulatedHub, expansionHub: EmulatedHub? = null, batteryVoltage: () -> Double): HardwareMap` | Builds a real `HardwareMap` pre-populated with each hand-declared hub's devices, so `hardwareMap.get(DcMotorEx::class.java/Servo::class.java/LynxModule::class.java, ...)` all work exactly as they would against real hardware. |
 | `buildEmulatedHardwareMap(simulatedRobot: emulator.config.SimulatedRobot, batteryVoltage: () -> Double): HardwareMap` | Same, but built straight from a `SimulatedRobot` (i.e. `emulator.config.buildSimulatedRobot(parseRobotConfigXml(...))`) instead of hand-declared hubs — what `EmulatorAutoLauncher` uses under the hood. |
