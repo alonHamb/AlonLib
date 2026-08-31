@@ -7,24 +7,24 @@ package org.firstinspires.ftc.teamcode.alonlib.commands
  */
 class DeferredCommand(private val supplier: () -> Command, requirements: Collection<Subsystem> = emptySet()) : CommandBase() {
 
-    private var command: Command? = null
+	private var command: Command? = null
 
-    init {
-        requirementsSet.addAll(requirements)
-    }
+	init {
+		requirementSet.addAll(requirements)
+	}
 
-    override fun initialize() {
-        val built = supplier()
-        command = built
-        built.initialize()
-    }
+	override fun initialize() {
+		val built = supplier()
+		command = built
+		built.initialize()
+	}
 
-    override fun execute() = command?.execute() ?: Unit
+	override fun execute() = command?.execute() ?: Unit
 
-    override fun isFinished() = command?.isFinished() ?: true
+	override fun isFinished() = command?.isFinished() ?: true
 
-    override fun end(interrupted: Boolean) {
-        command?.end(interrupted)
-        command = null
-    }
+	override fun end(interrupted: Boolean) {
+		command?.end(interrupted)
+		command = null
+	}
 }

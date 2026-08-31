@@ -8,22 +8,22 @@ package org.firstinspires.ftc.teamcode.alonlib.commands
  */
 class ConditionalCommand(private val onTrue: Command, private val onFalse: Command, private val condition: () -> Boolean) : CommandBase() {
 
-    private lateinit var selectedCommand: Command
+	private lateinit var selectedCommand: Command
 
-    init {
-        CommandGroupBase.requireUngrouped(onTrue, onFalse)
-        CommandGroupBase.registerGroupedCommands(onTrue, onFalse)
-        requirementsSet.addAll(onTrue.requirements)
-        requirementsSet.addAll(onFalse.requirements)
-    }
+	init {
+		CommandGroupBase.requireUngrouped(onTrue, onFalse)
+		CommandGroupBase.registerGroupedCommands(onTrue, onFalse)
+		requirementSet.addAll(onTrue.requirement)
+		requirementSet.addAll(onFalse.requirement)
+	}
 
-    override fun initialize() {
-        selectedCommand = if (condition()) onTrue else onFalse
-        selectedCommand.initialize()
-    }
+	override fun initialize() {
+		selectedCommand = if (condition()) onTrue else onFalse
+		selectedCommand.initialize()
+	}
 
-    override fun execute() = selectedCommand.execute()
-    override fun end(interrupted: Boolean) = selectedCommand.end(interrupted)
-    override fun isFinished() = selectedCommand.isFinished()
-    override fun runsWhenDisabled() = onTrue.runsWhenDisabled() && onFalse.runsWhenDisabled()
+	override fun execute() = selectedCommand.execute()
+	override fun end(interrupted: Boolean) = selectedCommand.end(interrupted)
+	override fun isFinished() = selectedCommand.isFinished()
+	override fun runsWhenDisabled() = onTrue.runsWhenDisabled() && onFalse.runsWhenDisabled()
 }

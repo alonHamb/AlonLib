@@ -5,17 +5,17 @@ infix fun Command.andThen(next: Command): Command = this.andThen(next)
 infix fun Command.andThen(next: () -> Command): Command = this.andThen(next())
 
 private class FinallyDoCommand(private val command: Command, private val onEnd: (interrupted: Boolean) -> Unit) : CommandBase() {
-    init {
-        addRequirements(*command.requirements.toTypedArray())
-    }
+	init {
+		addRequirements(*command.requirement.toTypedArray())
+	}
 
-    override fun initialize() = command.initialize()
-    override fun execute() = command.execute()
-    override fun isFinished() = command.isFinished()
-    override fun end(interrupted: Boolean) {
-        command.end(interrupted)
-        onEnd(interrupted)
-    }
+	override fun initialize() = command.initialize()
+	override fun execute() = command.execute()
+	override fun isFinished() = command.isFinished()
+	override fun end(interrupted: Boolean) {
+		command.end(interrupted)
+		onEnd(interrupted)
+	}
 }
 
 infix fun Command.finallyDo(end: (interrupted: Boolean) -> Unit): Command = FinallyDoCommand(this, end)
@@ -37,7 +37,7 @@ infix fun CommandBase.withName(commandName: String): Command = this.setName(comm
  * For single-subsystem commands, use [SubsystemBase.withName].
  */
 fun withName(commandName: String, commandSupplier: () -> CommandBase): Command =
-    commandSupplier().also { it.name = commandName }
+	commandSupplier().also { it.name = commandName }
 
 /**
  * Good for single-subsystem commands.
@@ -46,4 +46,4 @@ fun withName(commandName: String, commandSupplier: () -> CommandBase): Command =
  * For multi-subsystem commands, use [withName].
  */
 fun SubsystemBase.withName(commandName: String, commandSupplier: () -> CommandBase): Command =
-    commandSupplier().also { it.name = "$commandName : ${this.name}" }
+	commandSupplier().also { it.name = "$commandName : ${this.name}" }

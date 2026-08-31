@@ -1,6 +1,6 @@
 [versions]
 agp = "9.1.1"
-ftcControlHubEmulator = "v1.0.3"
+ftcControlHubEmulator = "v1.1.1"
 kotlin = "2.4.10"
 ftc-sdk = "11.1.0"
 dashboard = "0.5.1"
