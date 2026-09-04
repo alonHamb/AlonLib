@@ -17,7 +17,7 @@ plugins {
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode.alonlib.emulator'
-    compileSdk = libs.versions.compileSdk.get().toInteger()
+    compileSdkVersion = libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInteger()

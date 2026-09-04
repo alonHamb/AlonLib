@@ -29,7 +29,7 @@ class HaServo(
 
     // --- servo object declaration ---
 
-    private var servo: Servo = hardwareMap.get(Servo::class.java, id)
+    var servo: Servo = hardwareMap.get(Servo::class.java, id)
 
     init {
         (servo as ServoImplEx).apply {

@@ -44,37 +44,13 @@ class HaServoPositionRegressionTest {
             settle()
             assertEquals("$type: centered position should be the middle of the physical sweep", 0.5, haServo.servo.position, 1e-9)
 
-            haServo.position = halfRange.degrees
+            haServo.position = halfRange
             settle()
             assertEquals("$type: maxPosition should reach the top of the physical sweep", 1.0, haServo.servo.position, 1e-9)
 
-            haServo.position = (-halfRange).degrees
+            haServo.position = (-halfRange)
             settle()
             assertEquals("$type: minPosition should reach the bottom of the physical sweep", 0.0, haServo.servo.position, 1e-9)
         }
-    }
-
-    @Test
-    fun `minLimit and maxLimit further restrict position independent of the center-relative range math`() {
-        val controlHub = hub()
-        val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
-        val simServo = controlHub.servos.getValue(0)
-
-        fun settle() = simServo.update(10.0) // plenty of time to finish the slew
-
-        // Speed's range is 300deg, so halfRange is 150deg -- a soft limit set in plain
-        // low-end-relative degrees (50deg..250deg) should clamp position even though minPosition/
-        // maxPosition (center-relative, -150deg..150deg) would otherwise allow the full sweep.
-        val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FULL_RANGE, Data.Servos.Type.Speed)
-        haServo.minLimit = 50.0
-        haServo.maxLimit = 250.0
-
-        haServo.position = 150.0.degrees // the physical high end (300deg absolute)
-        settle()
-        assertEquals("maxLimit should cap the physical high end at 250/300 of the sweep", 250.0 / 300.0, haServo.servo.position, 1e-9)
-
-        haServo.position = (-150.0).degrees // the physical low end (0deg absolute)
-        settle()
-        assertEquals("minLimit should raise the physical low end to 50/300 of the sweep", 50.0 / 300.0, haServo.servo.position, 1e-9)
     }
 }

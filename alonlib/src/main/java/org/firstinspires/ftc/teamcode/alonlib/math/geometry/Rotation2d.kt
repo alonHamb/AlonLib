@@ -37,8 +37,8 @@ class Rotation2d private constructor(val radians: Double, val cos: Double, val s
     operator fun plus(other: Rotation2d) = rotateBy(other)
     operator fun minus(other: Rotation2d) = rotateBy(-other)
     operator fun unaryMinus() = Rotation2d(-radians, cos, -sin)
-    operator fun times(scalar: Double) = Rotation2d(radians * scalar)
-    operator fun div(scalar: Double) = Rotation2d(radians / scalar)
+    operator fun times(scalar: Number) = Rotation2d(radians * scalar.toDouble())
+    operator fun div(scalar: Number) = Rotation2d(radians / scalar.toDouble())
     fun coerceIn(min: Rotation2d, max: Rotation2d): Rotation2d {
         if (min.radians <= max.radians) {
             robotPrintError("min must be <= max")
