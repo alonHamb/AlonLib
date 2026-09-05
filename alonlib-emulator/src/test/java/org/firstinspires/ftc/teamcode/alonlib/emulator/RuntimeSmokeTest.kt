@@ -77,7 +77,7 @@ class RuntimeSmokeTest {
         // position is relative to the center of the servo's sweep (0deg = centered), so a physical
         // 0.75 fraction is a quarter-range offset from center: (0.75 - 0.5) * range.
         val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FULL_RANGE, Data.Servos.Type.Speed)
-        haServo.position = (0.25 * Data.Servos.Type.Speed.range).degrees
+        haServo.position = ( Data.Servos.Type.Speed.range * 0.25)
         controlHub.servos.getValue(0).update(10.0)
         assertEquals(0.75, haServo.servo.position, 0.01)
     }
