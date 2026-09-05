@@ -37,7 +37,9 @@ class Rotation2d private constructor(val radians: Double, val cos: Double, val s
     operator fun plus(other: Rotation2d) = rotateBy(other)
     operator fun minus(other: Rotation2d) = rotateBy(-other)
     operator fun unaryMinus() = Rotation2d(-radians, cos, -sin)
+	operator fun times(other: Rotation2d) = Rotation2d( radians * other.radians)
     operator fun times(scalar: Number) = Rotation2d(radians * scalar.toDouble())
+	operator fun div(other: Rotation2d) = Rotation2d(radians / other.radians)
     operator fun div(scalar: Number) = Rotation2d(radians / scalar.toDouble())
     fun coerceIn(min: Rotation2d, max: Rotation2d): Rotation2d {
         if (min.radians <= max.radians) {
@@ -46,12 +48,6 @@ class Rotation2d private constructor(val radians: Double, val cos: Double, val s
         return fromRadians(radians.coerceIn(min.radians, max.radians))
     }
 
-    val normalizdDegrees
-        get() = if (this.degrees.sign == -1.0) {
-            this.degrees + 360.0
-        } else {
-            this.degrees
-        }
 
 
     /**

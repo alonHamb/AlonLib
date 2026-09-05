@@ -33,8 +33,8 @@ class HaCoaxialSwerveDrivetrain(
 		require(motors.size == 4 && swervos.size == 4 && swervoAngles.size == 4) { "Hardware lists for swerve modules must have exactly 4 objects each" }
 		require(trackWidth > 0 && wheelBase > 0 && maxSpeed > 0) { "trackWidth, wheelBase, and maxSpeed must have positive values" }
 		for (motor in motors) {
-			motor.runMode = RunMode.RAW_POWER
-			motor.zeroPowerBehavior = ZeroPowerBehavior.BRAKE
+			motor.runMode = RunMode.RawPower
+			motor.zeroPowerBehavior = ZeroPowerBehavior.Brake
 		}
 	}
 

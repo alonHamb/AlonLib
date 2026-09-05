@@ -9,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.hardware.motors.HaMotor
 import org.firstinspires.ftc.teamcode.alonlib.hardware.servos.HaServo
-import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -76,7 +75,7 @@ class RuntimeSmokeTest {
 
         // position is relative to the center of the servo's sweep (0deg = centered), so a physical
         // 0.75 fraction is a quarter-range offset from center: (0.75 - 0.5) * range.
-        val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FULL_RANGE, Data.Servos.Type.Speed)
+        val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FullRange, Data.Servos.Type.Speed)
         haServo.position = ( Data.Servos.Type.Speed.range * 0.25)
         controlHub.servos.getValue(0).update(10.0)
         assertEquals(0.75, haServo.servo.position, 0.01)

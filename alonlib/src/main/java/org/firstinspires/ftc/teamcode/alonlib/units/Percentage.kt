@@ -57,7 +57,7 @@ class Percentage(percentage: Number, percentageUnit: Unit) : Comparable<Percenta
 	operator fun times(other: Percentage) = fromFraction(fraction * other.fraction)
 	operator fun times(scalar: Number) = fromFraction(fraction * scalar.toDouble())
 	operator fun div(other: Percentage) = fromFraction(fraction / other.fraction)
-	operator fun div(scalar: Number = fromFraction(fraction / scalar.toDouble())
+	operator fun div(scalar: Number) = fromFraction(fraction / scalar.toDouble())
 	operator fun unaryMinus() = fromFraction(-fraction)
 
 	fun coerceIn(min: Percentage, max: Percentage) = fromFraction(fraction.coerceIn(min.fraction, max.fraction))

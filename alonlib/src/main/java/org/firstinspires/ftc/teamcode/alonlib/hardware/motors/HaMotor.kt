@@ -9,10 +9,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap
 import com.qualcomm.robotcore.hardware.PIDFCoefficients
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.Direction
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.GoBILDA
 import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.RunMode
-import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.ZeroPowerBehavior.FLOAT
+import org.firstinspires.ftc.teamcode.alonlib.hardware.Data.Motors.ZeroPowerBehavior.Float
 import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
 import org.firstinspires.ftc.teamcode.alonlib.math.control.PIDFController
 import org.firstinspires.ftc.teamcode.alonlib.math.control.SimpleMotorFeedforward
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.teamcode.alonlib.units.amps
 import org.firstinspires.ftc.teamcode.alonlib.units.compareTo
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
 import org.firstinspires.ftc.teamcode.alonlib.units.fraction
+import org.firstinspires.ftc.teamcode.alonlib.units.meters
 import org.firstinspires.ftc.teamcode.alonlib.units.rotations
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 import org.firstinspires.ftc.teamcode.alonlib.units.rps
@@ -36,7 +38,7 @@ import kotlin.math.sign
 /**
  * AlonLib's motor hardware wrapper -- owns an SDK [DcMotorEx] directly (encoder position/velocity
  * read via [hub]'s bulk data, not the SDK's own per-call reads), with its own software PIDF loop
- * for [RunMode.POSITION_CONTROL]/[RunMode.VELOCITY_CONTROL] and software current limiting.
+ * for [RunMode.PositionControl]/[RunMode.VelocityControl] and software current limiting.
  *
  * Optional [followers] mirror this motor's [percentOutput] every time it's set (directly, or via
  * [voltage]/[update]) -- construct each one the way you want it to run (direction, zero-power
@@ -53,6 +55,10 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 
     // --- motor parameters ---
     private val ticksPerRev: Double = cpr.toDouble()
+
+	var distancePerRevolution = 1.meters
+
+
 
 
     // --- hardware declaration ---
@@ -76,7 +82,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
     /**
     sets the behavior of the motor when stop() is called or when you set [percentOutput] to zero
      */
-    var zeroPowerBehavior = FLOAT
+    var zeroPowerBehavior = Float
         set(value) {
             field = value
             motor.zeroPowerBehavior = value.sdkBehavior
@@ -86,35 +92,37 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 
     /**
      * the direction the motor to rotates
-     * @param Direction.FORWARD clockwise
-     * @param Direction.REVERSE counterclockwise
+     * @param Direction.Forward clockwise
+     * @param Direction.Reverse counterclockwise
      */
     var runningDirection: Direction
         get() {
             return when (motor.direction) {
-                DcMotorSimple.Direction.REVERSE -> Direction.REVERSE
-                else                            -> Direction.FORWARD
+                DcMotorSimple.Direction.REVERSE -> Direction.Reverse
+                else                            -> Direction.Forward
             }
         }
         set(value) {
             motor.direction = when (value) {
-                Direction.FORWARD -> DcMotorSimple.Direction.FORWARD
-                Direction.REVERSE -> DcMotorSimple.Direction.REVERSE
+                Direction.Forward -> DcMotorSimple.Direction.FORWARD
+                Direction.Reverse -> DcMotorSimple.Direction.REVERSE
             }
             followers.forEach { it.runningDirection = value }
         }
 
     /**
      * the way the [update] function is used to control the motor.
-     * @param RunMode.RAW_POWER doesn't do anything
-     * @param RunMode.POSITION_CONTROL sends [setPoint] to the pid controller as degrees between [minimumPosition] and [maximumPosition]
-     * @param RunMode.VELOCITY_CONTROL sends [setPoint] to the pid controller as rpm between -[rpm] and [rpm]
+     * @param RunMode.RawPower doesn't do anything
+     * @param RunMode.PositionControl sends [setPoint] to the pid controller as degrees between [minimumPosition] and [maximumPosition]
+     * @param RunMode.VelocityControl sends [setPoint] to the pid controller as rpm between -[rpm] and [rpm]
      */
-    var runMode: RunMode = RunMode.RAW_POWER
+    var runMode: RunMode = RunMode.RawPower
         set(value) {
             field = value
             followers.forEach { it.runMode = value }
         }
+
+	var distanceMode: Data.Motors.DistanceMode = Data.Motors.DistanceMode.ANGULAR
 
 
     // --- state getters and setters ---
@@ -229,7 +237,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
      * when set sets the position [setPoint] of the motor
      */
     var position: Rotation2d = 0.degrees
-        get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev)).rotations
+	    get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev)).rotations
         set(position) {
             field = position
             setPoint = position.degrees.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
@@ -279,7 +287,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
     /**
     the current [setPoint] for the motors pid controller
 
-    if the run mode is [RunMode.POSITION_CONTROL] the unit is degrees if the run mode is [RunMode.VELOCITY_CONTROL] the unit is rpm
+    if the run mode is [RunMode.PositionControl] the unit is degrees if the run mode is [RunMode.VelocityControl] the unit is rpm
      */
     var setPoint: Double = 0.0
         set(setPoint) {
@@ -292,19 +300,19 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
                 false -> {}
             }
             when (this.runMode) {
-                RunMode.POSITION_CONTROL -> {
+                RunMode.PositionControl -> {
                     positionController.setPoint =
                         setPoint.coerceIn(minimumPosition.degrees, maximumPosition.degrees)
                     field = setPoint
                 }
 
 
-                RunMode.VELOCITY_CONTROL -> {
+                RunMode.VelocityControl -> {
                     velocityController.setPoint = setPoint.coerceIn(-rpm.rpm, rpm.rpm)
                     field = setPoint
                 }
 
-                RunMode.RAW_POWER        -> {}
+                RunMode.RawPower -> {}
             }
             followers.forEach { it.setPoint = setPoint }
         }
@@ -317,15 +325,15 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
     val error: Double
         get() {
             return when (runMode) {
-                RunMode.POSITION_CONTROL -> {
+                RunMode.PositionControl -> {
                     positionController.positionError
                 }
 
-                RunMode.VELOCITY_CONTROL -> {
+                RunMode.VelocityControl -> {
                     velocityController.positionError
                 }
 
-                RunMode.RAW_POWER        -> {
+                RunMode.RawPower -> {
                     0.0
                 }
             }
@@ -340,9 +348,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
     var tolerance: Double = 0.0
         set(value) {
             when (runMode) {
-                RunMode.POSITION_CONTROL -> positionController.setTolerance(value)
-                RunMode.VELOCITY_CONTROL -> velocityController.setTolerance(value)
-                RunMode.RAW_POWER        -> {}
+                RunMode.PositionControl -> positionController.setTolerance(value)
+                RunMode.VelocityControl -> velocityController.setTolerance(value)
+                RunMode.RawPower        -> {}
             }
             followers.forEach { it.tolerance = value }
         }
@@ -353,15 +361,15 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
     val inTolerance: Boolean
         get() {
             return when (runMode) {
-                RunMode.POSITION_CONTROL -> {
+                RunMode.PositionControl -> {
                     positionController.atSetPoint()
                 }
 
-                RunMode.VELOCITY_CONTROL -> {
+                RunMode.VelocityControl -> {
                     velocityController.atSetPoint()
                 }
 
-                RunMode.RAW_POWER        -> {
+                RunMode.RawPower -> {
                     true
                 }
             }
@@ -412,19 +420,21 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
      */
     fun update() {
         when (this.runMode) {
-            RunMode.VELOCITY_CONTROL -> voltage =
+            RunMode.VelocityControl -> voltage =
                 (velocityController.calculate(velocity.asRpm) + feedForwardController.calculate(
                     velocity.asRpm,
                     estimateAcceleration()
                 ) + pidfGains.kFF * error.sign).volts
 
-            RunMode.POSITION_CONTROL -> voltage =
-                (positionController.calculate(position.degrees) + feedForwardController.calculate(
-                    velocity.asRpm,
-                    estimateAcceleration()
-                ) + pidfGains.kFF * error.sign).volts
+            RunMode.PositionControl -> voltage = when(distanceMode){
+				Data.Motors.DistanceMode.ANGULAR -> (positionController.calculate(position.degrees) + feedForwardController.calculate(velocity.asRpm, estimateAcceleration()) + pidfGains.kFF * error.sign).volts
+	            Data.Motors.DistanceMode.LINEAR -> (positionController.calculate(position.rotations * distancePerRevolution.asMeters) + feedForwardController.calculate(
+		            velocity.asRpm,
+		            estimateAcceleration()
+	            ) + pidfGains.kFF * error.sign).volts
+			}
 
-            RunMode.RAW_POWER        -> {}
+            RunMode.RawPower -> {}
         }
         limitCurrent()
         followers.forEach { it.update() }

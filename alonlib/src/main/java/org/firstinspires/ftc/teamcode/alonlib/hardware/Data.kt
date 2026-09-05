@@ -13,7 +13,7 @@ object Data {
 
     object Motors {
         /** The direction the motor rotates. */
-        enum class Direction(val multiplier: Int) { FORWARD(1), REVERSE(-1) }
+        enum class Direction(val multiplier: Int) { Forward(1), Reverse(-1) }
 
         /** GoBILDA yellow-jacket gearbox presets -- ticks/rev and free-run RPM per ratio. */
         enum class GoBILDA(val cpr: Double, val rpm: Double) {
@@ -22,19 +22,20 @@ object Data {
             RPM_1150(145.6, 1150.0), RPM_1620(103.6, 1620.0), BARE(28.0, 6000.0),
         }
 
-        enum class RunMode { VELOCITY_CONTROL, POSITION_CONTROL, RAW_POWER }
+        enum class RunMode { VelocityControl, PositionControl, RawPower }
+	    enum class DistanceMode { LINEAR,ANGULAR }
 
         enum class ZeroPowerBehavior(val sdkBehavior: DcMotor.ZeroPowerBehavior) {
-            UNKNOWN(DcMotor.ZeroPowerBehavior.UNKNOWN),
-            BRAKE(DcMotor.ZeroPowerBehavior.BRAKE),
-            FLOAT(DcMotor.ZeroPowerBehavior.FLOAT),
+            Unknown(DcMotor.ZeroPowerBehavior.UNKNOWN),
+            Brake(DcMotor.ZeroPowerBehavior.BRAKE),
+            Float(DcMotor.ZeroPowerBehavior.FLOAT),
         }
     }
 
     object Servos {
         enum class Mode {
-            CR,
-            FULL_RANGE
+            Cr,
+            FullRange
         }
 
         /**

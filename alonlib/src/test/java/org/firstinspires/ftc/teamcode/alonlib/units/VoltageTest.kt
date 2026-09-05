@@ -45,7 +45,7 @@ class VoltageTest {
 
     @Test
     fun `toString reports volts`() {
-        assertEquals("Volts(12.0)", Voltage.fromVolts(12.0).toString())
+        assertEquals("12.0 Volts", Voltage.fromVolts(12.0).toString())
     }
 
     @Test

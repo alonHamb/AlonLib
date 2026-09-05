@@ -32,7 +32,7 @@ class HaServoPositionRegressionTest {
         fun settle() = simServo.update(10.0) // plenty of time to finish the slew
 
         for (type in Data.Servos.Type.entries) {
-            val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FULL_RANGE, type)
+            val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FullRange, type)
             val halfRange = type.range / 2.0
 
             assertTrue(

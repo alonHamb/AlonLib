@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.alonlib.math.mapRange
 import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity
 import org.firstinspires.ftc.teamcode.alonlib.units.degrees
+import org.firstinspires.ftc.teamcode.alonlib.units.normalizedDegrees
 import org.firstinspires.ftc.teamcode.alonlib.units.rpm
 
 /**
@@ -34,8 +35,8 @@ class HaServo(
     init {
         (servo as ServoImplEx).apply {
             pwmRange = when (mode) {
-                Mode.CR         -> PwmControl.PwmRange(type.crPwmRange.first.asMicroseconds, type.crPwmRange.second.asMicroseconds)
-                Mode.FULL_RANGE -> PwmControl.PwmRange(type.fullRangePwmRange.first.asMicroseconds, type.fullRangePwmRange.second.asMicroseconds)
+                Mode.Cr        -> PwmControl.PwmRange(type.crPwmRange.first.asMicroseconds, type.crPwmRange.second.asMicroseconds)
+                Mode.FullRange -> PwmControl.PwmRange(type.fullRangePwmRange.first.asMicroseconds, type.fullRangePwmRange.second.asMicroseconds)
             }
         }
     }
@@ -96,7 +97,7 @@ class HaServo(
      */
     var maxPosition: Rotation2d = halfRange
         set(value) {
-            field = value.degrees.coerceIn(-halfRange.normalizdDegrees..halfRange.normalizdDegrees).degrees
+            field = value.degrees.coerceIn(-halfRange.normalizedDegrees..halfRange.normalizedDegrees).degrees
             followers.forEach { it.maxPosition = field }
         }
 
@@ -105,7 +106,7 @@ class HaServo(
      */
     var minPosition: Rotation2d = (-halfRange)
         set(value) {
-            field = value.degrees.coerceIn(-halfRange.normalizdDegrees..maxPosition.normalizdDegrees).degrees
+            field = value.degrees.coerceIn(-halfRange.normalizedDegrees..maxPosition.normalizedDegrees).degrees
             followers.forEach { it.minPosition = field }
         }
 
@@ -119,15 +120,15 @@ class HaServo(
     var position: Rotation2d = 0.0.degrees
         set(position) {
             when (mode) {
-                Mode.CR         -> robotPrintError("cannot set position in CR mode")
-                Mode.FULL_RANGE -> {
+                Mode.Cr        -> robotPrintError("cannot set position in CR mode")
+                Mode.FullRange -> {
                     field = position
                     servo.position = mapRange(
-                        position.normalizdDegrees.coerceIn(minPosition.normalizdDegrees, maxPosition.normalizdDegrees),
-                        0.0,
-                        type.range.normalizdDegrees,
-                        0.0,
-                        1.0
+	                    position.normalizedDegrees.coerceIn(minPosition.normalizedDegrees, maxPosition.normalizedDegrees),
+	                    0.0,
+	                    type.range.normalizedDegrees,
+	                    0.0,
+	                    1.0
                     )
                     followers.forEach { it.position = position }
 
@@ -161,13 +162,13 @@ class HaServo(
     var velocity: AngularVelocity = 0.0.rpm
         set(value) {
             when (mode) {
-                Mode.CR         -> {
+                Mode.Cr -> {
                     servo.position = mapRange(value.asRpm, minVelocity.asRpm, maxVelocity.asRpm, 0.0, 1.0)
                     field = value
                     followers.forEach { it.velocity = value }
                 }
 
-                Mode.FULL_RANGE -> robotPrintError("cannot set velocity in full range mode")
+                Mode.FullRange -> robotPrintError("cannot set velocity in full range mode")
 
             }
         }
@@ -175,8 +176,8 @@ class HaServo(
 
     fun stop() {
         when (mode) {
-            Mode.CR         -> percentOutput = 0.0
-            Mode.FULL_RANGE -> {}
+            Mode.Cr        -> percentOutput = 0.0
+            Mode.FullRange -> {}
         }
         followers.forEach { it.stop() }
     }
