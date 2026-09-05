@@ -11,7 +11,9 @@ import java.util.Collections
  * [registerSubsystem] a [Subsystem] so its [Subsystem.periodic] runs and its default command gets
  * scheduled.
  */
-object CommandScheduler {
+object
+
+CommandScheduler {
 
 	private val scheduledCommands = LinkedHashMap<Command, CommandState>()
 	private val requirementOwners = LinkedHashMap<Subsystem, Command>()
