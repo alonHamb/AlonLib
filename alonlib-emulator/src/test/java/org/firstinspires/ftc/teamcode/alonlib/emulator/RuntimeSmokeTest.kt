@@ -23,61 +23,61 @@ import org.junit.Test
  */
 class RuntimeSmokeTest {
 
-    private fun hub() = EmulatedHub(
-        HubId.CONTROL,
-        motors = mapOf(0 to "front left motor"),
-        servos = mapOf(0 to "hood servo")
-    )
+	private fun hub() = EmulatedHub(
+		HubId.CONTROL,
+		motors = mapOf(0 to "front left motor"),
+		servos = mapOf(0 to "hood servo")
+	)
 
-    @Test
-    fun `raw DcMotorEx and Servo lookups work`() {
-        val controlHub = hub()
-        val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
+	@Test
+	fun `raw DcMotorEx and Servo lookups work`() {
+		val controlHub = hub()
+		val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
 
-        val motor = hardwareMap.get(DcMotorEx::class.java, "front left motor")
-        motor.power = 0.6
-        controlHub.motors.getValue(0).update(0.5) // advance sim dynamics by 0.5s
-        assertTrue("expected the encoder to have moved", motor.currentPosition != 0)
+		val motor = hardwareMap.get(DcMotorEx::class.java, "front left motor")
+		motor.power = 0.6
+		controlHub.motors.getValue(0).update(0.5) // advance sim dynamics by 0.5s
+		assertTrue("expected the encoder to have moved", motor.currentPosition != 0)
 
-        val servo = hardwareMap.get(Servo::class.java, "hood servo")
-        assertTrue("HaServo force-casts this to ServoImplEx", servo is ServoImplEx)
-        servo.position = 0.75
-        controlHub.servos.getValue(0).update(10.0) // plenty of time to finish the slew
-        assertEquals(0.75, servo.position, 0.01)
-    }
+		val servo = hardwareMap.get(Servo::class.java, "hood servo")
+		assertTrue("HaServo force-casts this to ServoImplEx", servo is ServoImplEx)
+		servo.position = 0.75
+		controlHub.servos.getValue(0).update(10.0) // plenty of time to finish the slew
+		assertEquals(0.75, servo.position, 0.01)
+	}
 
-    @Test
-    fun `LynxModule bulk data and voltage are wired to the same sim motor`() {
-        val controlHub = hub()
-        val hardwareMap = buildEmulatedHardwareMap(controlHub) { 11.5 }
+	@Test
+	fun `LynxModule bulk data and voltage are wired to the same sim motor`() {
+		val controlHub = hub()
+		val hardwareMap = buildEmulatedHardwareMap(controlHub) { 11.5 }
 
-        val motor = hardwareMap.get(DcMotorEx::class.java, "front left motor")
-        motor.power = 1.0
-        controlHub.motors.getValue(0).update(1.0)
+		val motor = hardwareMap.get(DcMotorEx::class.java, "front left motor")
+		motor.power = 1.0
+		controlHub.motors.getValue(0).update(1.0)
 
-        val hub = hardwareMap.get(LynxModule::class.java, "Control Hub")
-        assertEquals(motor.currentPosition, hub.bulkData.getMotorCurrentPosition(0))
-        assertEquals(11.5, hub.getInputVoltage(VoltageUnit.VOLTS), 0.001)
-    }
+		val hub = hardwareMap.get(LynxModule::class.java, "Control Hub")
+		assertEquals(motor.currentPosition, hub.bulkData.getMotorCurrentPosition(0))
+		assertEquals(11.5, hub.getInputVoltage(VoltageUnit.VOLTS), 0.001)
+	}
 
-    @Test
-    fun `HaMotor and HaServo from alonlib work against the emulated hardware map unmodified`() {
-        val controlHub = hub()
-        val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
+	@Test
+	fun `HaMotor and HaServo from alonlib work against the emulated hardware map unmodified`() {
+		val controlHub = hub()
+		val hardwareMap = buildEmulatedHardwareMap(controlHub) { 12.7 }
 
-        val haMotor = HaMotor(hardwareMap, "front left motor", Data.Motors.GoBILDA.RPM_435)
-        haMotor.percentOutput = 0.4.fraction
-        haMotor.update()
-        controlHub.motors.getValue(0).update(0.2)
-        // Reading through HaMotor exercises hub.bulkData.getMotorCurrentPosition/Velocity.
-        haMotor.position
-        haMotor.velocity
+		val haMotor = HaMotor(hardwareMap, "front left motor", Data.Motors.GoBILDA.RPM_435)
+		haMotor.percentOutput = 0.4.fraction
+		haMotor.update()
+		controlHub.motors.getValue(0).update(0.2)
+		// Reading through HaMotor exercises hub.bulkData.getMotorCurrentPosition/Velocity.
+		haMotor.angle
+		haMotor.velocity
 
-        // position is relative to the center of the servo's sweep (0deg = centered), so a physical
-        // 0.75 fraction is a quarter-range offset from center: (0.75 - 0.5) * range.
-        val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FullRange, Data.Servos.Type.Speed)
-        haServo.position = ( Data.Servos.Type.Speed.range * 0.25)
-        controlHub.servos.getValue(0).update(10.0)
-        assertEquals(0.75, haServo.servo.position, 0.01)
-    }
+		// position is relative to the center of the servo's sweep (0deg = centered), so a physical
+		// 0.75 fraction is a quarter-range offset from center: (0.75 - 0.5) * range.
+		val haServo = HaServo(hardwareMap, "hood servo", Data.Servos.Mode.FullRange, Data.Servos.Type.Speed)
+		haServo.position = (Data.Servos.Type.Speed.range * 0.25)
+		controlHub.servos.getValue(0).update(10.0)
+		assertEquals(0.75, haServo.servo.position, 0.01)
+	}
 }

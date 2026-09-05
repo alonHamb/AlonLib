@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.alonlib.math.control
 
-import com.qualcomm.robotcore.hardware.PIDFCoefficients
+import org.firstinspires.ftc.teamcode.alonlib.math.PIDFGains
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt
@@ -13,10 +13,10 @@ import kotlin.math.sqrt
  * disproportionately large correction) -- the square root flattens that out while keeping the
  * same direction and zero-crossing.
  */
-class SquIDFController(kp: Double, ki: Double, kd: Double, kf: Double, sp: Double = 0.0, pv: Double = 0.0) :
-        PIDFController(kp, ki, kd, kf, sp, pv) {
+class SquIDFController(gains: PIDFGains, setpoint: Double, current: Double) :
+	PIDFController(gains) {
 
-    constructor(coefficients: PIDFCoefficients) : this(coefficients.p, coefficients.i, coefficients.d, coefficients.f)
+	constructor(kp: Double, ki: Double, kd: Double, kf: (Double) -> Double, sp: Double, pv: Double) : this(PIDFGains(kp, ki, kd, kf), sp, pv)
 
-    override fun proportionalTerm(error: Double) = sign(error) * sqrt(abs(error))
+	override fun proportionalTerm(error: Double) = sign(error) * sqrt(abs(error))
 }

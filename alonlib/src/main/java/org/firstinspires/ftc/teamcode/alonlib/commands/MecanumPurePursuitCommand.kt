@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.alonlib.commands
 
 import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Pose2d
 import org.firstinspires.ftc.teamcode.alonlib.purepursuit.Path
-import org.firstinspires.ftc.teamcode.alonlib.purepursuit.Waypoint
+import org.firstinspires.ftc.teamcode.alonlib.purepursuit.waypoints.Waypoint
 
 /**
  * Drives a mecanum-style robot along a pure-pursuit [Path], every scheduler tick, until it

@@ -23,72 +23,73 @@ import kotlin.math.sin
  * accessors), so there's nothing left for a separate angle-unit parameter to disambiguate.
  */
 class P2PController(
-    val translationalController: PIDController,
-    val headingController: PIDController,
-    start: Pose2d = Pose2d.kZero,
-    target: Pose2d = Pose2d.kZero,
-    positionTolerance: Double,
-    angularToleranceRadians: Double,
+	val translationalController: PIDController,
+	val headingController: PIDController,
+	start: Pose2d = Pose2d.kZero,
+	target: Pose2d = Pose2d.kZero,
+	positionTolerance: Double,
+	angularToleranceRadians: Double,
 ) {
-    var target: Pose2d = target
-        private set
 
-    private var current: Pose2d = start
+	var target: Pose2d = target
+		private set
 
-    var error: Transform2d = Transform2d()
-        private set
+	private var current: Pose2d = start
 
-    private var magnitudeLimiter: SlewRateLimiter? = null
-    private var headingLimiter: SlewRateLimiter? = null
+	var error: Transform2d = Transform2d()
+		private set
 
-    init {
-        updateError()
-        setTolerance(positionTolerance, angularToleranceRadians)
-    }
+	private var magnitudeLimiter: SlewRateLimiter? = null
+	private var headingLimiter: SlewRateLimiter? = null
 
-    /** The field-centric chassis speeds to drive from the robot's current pose [pv] towards [target]. */
-    fun calculate(pv: Pose2d): ChassisSpeeds {
-        current = pv
-        updateError()
+	init {
+		updateError()
+		setTolerance(positionTolerance, angularToleranceRadians)
+	}
 
-        val errorX = target.x - current.x
-        val errorY = target.y - current.y
+	/** The field-centric chassis speeds to drive from the robot's current pose [pv] towards [target]. */
+	fun calculate(pv: Pose2d): ChassisSpeeds {
+		current = pv
+		updateError()
 
-        val distanceToTarget = hypot(errorX, errorY)
-        val errorAngle = atan2(errorY, errorX)
-        var magnitude = translationalController.calculate(0.0, distanceToTarget)
-        magnitudeLimiter?.let { magnitude = it.calculate(magnitude) }
+		val errorX = target.x - current.x
+		val errorY = target.y - current.y
 
-        val xVal = magnitude * cos(errorAngle)
-        val yVal = magnitude * sin(errorAngle)
+		val distanceToTarget = hypot(errorX, errorY)
+		val errorAngle = atan2(errorY, errorX)
+		var magnitude = translationalController.calculate(0.0, distanceToTarget)
+		magnitudeLimiter?.let { magnitude = it.calculate(magnitude) }
 
-        val headingError = angleModulus(target.rotation.radians - current.rotation.radians)
-        var headingVal = headingController.calculate(0.0, headingError)
-        headingLimiter?.let { headingVal = it.calculate(headingVal) }
+		val xVal = magnitude * cos(errorAngle)
+		val yVal = magnitude * sin(errorAngle)
 
-        return ChassisSpeeds(xVal, yVal, headingVal)
-    }
+		val headingError = angleModulus(target.rotation.radians - current.rotation.radians)
+		var headingVal = headingController.calculate(0.0, headingError)
+		headingLimiter?.let { headingVal = it.calculate(headingVal) }
 
-    fun setSlewRateLimiters(magnitudeLimiter: SlewRateLimiter?, headingLimiter: SlewRateLimiter?) = apply {
-        this.magnitudeLimiter = magnitudeLimiter
-        this.headingLimiter = headingLimiter
-    }
+		return ChassisSpeeds(xVal, yVal, headingVal)
+	}
 
-    fun setTarget(target: Pose2d) {
-        this.target = target
-    }
+	fun setSlewRateLimiters(magnitudeLimiter: SlewRateLimiter?, headingLimiter: SlewRateLimiter?) = apply {
+		this.magnitudeLimiter = magnitudeLimiter
+		this.headingLimiter = headingLimiter
+	}
 
-    fun setTolerance(positionTolerance: Double, angularToleranceRadians: Double) {
-        translationalController.setTolerance(positionTolerance)
-        headingController.setTolerance(angularToleranceRadians)
-    }
+	fun setTarget(target: Pose2d) {
+		this.target = target
+	}
 
-    fun atTarget() = translationalController.atSetPoint() && headingController.atSetPoint()
+	fun setTolerance(positionTolerance: Double, angularToleranceRadians: Double) {
+		translationalController.setTolerance(positionTolerance)
+		headingController.setTolerance(angularToleranceRadians)
+	}
 
-    private fun updateError() {
-        val errorX = target.x - current.x
-        val errorY = target.y - current.y
-        val errorHeading = angleModulus(target.rotation.radians - current.rotation.radians)
-        error = Transform2d(Translation2d(errorX, errorY), Rotation2d.fromRadians(errorHeading))
-    }
+	fun atTarget() = translationalController.inTolerance() && headingController.inTolerance()
+
+	private fun updateError() {
+		val errorX = target.x - current.x
+		val errorY = target.y - current.y
+		val errorHeading = angleModulus(target.rotation.radians - current.rotation.radians)
+		error = Transform2d(Translation2d(errorX, errorY), Rotation2d.fromRadians(errorHeading))
+	}
 }

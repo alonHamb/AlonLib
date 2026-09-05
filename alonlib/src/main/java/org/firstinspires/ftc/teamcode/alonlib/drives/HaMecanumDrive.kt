@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.alonlib.math.geometry.Vector2d
 import org.firstinspires.ftc.teamcode.alonlib.units.fraction
 import kotlin.math.sin
 
-class HaMecanumDriveHa(
+class HaMecanumDrive(
 	var motors: Array<HaMotor>,
 	var rightSideMultiplier: Double = -1.0
 ) : HaRobotDrive() {
