@@ -16,71 +16,75 @@ import org.firstinspires.ftc.teamcode.alonlib.units.AngularVelocity.Unit as Angu
  * - Meters per Second (Mps)
  */
 class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
-    Comparable<AngularVelocity> {
-    var rpm = 0.0
-        set(value) {
-            field = if (value.isNaN()) {
-                robotPrintError("AngularVelocity cannot be NaN.")
-                0.0
-            } else if (value.isInfinite()) {
-                robotPrintError("AngularVelocity cannot be infinite.")
-                0.0
-            } else value
-        }
+	Comparable<AngularVelocity> {
 
-    val asRpm get() = rpm
-    val asRps get() = this.inUnit(AngularVelocityUnit.Rps)
-    val asRadPs get() = this.inUnit(AngularVelocityUnit.RadPs)
-    val asDegPs get() = this.inUnit(AngularVelocityUnit.DegPs)
+	var rpm = 0.0
+		set(value) {
+			field = if (value.isNaN()) {
+				robotPrintError("AngularVelocity cannot be NaN.")
+				0.0
+			} else if (value.isInfinite()) {
+				robotPrintError("AngularVelocity cannot be infinite.")
+				0.0
+			} else value
+		}
 
-    val asSecondsPerSixtyDegrees get() = this.inUnit(AngularVelocityUnit.SecondsPerSixtyDegrtees)
+	val asRpm get() = rpm
+	val asRps get() = this.inUnit(AngularVelocityUnit.Rps)
+	val asRadPs get() = this.inUnit(AngularVelocityUnit.RadPs)
+	val asDegPs get() = this.inUnit(AngularVelocityUnit.DegPs)
 
-    fun asMps(wheelRadius: Length) = rpmToMps(rpm, wheelRadius)
+	val asSecondsPerSixtyDegrees get() = this.inUnit(AngularVelocityUnit.SecondsPerSixtyDegrtees)
 
-    init {
-        rpm = when (velocityUnit) {
-            AngularVelocityUnit.Rpm                     -> velocity
-            AngularVelocityUnit.Rps                     -> rpsToRpm(velocity)
-            AngularVelocityUnit.RadPs                   -> radPsToRpm(velocity)
-            AngularVelocityUnit.DegPs                   -> degPsToRpm(velocity)
-            AngularVelocityUnit.SecondsPerSixtyDegrtees -> secondsPerSixtyDegreesToRpm(velocity)
-        }
-    }
+	fun asMps(wheelRadius: Length) = rpmToMps(rpm, wheelRadius)
 
-    private fun inUnit(velocityUnit: AngularVelocityUnit) =
-        when (velocityUnit) {
-            AngularVelocityUnit.Rpm                     -> rpm
-            AngularVelocityUnit.Rps                     -> rpmToRps(rpm)
-            AngularVelocityUnit.RadPs                   -> rpmToRadPs(rpm)
-            AngularVelocityUnit.DegPs                   -> rpmToDegPs(rpm)
-            AngularVelocityUnit.SecondsPerSixtyDegrtees -> rpmToSecondsPerSixtyDegrees(rpm)
-        }
+	init {
+		rpm = when (velocityUnit) {
+			AngularVelocityUnit.Rpm                     -> velocity
+			AngularVelocityUnit.Rps                     -> rpsToRpm(velocity)
+			AngularVelocityUnit.RadPs                   -> radPsToRpm(velocity)
+			AngularVelocityUnit.DegPs                   -> degPsToRpm(velocity)
+			AngularVelocityUnit.SecondsPerSixtyDegrtees -> secondsPerSixtyDegreesToRpm(velocity)
+		}
+	}
 
-    val absoluteValue get() = fromRpm(rpm.absoluteValue)
+	private fun inUnit(velocityUnit: AngularVelocityUnit) =
+		when (velocityUnit) {
+			AngularVelocityUnit.Rpm                     -> rpm
+			AngularVelocityUnit.Rps                     -> rpmToRps(rpm)
+			AngularVelocityUnit.RadPs                   -> rpmToRadPs(rpm)
+			AngularVelocityUnit.DegPs                   -> rpmToDegPs(rpm)
+			AngularVelocityUnit.SecondsPerSixtyDegrtees -> rpmToSecondsPerSixtyDegrees(rpm)
+		}
 
-    override fun toString() = "RPM($rpm)"
-    override fun compareTo(other: AngularVelocity): Int = rpm.compareTo(other.rpm)
+	val absoluteValue get() = fromRpm(rpm.absoluteValue)
 
-    operator fun plus(other: AngularVelocity) = fromRpm(rpm + other.rpm)
-    operator fun minus(other: AngularVelocity) = fromRpm(rpm - other.rpm)
-    operator fun times(ratio: Double) = fromRpm(rpm * ratio)
-    operator fun div(ratio: Double) = fromRpm(rpm / ratio)
-    operator fun unaryMinus() = fromRpm(-rpm)
+	override fun toString() = "RPM($rpm)"
+	override fun compareTo(other: AngularVelocity): Int = rpm.compareTo(other.rpm)
 
-    enum class Unit {
-        Rpm,
-        Rps,
-        RadPs,
-        DegPs,
-        SecondsPerSixtyDegrtees,
+	operator fun plus(other: AngularVelocity) = fromRpm(rpm + other.rpm)
+	operator fun minus(other: AngularVelocity) = fromRpm(rpm - other.rpm)
+	operator fun times(other: AngularVelocity) = fromRpm(rpm * other.rpm)
+	operator fun times(ratio: Double) = fromRpm(rpm * ratio)
+	operator fun div(other: AngularVelocity) = fromRpm(rpm * other.rpm)
+	operator fun div(ratio: Double) = fromRpm(rpm / ratio)
+	operator fun unaryMinus() = fromRpm(-rpm)
 
-    }
+	enum class Unit {
+		Rpm,
+		Rps,
+		RadPs,
+		DegPs,
+		SecondsPerSixtyDegrtees,
 
-    companion object {
-        fun fromRpm(rpm: Double) = AngularVelocity(rpm, AngularVelocityUnit.Rpm)
-        fun fromRps(rps: Double) = AngularVelocity(rps, AngularVelocityUnit.Rps)
-        fun fromRadPs(radPs: Double) = AngularVelocity(radPs, AngularVelocityUnit.RadPs)
-        fun fromDegPs(degPs: Double) = AngularVelocity(degPs, AngularVelocityUnit.DegPs)
-        fun fromMps(mps: Double, wheelRadius: Length) = fromRpm(mpsToRpm(mps, wheelRadius))
-    }
+	}
+
+	companion object {
+
+		fun fromRpm(rpm: Double) = AngularVelocity(rpm, AngularVelocityUnit.Rpm)
+		fun fromRps(rps: Double) = AngularVelocity(rps, AngularVelocityUnit.Rps)
+		fun fromRadPs(radPs: Double) = AngularVelocity(radPs, AngularVelocityUnit.RadPs)
+		fun fromDegPs(degPs: Double) = AngularVelocity(degPs, AngularVelocityUnit.DegPs)
+		fun fromMps(mps: Double, wheelRadius: Length) = fromRpm(mpsToRpm(mps, wheelRadius))
+	}
 }

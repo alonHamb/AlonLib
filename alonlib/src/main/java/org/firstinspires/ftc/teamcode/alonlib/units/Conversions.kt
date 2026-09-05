@@ -5,8 +5,8 @@ import org.firstinspires.ftc.teamcode.alonlib.robotPrintError
 import kotlin.math.PI
 
 const val INCHES_IN_METER = 39.3700787402
-val DECODE_FIELD_LENGTH = Length.fromMeters(3.585719)
-val DECODE_FIELD_WIDTH = Length.fromMeters(3.585719)
+val FIELD_LENGTH = Length.fromMeters(3.585719)
+val FIELD_WIDTH = Length.fromMeters(3.585719)
 
 /// --- Angles to Angles Conversions ---
 
@@ -41,7 +41,6 @@ fun rpsToDegPs(rps: Number) = rps.toDouble() * 360.0
 
 /** Rotations per second to seconds per sixty degree. */
 fun rpsToSecondsPerSixtyDegrees(rps: Number) = 1 / (rps.toDouble() / 6)
-
 
 /** Radians per second to rotations per minute. */
 fun radPsToRpm(radPs: Number) = radPs.toDouble() / (Math.PI * 2.0) * 60.0
@@ -82,11 +81,11 @@ fun secondsPerSixtyDegreesToRpm(secondsPerSixtyDegrees: Number) = 1 / secondsPer
  *
  * Wheel radius should be greater than 0. */
 fun rpmToMps(rpm: Number, wheelRadius: Length): Double {
-    if (wheelRadius.asMeters <= 0.0) {
-        robotPrintError("wheelRadius is negative")
-        return 0.0
-    }
-    return rpm.toDouble() / 60.0 * (wheelRadius.asMeters * 2.0 * Math.PI)
+	if (wheelRadius.asMeters <= 0.0) {
+		robotPrintError("wheelRadius is negative")
+		return 0.0
+	}
+	return rpm.toDouble() / 60.0 * (wheelRadius.asMeters * 2.0 * Math.PI)
 }
 
 /** Radians per second to meters per second.
@@ -103,11 +102,11 @@ fun degPsToMps(degPs: Number, wheelRadius: Length) = rpmToMps(degPsToRpm(degPs),
  *
  * Wheel radius should be greater than 0. */
 fun mpsToRpm(mps: Number, wheelRadius: Length): Double {
-    if (wheelRadius.asMeters <= 0.0) {
-        robotPrintError("wheelRadius is negative")
-        return 0.0
-    }
-    return mps.toDouble() * 60.0 / (wheelRadius.asMeters * 2.0 * Math.PI)
+	if (wheelRadius.asMeters <= 0.0) {
+		robotPrintError("wheelRadius is negative")
+		return 0.0
+	}
+	return mps.toDouble() * 60.0 / (wheelRadius.asMeters * 2.0 * Math.PI)
 }
 
 /** Meters per second to radians per second.
@@ -140,7 +139,6 @@ fun feetToMeters(feet: Number) = inchesToMeters(feetToInches(feet))
 /** Feet to inches.  */
 fun feetToInches(feet: Number) = feet.toDouble() * 12.0
 
-
 /**
  * @param position - MUST be blue alliance.
  * @param alliance - The current alliance.
@@ -154,15 +152,14 @@ fun mpsToIps(mps: Number) = mps.toDouble() * 39.37008
 fun mpsToMph(mps: Number) = mps.toDouble() * 2.23693632
 fun mmpsToMps(mmps: Number) = mmps.toDouble() / 1000.0
 
-
 fun matchPoseToAlliance(position: Pose2d, alliance: Alliance): Pose2d {
-    return when (alliance) {
-        Alliance.Blue -> position
-        Alliance.Red  ->
-            Pose2d(
-                DECODE_FIELD_LENGTH.asMeters - position.x,
-                position.y,
-                position.rotation + 180.degrees
-            )
-    }
+	return when (alliance) {
+		Alliance.Blue -> position
+		Alliance.Red  ->
+			Pose2d(
+				FIELD_LENGTH.asMeters - position.x,
+				position.y,
+				position.rotation + 180.degrees
+			)
+	}
 }
