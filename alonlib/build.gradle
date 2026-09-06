@@ -1,15 +1,16 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 //
 // build.gradle for the alonlib library module
 //
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     id 'maven-publish'
 }
 
 android {
-    namespace = 'org.firstinspires.ftc.teamcode.alonlib'
+    namespace = 'alonlib'
     compileSdk = libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
@@ -18,18 +19,19 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     publishing {
         singleVariant('release') {
             withSourcesJar()
         }
+    }
+}
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17 // Change to your target version (e.g., JVM_11, JVM_17, JVM_21)
     }
 }
 
@@ -46,9 +48,9 @@ dependencies {
     api libs.bundles.roadrunner
     api libs.acmerobotics.dashboard
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.12.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.kotlinx.coroutines.test)
     // if using coroutines
 }
 

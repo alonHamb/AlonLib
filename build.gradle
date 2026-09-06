@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
@@ -7,14 +9,21 @@ buildscript {
         mavenCentral()
         google()
     }
+    dependencies {
+        // For KGP
+        classpath(libs.kotlin.gradle.plugin)
+
+        // For KSP
+        //noinspection UseTomlInstead
+        classpath("com.google.devtools.ksp:symbol-processing-gradle-plugin:KSP_VERSION")
+    }
 }
 plugins {
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.kotlin.android) apply false
 }
 
 allprojects {
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy {
             eachDependency { details ->
                 if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name.startsWith('kotlin-stdlib-jdk')) {
