@@ -1,12 +1,15 @@
 [versions]
 agp = "9.1.1"
 ftcControlHubEmulator = "v1.1.1"
+junit = "4.13.2"
 kotlin = "2.4.10"
 ftc-sdk = "11.1.0"
 dashboard = "0.5.1"
 appcompat = "1.8.0"
 core-ktx = "1.19.0"
 ejml = "0.44.0"
+kotlinxCoroutinesTest = "1.11.0"
+mockitoCore = "5.23.0"
 roadrunner-core = "1.0.1"
 roadrunner-actions = "1.0.1"
 roadrunner-ftc = "0.1.25"
@@ -29,17 +32,7 @@ ftc-hardware = { group = "org.firstinspires.ftc", name = "Hardware", version.ref
 ftc-ftccommon = { group = "org.firstinspires.ftc", name = "FtcCommon", version.ref = "ftc-sdk" }
 ftc-vision = { group = "org.firstinspires.ftc", name = "Vision", version.ref = "ftc-sdk" }
 
-# Dashboard
-acmerobotics-dashboard = { group = "com.acmerobotics.dashboard", name = "dashboard", version.ref = "dashboard" }
 
-# AndroidX
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
-
-# Others
-ejml-simple = { group = "org.ejml", name = "ejml-simple", version.ref = "ejml" }
-
-# RoadRunner
 roadrunner-core = { group = "com.acmerobotics.roadrunner", name = "core", version.ref = "roadrunner-core" }
 roadrunner-actions = { group = "com.acmerobotics.roadrunner", name = "actions", version.ref = "roadrunner-actions" }
 roadrunner-ftc = { group = "com.acmerobotics.roadrunner", name = "ftc", version.ref = "roadrunner-ftc" }
