@@ -1,6 +1,5 @@
 [versions]
 kotlin = "2.4.10"
-
 [bundles]
 
 [plugins]
