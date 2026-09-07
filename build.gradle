@@ -9,12 +9,11 @@ buildscript {
     }
 }
 plugins {
-    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.android) apply false
 }
 
 allprojects {
-    configurations.all {
+    configurations.configureEach {
         resolutionStrategy {
             eachDependency { details ->
                 if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name.startsWith('kotlin-stdlib-jdk')) {
