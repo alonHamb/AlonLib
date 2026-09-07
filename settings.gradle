@@ -22,3 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "AlonLib"
 include ':alonlib'
+include ':alonlib-emulator'
+include ':demo'

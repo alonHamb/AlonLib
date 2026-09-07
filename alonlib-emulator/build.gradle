@@ -1,0 +1,92 @@
+//
+// build.gradle for the alonlib-emulator module
+//
+// Lets a consuming project's TeamCode module run its *real, unmodified* OpModes on a desktop
+// emulator (see https://github.com/alonHamb/ftc-control-hub-emulator) instead of a physical REV
+// Control/Expansion Hub. Deliberately kept out of the main `alonlib` module -- it drags in
+// Mockito and ftc-control-hub-emulator (which itself pulls in JNA for gamepad reading), neither of
+// which any real robot build should ship. Only ever add this as a `testImplementation` of your
+// TeamCode module, never `implementation`.
+//
+
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    id 'maven-publish'
+}
+
+android {
+    namespace = 'org.firstinspires.ftc.teamcode.alonlib.emulator'
+    compileSdkVersion = libs.versions.compileSdk.get().toInteger()
+
+    defaultConfig {
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // HardwareMap.tryGet() unconditionally touches Device.isRevControlHub(), whose static init
+    // chain reaches an unmocked android.os.Environment method. Consuming projects need the same
+    // option on their TeamCode module -- see the README.
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+        }
+    }
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+dependencies {
+    // Brings in the FTC SDK (as `api` from alonlib) plus HaMotor/HaServo so this module's
+    // adapters can be dropped straight into hardware maps built the normal AlonLib way.
+    api project(':alonlib')
+
+    // SimMotor/SimServo/BatteryModel/RunnerShellApp/gamepad reading, plus emulator.config
+    // (parseRobotConfigXml/buildSimulatedRobot -- see EmulatorAutoLauncher.kt), which landed on
+    // upstream's main after the v1.0.2 tag and hasn't been released as a tagged version yet, so
+    // this pins a specific commit instead -- bump to a real tag once one exists past this commit.
+    // Includes the fix for RunnerShellApp's tick Timer never being stopped on window close, which
+    // kept the AWT event thread (and so the whole JVM) alive after the emulator window closed.
+    api libs.ftc.control.hub.emulator
+
+    // Mocks LynxModule's bulk-read data (see EmuLynxModule.kt) -- LynxModule has no way to be
+    // constructed without a real USB-connected hub, so it can't be implemented directly the way
+    // DcMotorEx/Servo are.
+    implementation 'org.mockito:mockito-core:5.23.0'
+
+    // Classpath-scans for @TeleOp/@Autonomous OpModes (see EmulatorAutoLauncher.kt) -- runs inside
+    // a consuming project's own test classpath, so this needs to be `implementation`, not
+    // `testImplementation`, to actually be present there.
+    implementation 'io.github.classgraph:classgraph:4.8.193'
+
+    // `api`, not `testImplementation`: EmulatorAutoLauncher.kt (in src/main, so it's usable from a
+    // consumer's own src/test with zero code of their own) references `org.junit.Test` directly,
+    // and this module's own src/test needs it too -- `testImplementation` extends `implementation`,
+    // so declaring it here covers both instead of needing two separate lines.
+    api 'junit:junit:4.13.2'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.alonHamb'
+                artifactId = 'alonlib-emulator'
+            }
+        }
+    }
+}
