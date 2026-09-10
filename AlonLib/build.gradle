@@ -43,9 +43,6 @@ dependencies {
     // unless they touch the estimator/system package.
     implementation libs.ejml.simple
 
-    api libs.bundles.roadrunner
-    api libs.acmerobotics.dashboard
-
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -55,7 +55,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 	fun init() {
 		verifyLegality()
 		reset()
-		for (i in 1 until java.util.ArrayList.size) (this[i] as GeneralWaypoint).inherit(this[i - 1])
+		for (i in 1 until size) (this[i] as GeneralWaypoint).inherit(this[i - 1])
 		initComplete = true
 	}
 
@@ -101,7 +101,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 		while (interruptActionQueue.isNotEmpty()) interruptActionQueue.removeFirst().performAction()
 
 		val intersections = mutableListOf<TaggedIntersection>()
-		for (i in 1 until java.util.ArrayList.size) {
+		for (i in 1 until size) {
 			val linePoint1 = this[i - 1].pose.translation
 			val linePoint2 = this[i].pose.translation
 			val radius = this[i].followDistance
@@ -341,7 +341,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 
 	/** Sets the first `timeouts.size` waypoints' individual timeouts. */
 	fun setWaypointTimeouts(vararg timeouts: Long) = apply {
-		for (i in 0 until minOf(java.util.ArrayList.size, timeouts.size)) (this[i] as? GeneralWaypoint)?.setTimeout(timeouts[i])
+		for (i in 0 until minOf(size, timeouts.size)) (this[i] as? GeneralWaypoint)?.setTimeout(timeouts[i])
 	}
 
 	/** Sets every waypoint's individual timeout to the same value. Not recommended. */
@@ -387,10 +387,10 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 	}
 
 	private fun verifyLegality() {
-		check(java.util.ArrayList.size >= 2) { "A path must have at least two waypoints." }
+		check(size >= 2) { "A path must have at least two waypoints." }
 		check(this[0].type == WaypointType.START) { "A path must start with a StartWaypoint." }
-		check(this[java.util.ArrayList.size - 1].type == WaypointType.END) { "A path must end with an EndWaypoint." }
-		for (i in 1 until java.util.ArrayList.size - 1) {
+		check(this[size - 1].type == WaypointType.END) { "A path must end with an EndWaypoint." }
+		for (i in 1 until size - 1) {
 			check(this[i].type != WaypointType.END && this[i].type != WaypointType.START) {
 				"A path must not have end and start waypoints anywhere other than the first and last spot."
 			}

@@ -13,10 +13,7 @@ import kotlin.math.sin
  * raw angle so composing rotations ([rotateBy]) is a cheap multiply instead of another
  * trig call.
  *
- * This is the internal, ported-from-WPILib geometry type -- distinct from RoadRunner's own
- * `Rotation2d` (bridged separately via `units/RoadRunnerConversions.kt`) and from
- * [org.firstinspires.ftc.teamcode.alonlib.units], though [org.firstinspires.ftc.teamcode.alonlib.units.Extensions.kt]-style
- * `Number.x` bridges for this type live in `units/WpilibConversions.kt`.
+ * This is the internal, ported-from-WPILib geometry type.
  */
 class Rotation2d private constructor(val radians: Double, val cos: Double, val sin: Double) :
     Interpolatable<Rotation2d> {

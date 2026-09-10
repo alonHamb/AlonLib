@@ -1,6 +1,6 @@
 package alonlib.commands.button
 
-import org.firstinspires.ftc.teamcode.alonlib.commands.Command
+import alonlib.commands.Command
 import alonlib.commands.CommandScheduler
 import alonlib.commands.InstantCommand
 
