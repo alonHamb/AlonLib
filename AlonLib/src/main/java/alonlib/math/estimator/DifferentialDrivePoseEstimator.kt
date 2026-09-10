@@ -1,7 +1,7 @@
 package alonlib.math.estimator
 
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.math.kinematics.DifferentialDriveKinematics
 import alonlib.math.kinematics.DifferentialDriveOdometry
 import alonlib.math.kinematics.DifferentialDriveWheelPositions
@@ -14,22 +14,22 @@ import alonlib.math.system.Matrix
  * and takes rotation from the gyro, neither of which depends on the trackwidth.
  */
 class DifferentialDrivePoseEstimator(
-    kinematics: DifferentialDriveKinematics,
-    gyroAngle: Rotation2d,
-    leftDistanceMeters: Double,
-    rightDistanceMeters: Double,
-    initialPose: Pose2d,
-    stateStdDevs: Matrix,
-    visionMeasurementStdDevs: Matrix,
+	kinematics: DifferentialDriveKinematics,
+	gyroAngle: AngularPositon,
+	leftDistanceMeters: Double,
+	rightDistanceMeters: Double,
+	initialPose: Pose2d,
+	stateStdDevs: Matrix,
+	visionMeasurementStdDevs: Matrix,
 ) : PoseEstimator<DifferentialDriveWheelPositions>(
-        DifferentialDriveOdometry(gyroAngle, leftDistanceMeters, rightDistanceMeters, initialPose),
-        stateStdDevs,
-        visionMeasurementStdDevs,
-    ) {
+	DifferentialDriveOdometry(gyroAngle, leftDistanceMeters, rightDistanceMeters, initialPose),
+	stateStdDevs,
+	visionMeasurementStdDevs,
+) {
 
-    fun update(gyroAngle: Rotation2d, leftDistanceMeters: Double, rightDistanceMeters: Double) =
-        update(gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
+	fun update(gyroAngle: AngularPositon, leftDistanceMeters: Double, rightDistanceMeters: Double) =
+		update(gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
 
-    fun updateWithTime(currentTimeSeconds: Double, gyroAngle: Rotation2d, leftDistanceMeters: Double, rightDistanceMeters: Double) =
-        updateWithTime(currentTimeSeconds, gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
+	fun updateWithTime(currentTimeSeconds: Double, gyroAngle: AngularPositon, leftDistanceMeters: Double, rightDistanceMeters: Double) =
+		updateWithTime(currentTimeSeconds, gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
 }

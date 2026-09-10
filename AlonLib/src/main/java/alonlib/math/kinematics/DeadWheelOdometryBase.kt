@@ -1,7 +1,7 @@
 package alonlib.math.kinematics
 
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 
 /**
  * Base for dead-wheel-only odometry ([DifferentialOdometry], [HolonomicOdometry]) that computes
@@ -13,17 +13,17 @@ import alonlib.math.geometry.Rotation2d
  */
 abstract class DeadWheelOdometryBase(initialPose: Pose2d, val trackWidth: Double = 18.0) {
 
-    var pose = initialPose
-        protected set
+	var pose = initialPose
+		protected set
 
-    /** Recomputes [pose] from the latest live sensor readings (see the constructor lambdas of subclasses). */
-    abstract fun updatePose()
+	/** Recomputes [pose] from the latest live sensor readings (see the constructor lambdas of subclasses). */
+	abstract fun updatePose()
 
-    /** Resets [pose] outright and clears the subclass's running encoder deltas. */
-    abstract fun updatePose(newPose: Pose2d)
+	/** Resets [pose] outright and clears the subclass's running encoder deltas. */
+	abstract fun updatePose(newPose: Pose2d)
 
-    /** Offsets [pose]'s heading by [byRadians] without moving its translation. */
-    fun rotatePose(byRadians: Double) {
-        pose = Pose2d(pose.translation, pose.rotation + Rotation2d(byRadians))
-    }
+	/** Offsets [pose]'s heading by [byRadians] without moving its translation. */
+	fun rotatePose(byRadians: Double) {
+		pose = Pose2d(pose.translation, pose.rotation + AngularPositon(byRadians))
+	}
 }

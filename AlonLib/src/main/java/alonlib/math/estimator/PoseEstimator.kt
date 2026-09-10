@@ -1,7 +1,7 @@
 package alonlib.math.estimator
 
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.math.geometry.Translation2d
 import alonlib.math.geometry.Twist2d
 import alonlib.math.interpolation.TimeInterpolatableBuffer
@@ -18,155 +18,158 @@ import kotlin.math.sqrt
  * rather than this directly.
  */
 open class PoseEstimator<WheelPositions>(
-    private val odometry: Odometry<WheelPositions>,
-    stateStdDevs: Matrix,
-    visionMeasurementStdDevs: Matrix,
+	private val odometry: Odometry<WheelPositions>,
+	stateStdDevs: Matrix,
+	visionMeasurementStdDevs: Matrix,
 ) {
-    private val q = Matrix.vector(
-        stateStdDevs[0, 0] * stateStdDevs[0, 0],
-        stateStdDevs[1, 0] * stateStdDevs[1, 0],
-        stateStdDevs[2, 0] * stateStdDevs[2, 0],
-    )
-    private val visionK = Matrix(3, 3)
 
-    private val odometryPoseBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(BUFFER_DURATION_SECONDS)
-    private val visionUpdates = TreeMap<Double, VisionUpdate>()
+	private val q = Matrix.vector(
+		stateStdDevs[0, 0] * stateStdDevs[0, 0],
+		stateStdDevs[1, 0] * stateStdDevs[1, 0],
+		stateStdDevs[2, 0] * stateStdDevs[2, 0],
+	)
+	private val visionK = Matrix(3, 3)
 
-    var estimatedPosition = odometry.pose
-        private set
+	private val odometryPoseBuffer = TimeInterpolatableBuffer.createBuffer<Pose2d>(BUFFER_DURATION_SECONDS)
+	private val visionUpdates = TreeMap<Double, VisionUpdate>()
 
-    init {
-        setVisionMeasurementStdDevs(visionMeasurementStdDevs)
-    }
+	var estimatedPosition = odometry.pose
+		private set
 
-    /** Changes how much [addVisionMeasurement] trusts future global measurements (e.g. as distance to a vision target changes). */
-    fun setVisionMeasurementStdDevs(visionMeasurementStdDevs: Matrix) {
-        val r = DoubleArray(3) { visionMeasurementStdDevs[it, 0] * visionMeasurementStdDevs[it, 0] }
+	init {
+		setVisionMeasurementStdDevs(visionMeasurementStdDevs)
+	}
 
-        // Closed-form steady-state Kalman gain for a continuous filter with A = 0, C = I.
-        for (row in 0 until 3) {
-            visionK[row, row] = if (q[row, 0] == 0.0) 0.0 else q[row, 0] / (q[row, 0] + sqrt(q[row, 0] * r[row]))
-        }
-    }
+	/** Changes how much [addVisionMeasurement] trusts future global measurements (e.g. as distance to a vision target changes). */
+	fun setVisionMeasurementStdDevs(visionMeasurementStdDevs: Matrix) {
+		val r = DoubleArray(3) { visionMeasurementStdDevs[it, 0] * visionMeasurementStdDevs[it, 0] }
 
-    fun resetPosition(gyroAngle: Rotation2d, wheelPositions: WheelPositions, pose: Pose2d) {
-        odometry.resetPosition(gyroAngle, wheelPositions, pose)
-        odometryPoseBuffer.clear()
-        visionUpdates.clear()
-        estimatedPosition = odometry.pose
-    }
+		// Closed-form steady-state Kalman gain for a continuous filter with A = 0, C = I.
+		for (row in 0 until 3) {
+			visionK[row, row] = if (q[row, 0] == 0.0) 0.0 else q[row, 0] / (q[row, 0] + sqrt(q[row, 0] * r[row]))
+		}
+	}
 
-    fun resetPose(pose: Pose2d) {
-        odometry.resetPose(pose)
-        odometryPoseBuffer.clear()
-        visionUpdates.clear()
-        estimatedPosition = odometry.pose
-    }
+	fun resetPosition(gyroAngle: AngularPositon, wheelPositions: WheelPositions, pose: Pose2d) {
+		odometry.resetPosition(gyroAngle, wheelPositions, pose)
+		odometryPoseBuffer.clear()
+		visionUpdates.clear()
+		estimatedPosition = odometry.pose
+	}
 
-    fun resetTranslation(translation: Translation2d) {
-        odometry.resetTranslation(translation)
-        odometryPoseBuffer.clear()
-        visionUpdates.clear()
-        estimatedPosition = odometry.pose
-    }
+	fun resetPose(pose: Pose2d) {
+		odometry.resetPose(pose)
+		odometryPoseBuffer.clear()
+		visionUpdates.clear()
+		estimatedPosition = odometry.pose
+	}
 
-    fun resetRotation(rotation: Rotation2d) {
-        odometry.resetRotation(rotation)
-        odometryPoseBuffer.clear()
-        visionUpdates.clear()
-        estimatedPosition = odometry.pose
-    }
+	fun resetTranslation(translation: Translation2d) {
+		odometry.resetTranslation(translation)
+		odometryPoseBuffer.clear()
+		visionUpdates.clear()
+		estimatedPosition = odometry.pose
+	}
 
-    /** The estimated pose at [timestampSeconds], or null if there's no odometry history to sample from. */
-    fun sampleAt(timestampSeconds: Double): Pose2d? {
-        if (odometryPoseBuffer.internalBuffer.isEmpty()) return null
+	fun resetRotation(rotation: AngularPositon) {
+		odometry.resetRotation(rotation)
+		odometryPoseBuffer.clear()
+		visionUpdates.clear()
+		estimatedPosition = odometry.pose
+	}
 
-        val oldest = odometryPoseBuffer.internalBuffer.firstKey()
-        val newest = odometryPoseBuffer.internalBuffer.lastKey()
-        val clampedTime = timestampSeconds.coerceIn(oldest, newest)
+	/** The estimated pose at [timestampSeconds], or null if there's no odometry history to sample from. */
+	fun sampleAt(timestampSeconds: Double): Pose2d? {
+		if (odometryPoseBuffer.internalBuffer.isEmpty()) return null
 
-        if (visionUpdates.isEmpty() || clampedTime < visionUpdates.firstKey()) {
-            return odometryPoseBuffer.getSample(clampedTime)
-        }
+		val oldest = odometryPoseBuffer.internalBuffer.firstKey()
+		val newest = odometryPoseBuffer.internalBuffer.lastKey()
+		val clampedTime = timestampSeconds.coerceIn(oldest, newest)
 
-        val visionUpdate = visionUpdates[visionUpdates.floorKey(clampedTime)]!!
-        val odometryEstimate = odometryPoseBuffer.getSample(clampedTime) ?: return null
-        return visionUpdate.compensate(odometryEstimate)
-    }
+		if (visionUpdates.isEmpty() || clampedTime < visionUpdates.firstKey()) {
+			return odometryPoseBuffer.getSample(clampedTime)
+		}
 
-    /** Drops vision updates older than what any remaining odometry sample could still need. */
-    private fun cleanUpVisionUpdates() {
-        if (odometryPoseBuffer.internalBuffer.isEmpty()) return
+		val visionUpdate = visionUpdates[visionUpdates.floorKey(clampedTime)]!!
+		val odometryEstimate = odometryPoseBuffer.getSample(clampedTime) ?: return null
+		return visionUpdate.compensate(odometryEstimate)
+	}
 
-        val oldestOdometryTimestamp = odometryPoseBuffer.internalBuffer.firstKey()
-        if (visionUpdates.isEmpty() || oldestOdometryTimestamp < visionUpdates.firstKey()) return
+	/** Drops vision updates older than what any remaining odometry sample could still need. */
+	private fun cleanUpVisionUpdates() {
+		if (odometryPoseBuffer.internalBuffer.isEmpty()) return
 
-        val newestNeeded = visionUpdates.floorKey(oldestOdometryTimestamp)
-        visionUpdates.headMap(newestNeeded, false).clear()
-    }
+		val oldestOdometryTimestamp = odometryPoseBuffer.internalBuffer.firstKey()
+		if (visionUpdates.isEmpty() || oldestOdometryTimestamp < visionUpdates.firstKey()) return
 
-    /**
-     * Corrects the pose estimate toward [visionRobotPoseMeters], a global measurement (e.g. from
-     * vision) taken at [timestampSeconds]. Can be called as infrequently as needed, as long as
-     * [updateWithTime] is still called every loop. For stability, prefer only feeding in
-     * measurements already within roughly a meter of the current estimate.
-     */
-    fun addVisionMeasurement(visionRobotPoseMeters: Pose2d, timestampSeconds: Double) {
-        if (odometryPoseBuffer.internalBuffer.isEmpty() ||
-            odometryPoseBuffer.internalBuffer.lastKey() - BUFFER_DURATION_SECONDS > timestampSeconds
-        ) {
-            return
-        }
+		val newestNeeded = visionUpdates.floorKey(oldestOdometryTimestamp)
+		visionUpdates.headMap(newestNeeded, false).clear()
+	}
 
-        cleanUpVisionUpdates()
+	/**
+	 * Corrects the pose estimate toward [visionRobotPoseMeters], a global measurement (e.g. from
+	 * vision) taken at [timestampSeconds]. Can be called as infrequently as needed, as long as
+	 * [updateWithTime] is still called every loop. For stability, prefer only feeding in
+	 * measurements already within roughly a meter of the current estimate.
+	 */
+	fun addVisionMeasurement(visionRobotPoseMeters: Pose2d, timestampSeconds: Double) {
+		if (odometryPoseBuffer.internalBuffer.isEmpty() ||
+			odometryPoseBuffer.internalBuffer.lastKey() - BUFFER_DURATION_SECONDS > timestampSeconds
+		) {
+			return
+		}
 
-        val odometrySample = odometryPoseBuffer.getSample(timestampSeconds) ?: return
-        val visionSample = sampleAt(timestampSeconds) ?: return
+		cleanUpVisionUpdates()
 
-        val twist = visionSample.log(visionRobotPoseMeters)
-        val kTimesTwist = visionK * Matrix.vector(twist.dx, twist.dy, twist.dtheta)
-        val scaledTwist = Twist2d(kTimesTwist[0, 0], kTimesTwist[1, 0], kTimesTwist[2, 0])
+		val odometrySample = odometryPoseBuffer.getSample(timestampSeconds) ?: return
+		val visionSample = sampleAt(timestampSeconds) ?: return
 
-        val visionUpdate = VisionUpdate(visionSample.exp(scaledTwist), odometrySample)
-        visionUpdates[timestampSeconds] = visionUpdate
-        visionUpdates.tailMap(timestampSeconds, false).clear()
+		val twist = visionSample.log(visionRobotPoseMeters)
+		val kTimesTwist = visionK * Matrix.vector(twist.dx, twist.dy, twist.dtheta)
+		val scaledTwist = Twist2d(kTimesTwist[0, 0], kTimesTwist[1, 0], kTimesTwist[2, 0])
 
-        estimatedPosition = visionUpdate.compensate(odometry.pose)
-    }
+		val visionUpdate = VisionUpdate(visionSample.exp(scaledTwist), odometrySample)
+		visionUpdates[timestampSeconds] = visionUpdate
+		visionUpdates.tailMap(timestampSeconds, false).clear()
 
-    /** As the 2-arg overload, but also updating [setVisionMeasurementStdDevs] (which then applies to future calls too). */
-    fun addVisionMeasurement(visionRobotPoseMeters: Pose2d, timestampSeconds: Double, visionMeasurementStdDevs: Matrix) {
-        setVisionMeasurementStdDevs(visionMeasurementStdDevs)
-        addVisionMeasurement(visionRobotPoseMeters, timestampSeconds)
-    }
+		estimatedPosition = visionUpdate.compensate(odometry.pose)
+	}
 
-    /** Integrates the latest [gyroAngle]/[wheelPositions] odometry reading, timestamped with the current wall-clock time. */
-    fun update(gyroAngle: Rotation2d, wheelPositions: WheelPositions) =
-        updateWithTime(System.nanoTime() / 1e9, gyroAngle, wheelPositions)
+	/** As the 2-arg overload, but also updating [setVisionMeasurementStdDevs] (which then applies to future calls too). */
+	fun addVisionMeasurement(visionRobotPoseMeters: Pose2d, timestampSeconds: Double, visionMeasurementStdDevs: Matrix) {
+		setVisionMeasurementStdDevs(visionMeasurementStdDevs)
+		addVisionMeasurement(visionRobotPoseMeters, timestampSeconds)
+	}
 
-    /** As [update], but with an explicit [currentTimeSeconds] (e.g. matching your vision measurements' clock). */
-    fun updateWithTime(currentTimeSeconds: Double, gyroAngle: Rotation2d, wheelPositions: WheelPositions): Pose2d {
-        val odometryEstimate = odometry.update(gyroAngle, wheelPositions)
-        odometryPoseBuffer.addSample(currentTimeSeconds, odometryEstimate)
+	/** Integrates the latest [gyroAngle]/[wheelPositions] odometry reading, timestamped with the current wall-clock time. */
+	fun update(gyroAngle: AngularPositon, wheelPositions: WheelPositions) =
+		updateWithTime(System.nanoTime() / 1e9, gyroAngle, wheelPositions)
 
-        estimatedPosition = if (visionUpdates.isEmpty()) {
-            odometryEstimate
-        } else {
-            visionUpdates[visionUpdates.lastKey()]!!.compensate(odometryEstimate)
-        }
+	/** As [update], but with an explicit [currentTimeSeconds] (e.g. matching your vision measurements' clock). */
+	fun updateWithTime(currentTimeSeconds: Double, gyroAngle: AngularPositon, wheelPositions: WheelPositions): Pose2d {
+		val odometryEstimate = odometry.update(gyroAngle, wheelPositions)
+		odometryPoseBuffer.addSample(currentTimeSeconds, odometryEstimate)
 
-        return estimatedPosition
-    }
+		estimatedPosition = if (visionUpdates.isEmpty()) {
+			odometryEstimate
+		} else {
+			visionUpdates[visionUpdates.lastKey()]!!.compensate(odometryEstimate)
+		}
 
-    private class VisionUpdate(val visionPose: Pose2d, val odometryPose: Pose2d) {
-        /** [pose] re-expressed relative to [visionPose] instead of [odometryPose]. */
-        fun compensate(pose: Pose2d): Pose2d {
-            val delta = pose - odometryPose
-            return visionPose + delta
-        }
-    }
+		return estimatedPosition
+	}
 
-    companion object {
-        private const val BUFFER_DURATION_SECONDS = 1.5
-    }
+	private class VisionUpdate(val visionPose: Pose2d, val odometryPose: Pose2d) {
+
+		/** [pose] re-expressed relative to [visionPose] instead of [odometryPose]. */
+		fun compensate(pose: Pose2d): Pose2d {
+			val delta = pose - odometryPose
+			return visionPose + delta
+		}
+	}
+
+	companion object {
+
+		private const val BUFFER_DURATION_SECONDS = 1.5
+	}
 }

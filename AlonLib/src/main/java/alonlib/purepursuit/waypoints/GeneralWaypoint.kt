@@ -1,7 +1,7 @@
 package alonlib.purepursuit.waypoints
 
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.purepursuit.types.WaypointType
 
 /**
@@ -33,7 +33,7 @@ open class GeneralWaypoint(
 		turnSpeed: Double = 0.0,
 		followRadius: Double = 0.0,
 		preferredAngleRadians: Double? = null,
-	) : this(Pose2d(x, y, Rotation2d.fromRadians(preferredAngleRadians ?: 0.0)), movementSpeed, turnSpeed, followRadius, preferredAngleRadians)
+	) : this(Pose2d(x, y, AngularPositon.fromRadians(preferredAngleRadians ?: 0.0)), movementSpeed, turnSpeed, followRadius, preferredAngleRadians)
 
 	var movementSpeed = normalizeSpeed(movementSpeed)
 		private set

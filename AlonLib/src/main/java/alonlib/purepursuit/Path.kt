@@ -1,7 +1,7 @@
 package alonlib.purepursuit
 
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.math.geometry.Translation2d
 import alonlib.purepursuit.actions.TriggeredAction
 import alonlib.purepursuit.types.PathType
@@ -132,7 +132,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 
 		var bestIntersection = intersections[0]
 		bestIntersection = when (pathType) {
-			PathType.HEADING_CONTROLLED           -> selectHeadingControlledIntersection(intersections, Pose2d(vPosition, hPosition, Rotation2d.fromRadians(rotation)))
+			PathType.HEADING_CONTROLLED           -> selectHeadingControlledIntersection(intersections, Pose2d(vPosition, hPosition, AngularPositon.fromRadians(rotation)))
 			PathType.WAYPOINT_ORDERING_CONTROLLED -> selectWaypointOrderingControlledIntersection(intersections)
 		}
 
@@ -149,7 +149,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 			}
 		}
 
-		val robotPos = Pose2d(vPosition, hPosition, Rotation2d.fromRadians(rotation))
+		val robotPos = Pose2d(vPosition, hPosition, AngularPositon.fromRadians(rotation))
 		val motorPowers = when (bestIntersection.taggedPoint.type) {
 			WaypointType.GENERAL    -> handleGeneralIntersection(bestIntersection, robotPos)
 			WaypointType.POINT_TURN -> handlePointTurnIntersection(bestIntersection, robotPos)

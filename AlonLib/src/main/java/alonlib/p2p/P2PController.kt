@@ -4,7 +4,7 @@ import alonlib.math.angleModulus
 import alonlib.math.control.PIDController
 import alonlib.math.filter.SlewRateLimiter
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.math.geometry.Transform2d
 import alonlib.math.geometry.Translation2d
 import alonlib.math.kinematics.ChassisSpeeds
@@ -18,7 +18,7 @@ import kotlin.math.sin
  * from [translationalController], direction from the straight-line bearing to it) while
  * [headingController] independently turns to face [target]'s rotation.
  *
- * Unlike SolversLib's version, this doesn't take an `AngleUnit` -- [Rotation2d] is already
+ * Unlike SolversLib's version, this doesn't take an `AngleUnit` -- [AngularPositon] is already
  * unit-agnostic (always canonically radians internally, with both `.radians`/`.degrees`
  * accessors), so there's nothing left for a separate angle-unit parameter to disambiguate.
  */
@@ -90,6 +90,6 @@ class P2PController(
 		val errorX = target.x - current.x
 		val errorY = target.y - current.y
 		val errorHeading = angleModulus(target.rotation.radians - current.rotation.radians)
-		error = Transform2d(Translation2d(errorX, errorY), Rotation2d.fromRadians(errorHeading))
+		error = Transform2d(Translation2d(errorX, errorY), AngularPositon.fromRadians(errorHeading))
 	}
 }

@@ -36,7 +36,7 @@ class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
 
 	val asSecondsPerSixtyDegrees get() = this.inUnit(AngularVelocityUnit.SecondsPerSixtyDegrtees)
 
-	fun asMps(wheelRadius: Length) = rpmToMps(rpm, wheelRadius)
+	fun asMps(wheelRadius: Distance) = rpmToMps(rpm, wheelRadius)
 
 	init {
 		rpm = when (velocityUnit) {
@@ -85,6 +85,6 @@ class AngularVelocity(velocity: Double, velocityUnit: AngularVelocityUnit) :
 		fun fromRps(rps: Double) = AngularVelocity(rps, AngularVelocityUnit.Rps)
 		fun fromRadPs(radPs: Double) = AngularVelocity(radPs, AngularVelocityUnit.RadPs)
 		fun fromDegPs(degPs: Double) = AngularVelocity(degPs, AngularVelocityUnit.DegPs)
-		fun fromMps(mps: Double, wheelRadius: Length) = fromRpm(mpsToRpm(mps, wheelRadius))
+		fun fromMps(mps: Double, wheelRadius: Distance) = fromRpm(mpsToRpm(mps, wheelRadius))
 	}
 }

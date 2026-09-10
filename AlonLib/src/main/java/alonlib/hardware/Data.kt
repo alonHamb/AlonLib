@@ -1,12 +1,12 @@
 package alonlib.hardware
 
-import com.qualcomm.robotcore.hardware.DcMotor
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.units.AngularVelocity
 import alonlib.units.Time
 import alonlib.units.degrees
 import alonlib.units.microseconds
 import alonlib.units.rpm
+import com.qualcomm.robotcore.hardware.DcMotor
 
 object Data {
 
@@ -26,7 +26,7 @@ object Data {
 		}
 
 		enum class RunMode { VelocityControl, PositionControl, RawPower }
-		enum class DistanceMode { Linear, Angular }
+		enum class PositionMode { Linear, Angular }
 
 		enum class ZeroPowerBehavior(val sdkBehavior: DcMotor.ZeroPowerBehavior) {
 			Unknown(DcMotor.ZeroPowerBehavior.UNKNOWN),
@@ -43,11 +43,11 @@ object Data {
 
 		/**
 		 * @param range the servo's total mechanical sweep, in degrees. Stored as a plain [Double]
-		 * rather than a [Rotation2d] because every built-in
+		 * rather than a [AngularPositon] because every built-in
 		 * servo's sweep (300deg/350deg) exceeds the (-180, 180] domain that Rotation2d normalizes into,
 		 * which would silently corrupt the value (e.g. 300deg -> -60deg).
 		 */
-		enum class Type(val range: Rotation2d, val maxSpeed: AngularVelocity, val fullRangePwmRange: Pair<Time, Time>, val crPwmRange: Pair<Time, Time>) {
+		enum class Type(val range: AngularPositon, val maxSpeed: AngularVelocity, val fullRangePwmRange: Pair<Time, Time>, val crPwmRange: Pair<Time, Time>) {
 
 			Torque(300.degrees, 50.rpm, 500.microseconds to 2500.microseconds, 1000.microseconds to 2000.microseconds),
 			Speed(300.degrees, 111.11.rpm, 500.microseconds to 2500.microseconds, 1000.microseconds to 2000.microseconds),

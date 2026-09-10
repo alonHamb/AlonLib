@@ -5,8 +5,8 @@ import alonlib.robotPrintError
 import kotlin.math.PI
 
 const val INCHES_IN_METER = 39.3700787402
-val FIELD_LENGTH = Length.Companion.fromMeters(3.585719)
-val FIELD_WIDTH = Length.Companion.fromMeters(3.585719)
+val FIELD_LENGTH = Distance.fromMeters(3.585719)
+val FIELD_WIDTH = Distance.fromMeters(3.585719)
 
 /// --- Angles to Angles Conversions ---
 
@@ -80,7 +80,7 @@ fun secondsPerSixtyDegreesToRpm(secondsPerSixtyDegrees: Number) = 1 / secondsPer
 /** Rotations per minute to meters per second.
  *
  * Wheel radius should be greater than 0. */
-fun rpmToMps(rpm: Number, wheelRadius: Length): Double {
+fun rpmToMps(rpm: Number, wheelRadius: Distance): Double {
 	if (wheelRadius.asMeters <= 0.0) {
 		robotPrintError("wheelRadius is negative")
 		return 0.0
@@ -91,17 +91,17 @@ fun rpmToMps(rpm: Number, wheelRadius: Length): Double {
 /** Radians per second to meters per second.
  *
  * Wheel radius should be greater than 0. */
-fun radPsToMps(radPS: Number, wheelRadius: Length) = rpmToMps(radPsToRpm(radPS), wheelRadius)
+fun radPsToMps(radPS: Number, wheelRadius: Distance) = rpmToMps(radPsToRpm(radPS), wheelRadius)
 
 /** Degrees per second to meters per second.
  *
  * Wheel radius should be greater than 0. */
-fun degPsToMps(degPs: Number, wheelRadius: Length) = rpmToMps(degPsToRpm(degPs), wheelRadius)
+fun degPsToMps(degPs: Number, wheelRadius: Distance) = rpmToMps(degPsToRpm(degPs), wheelRadius)
 
 /** Meters per second to rotations per minute.
  *
  * Wheel radius should be greater than 0. */
-fun mpsToRpm(mps: Number, wheelRadius: Length): Double {
+fun mpsToRpm(mps: Number, wheelRadius: Distance): Double {
 	if (wheelRadius.asMeters <= 0.0) {
 		robotPrintError("wheelRadius is negative")
 		return 0.0
@@ -112,12 +112,12 @@ fun mpsToRpm(mps: Number, wheelRadius: Length): Double {
 /** Meters per second to radians per second.
  *
  * Wheel radius should be greater than 0. */
-fun mpsToRadPs(mps: Number, wheelRadius: Length) = rpmToRadPs(mpsToRpm(mps, wheelRadius))
+fun mpsToRadPs(mps: Number, wheelRadius: Distance) = rpmToRadPs(mpsToRpm(mps, wheelRadius))
 
 /** Meters per second to degrees per second.
  *
  * Wheel radius should be greater than 0. */
-fun mpsToDegPs(mps: Number, wheelRadius: Length) = rpmToDegPs(mpsToRpm(mps, wheelRadius))
+fun mpsToDegPs(mps: Number, wheelRadius: Distance) = rpmToDegPs(mpsToRpm(mps, wheelRadius))
 
 /// --- Lengths to Lengths Conversions ---
 

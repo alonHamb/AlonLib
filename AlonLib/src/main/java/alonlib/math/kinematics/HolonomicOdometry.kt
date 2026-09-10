@@ -1,7 +1,7 @@
 package alonlib.math.kinematics
 
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.math.geometry.Twist2d
 
 /**
@@ -14,54 +14,54 @@ import alonlib.math.geometry.Twist2d
  * loop, or leave them unset and drive [update] directly with your own readings.
  */
 class HolonomicOdometry(
-    trackWidth: Double,
-    private val centerWheelOffset: Double,
-    initialPose: Pose2d = Pose2d(),
-    private val left: (() -> Double)? = null,
-    private val right: (() -> Double)? = null,
-    private val horizontal: (() -> Double)? = null,
+	trackWidth: Double,
+	private val centerWheelOffset: Double,
+	initialPose: Pose2d = Pose2d(),
+	private val left: (() -> Double)? = null,
+	private val right: (() -> Double)? = null,
+	private val horizontal: (() -> Double)? = null,
 ) : DeadWheelOdometryBase(initialPose, trackWidth) {
 
-    private var previousAngle = initialPose.rotation
-    private var prevLeftEncoder = 0.0
-    private var prevRightEncoder = 0.0
-    private var prevHorizontalEncoder = 0.0
+	private var previousAngle = initialPose.rotation
+	private var prevLeftEncoder = 0.0
+	private var prevRightEncoder = 0.0
+	private var prevHorizontalEncoder = 0.0
 
-    override fun updatePose(newPose: Pose2d) {
-        previousAngle = newPose.rotation
-        pose = newPose
-        prevLeftEncoder = 0.0
-        prevRightEncoder = 0.0
-        prevHorizontalEncoder = 0.0
-    }
+	override fun updatePose(newPose: Pose2d) {
+		previousAngle = newPose.rotation
+		pose = newPose
+		prevLeftEncoder = 0.0
+		prevRightEncoder = 0.0
+		prevHorizontalEncoder = 0.0
+	}
 
-    /** Pulls the latest readings from the [left]/[right]/[horizontal] lambdas passed to the constructor and updates [pose]. */
-    override fun updatePose() {
-        val left = left ?: return
-        val right = right ?: return
-        val horizontal = horizontal ?: return
-        update(left(), right(), horizontal())
-    }
+	/** Pulls the latest readings from the [left]/[right]/[horizontal] lambdas passed to the constructor and updates [pose]. */
+	override fun updatePose() {
+		val left = left ?: return
+		val right = right ?: return
+		val horizontal = horizontal ?: return
+		update(left(), right(), horizontal())
+	}
 
-    fun update(leftEncoderPos: Double, rightEncoderPos: Double, horizontalEncoderPos: Double): Pose2d {
-        val deltaLeft = leftEncoderPos - prevLeftEncoder
-        val deltaRight = rightEncoderPos - prevRightEncoder
-        val deltaHorizontal = horizontalEncoderPos - prevHorizontalEncoder
+	fun update(leftEncoderPos: Double, rightEncoderPos: Double, horizontalEncoderPos: Double): Pose2d {
+		val deltaLeft = leftEncoderPos - prevLeftEncoder
+		val deltaRight = rightEncoderPos - prevRightEncoder
+		val deltaHorizontal = horizontalEncoderPos - prevHorizontalEncoder
 
-        val angle = previousAngle + Rotation2d((deltaLeft - deltaRight) / trackWidth)
+		val angle = previousAngle + AngularPositon((deltaLeft - deltaRight) / trackWidth)
 
-        prevLeftEncoder = leftEncoderPos
-        prevRightEncoder = rightEncoderPos
-        prevHorizontalEncoder = horizontalEncoderPos
+		prevLeftEncoder = leftEncoderPos
+		prevRightEncoder = rightEncoderPos
+		prevHorizontalEncoder = horizontalEncoderPos
 
-        val dw = (angle - previousAngle).radians
-        val dx = (deltaLeft + deltaRight) / 2.0
-        val dy = deltaHorizontal - (centerWheelOffset * dw)
+		val dw = (angle - previousAngle).radians
+		val dx = (deltaLeft + deltaRight) / 2.0
+		val dy = deltaHorizontal - (centerWheelOffset * dw)
 
-        val newPose = pose.exp(Twist2d(dx, dy, dw))
+		val newPose = pose.exp(Twist2d(dx, dy, dw))
 
-        previousAngle = angle
-        pose = Pose2d(newPose.translation, angle)
-        return pose
-    }
+		previousAngle = angle
+		pose = Pose2d(newPose.translation, angle)
+		return pose
+	}
 }

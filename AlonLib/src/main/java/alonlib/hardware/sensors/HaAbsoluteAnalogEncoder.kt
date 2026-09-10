@@ -3,7 +3,7 @@ package alonlib.hardware.sensors
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.HardwareMap
 import alonlib.hardware.HardwareDevice
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 import alonlib.units.radians
 import alonlib.units.rotations
 
@@ -11,10 +11,10 @@ import alonlib.units.rotations
 open class HaAbsoluteAnalogEncoder(
 	private val encoder: AnalogInput,
 	private val id: String = "",
-	private val range: Rotation2d = 1.rotations,
+	private val range: AngularPositon = 1.rotations,
 ) : HardwareDevice {
 
-	constructor(hardwareMap: HardwareMap, id: String, range: Rotation2d = 3.3.radians) :
+	constructor(hardwareMap: HardwareMap, id: String, range: AngularPositon = 3.3.radians) :
 			this(hardwareMap.get(AnalogInput::class.java, id), id, range)
 
 	override fun disable() {

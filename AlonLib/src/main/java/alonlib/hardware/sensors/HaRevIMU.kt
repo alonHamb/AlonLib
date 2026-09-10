@@ -3,7 +3,7 @@ package alonlib.hardware.sensors
 import com.qualcomm.hardware.bosch.BNO055IMU
 import com.qualcomm.robotcore.hardware.HardwareMap
 import alonlib.hardware.HardwareDevice
-import alonlib.math.geometry.Rotation2d
+import alonlib.math.geometry.AngularPositon
 
 /**
  * The REV Expansion/Control Hub's built-in [BNO055IMU]. Prefer [HaIMU] on modern hubs (it wraps the
@@ -12,48 +12,48 @@ import alonlib.math.geometry.Rotation2d
  */
 open class HaRevIMU(private val revIMU: BNO055IMU) : HardwareDevice {
 
-    constructor(hardwareMap: HardwareMap, imuName: String = "imu") : this(hardwareMap.get(BNO055IMU::class.java, imuName))
+	constructor(hardwareMap: HardwareMap, imuName: String = "imu") : this(hardwareMap.get(BNO055IMU::class.java, imuName))
 
-    private var globalHeadingOffset = 0.0
-    private var multiplier = 1
+	private var globalHeadingOffset = 0.0
+	private var multiplier = 1
 
-    fun init() = init(
-        BNO055IMU.Parameters().apply {
-            angleUnit = BNO055IMU.AngleUnit.DEGREES
-            calibrationDataFile = "BNO055IMUCalibration.json"
-            loggingEnabled = true
-            loggingTag = "IMU"
-        },
-    )
+	fun init() = init(
+		BNO055IMU.Parameters().apply {
+			angleUnit = BNO055IMU.AngleUnit.DEGREES
+			calibrationDataFile = "BNO055IMUCalibration.json"
+			loggingEnabled = true
+			loggingTag = "IMU"
+		},
+	)
 
-    fun init(parameters: BNO055IMU.Parameters) {
-        revIMU.initialize(parameters)
-        globalHeadingOffset = 0.0
-    }
+	fun init(parameters: BNO055IMU.Parameters) {
+		revIMU.initialize(parameters)
+		globalHeadingOffset = 0.0
+	}
 
-    /** Flips the sign of every heading this reports. */
-    fun invertGyro() {
-        multiplier *= -1
-    }
+	/** Flips the sign of every heading this reports. */
+	fun invertGyro() {
+		multiplier *= -1
+	}
 
-    fun getHeading() = getAbsoluteHeading() - globalHeadingOffset
+	fun getHeading() = getAbsoluteHeading() - globalHeadingOffset
 
-    fun getAbsoluteHeading() = revIMU.angularOrientation.firstAngle.toDouble() * multiplier
+	fun getAbsoluteHeading() = revIMU.angularOrientation.firstAngle.toDouble() * multiplier
 
-    fun getAngles(): DoubleArray {
-        val orientation = revIMU.angularOrientation
-        return doubleArrayOf(orientation.firstAngle.toDouble(), orientation.secondAngle.toDouble(), orientation.thirdAngle.toDouble())
-    }
+	fun getAngles(): DoubleArray {
+		val orientation = revIMU.angularOrientation
+		return doubleArrayOf(orientation.firstAngle.toDouble(), orientation.secondAngle.toDouble(), orientation.thirdAngle.toDouble())
+	}
 
-    fun getRotation2d(): Rotation2d = Rotation2d.fromDegrees(getHeading())
+	fun getRotation2d(): AngularPositon = AngularPositon.fromDegrees(getHeading())
 
-    override fun disable() = revIMU.close()
+	override fun disable() = revIMU.close()
 
-    fun reset() {
-        globalHeadingOffset += getHeading()
-    }
+	fun reset() {
+		globalHeadingOffset += getHeading()
+	}
 
-    override fun getDeviceType() = "Rev Expansion Hub IMU"
+	override fun getDeviceType() = "Rev Expansion Hub IMU"
 
-    fun getRevIMU() = revIMU
+	fun getRevIMU() = revIMU
 }

@@ -11,7 +11,7 @@ import alonlib.robotPrintError
  * - Feet
  * - Inches
  */
-class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
+class Distance(length: Number, lengthUnit: Unit) : Comparable<Distance> {
 
 	private var meters = 0.0
 		set(value) {
@@ -50,13 +50,13 @@ class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
 		}
 
 	override fun toString() = "Meters($meters)"
-	override fun compareTo(other: Length) = meters.compareTo(other.meters)
+	override fun compareTo(other: Distance) = meters.compareTo(other.meters)
 
-	operator fun plus(other: Length) = fromMeters(meters + other.meters)
-	operator fun minus(other: Length) = fromMeters(meters - other.meters)
-	operator fun times(other: Length) = fromMeters(meters * other.meters)
+	operator fun plus(other: Distance) = fromMeters(meters + other.meters)
+	operator fun minus(other: Distance) = fromMeters(meters - other.meters)
+	operator fun times(other: Distance) = fromMeters(meters * other.meters)
 	operator fun times(other: Number) = fromMeters(meters * other.toDouble())
-	operator fun div(other: Length) = fromMeters(meters / other.meters)
+	operator fun div(other: Distance) = fromMeters(meters / other.meters)
 	operator fun div(other: Number) = fromMeters(meters / other.toDouble())
 
 	enum class Unit {
@@ -69,10 +69,10 @@ class Length(length: Number, lengthUnit: Unit) : Comparable<Length> {
 
 	companion object {
 
-		fun fromMeters(meters: Number) = Length(meters, Unit.Meters)
-		fun fromCentimeters(centimeters: Number) = Length(centimeters, Unit.Centimeters)
-		fun fromMillimeters(millimeters: Number) = Length(millimeters, Unit.Millimeters)
-		fun fromFeet(feet: Number) = Length(feet, Unit.Feet)
-		fun fromInches(inches: Number) = Length(inches, Unit.Inches)
+		fun fromMeters(meters: Number) = Distance(meters, Unit.Meters)
+		fun fromCentimeters(centimeters: Number) = Distance(centimeters, Unit.Centimeters)
+		fun fromMillimeters(millimeters: Number) = Distance(millimeters, Unit.Millimeters)
+		fun fromFeet(feet: Number) = Distance(feet, Unit.Feet)
+		fun fromInches(inches: Number) = Distance(inches, Unit.Inches)
 	}
 }

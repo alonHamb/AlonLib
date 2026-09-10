@@ -1,5 +1,34 @@
 package alonlib.hardware.motors
 
+import alonlib.hardware.Data
+import alonlib.hardware.Data.Motors.Direction
+import alonlib.hardware.Data.Motors.GoBILDA
+import alonlib.hardware.Data.Motors.RunMode
+import alonlib.math.PIDFGains
+import alonlib.math.control.PIDFController
+import alonlib.math.control.SimpleMotorFeedforward
+import alonlib.math.geometry.AngularPositon
+import alonlib.robotPrintError
+import alonlib.units.AngularAcceleration
+import alonlib.units.AngularVelocity
+import alonlib.units.Current
+import alonlib.units.Distance
+import alonlib.units.LinearVelocity
+import alonlib.units.Percentage
+import alonlib.units.Voltage
+import alonlib.units.amps
+import alonlib.units.compareTo
+import alonlib.units.degrees
+import alonlib.units.fraction
+import alonlib.units.meters
+import alonlib.units.metersPerSecond
+import alonlib.units.microseconds
+import alonlib.units.nanoseconds
+import alonlib.units.rotations
+import alonlib.units.rpm
+import alonlib.units.rpmPerSecond
+import alonlib.units.rps
+import alonlib.units.volts
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
@@ -8,45 +37,16 @@ import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit
-import alonlib.hardware.Data
-import alonlib.hardware.Data.Motors.Direction
-import alonlib.hardware.Data.Motors.GoBILDA
-import alonlib.hardware.Data.Motors.RunMode
-import alonlib.math.PIDFGains
-import alonlib.math.control.PIDFController
-import alonlib.math.control.SimpleMotorFeedforward
-import alonlib.math.geometry.Rotation2d
-import alonlib.robotPrintError
-import alonlib.units.AngularAcceleration
-import alonlib.units.AngularVelocity
-import alonlib.units.Current
-import alonlib.units.Length
-import alonlib.units.Percentage
-import alonlib.units.Voltage
-import alonlib.units.amps
-import alonlib.units.compareTo
-import alonlib.units.degrees
-import alonlib.units.fraction
-import alonlib.units.meters
-import alonlib.units.microseconds
-import alonlib.units.nanoseconds
-import alonlib.units.rotations
-import alonlib.units.rpm
-import alonlib.units.rpmPerSecond
-import alonlib.units.rps
-import alonlib.units.volts
 import kotlin.math.absoluteValue
 
 /**
- * AlonLib's motor hardware wrapper -- owns an SDK [DcMotorEx] directly (encoder position/velocity
- * read via [hub]'s bulk data, not the SDK's own per-call reads), with its own software PIDF loop
- * for [RunMode.PositionControl]/[RunMode.VelocityControl] and software current limiting.
+ * AlonLib's motor hardware wrapper
  *
- * Optional [followers] mirror this motor's [percentOutput] every time it's set (directly, or via
- * [voltage]/[update]) -- construct each one the way you want it to run (direction, zero-power
- * behavior, ...) and pass it in here; they never run their own PID.
+ * Optional [followers] mirror this motor every time a property is set
+ *
+ * construct each one the way you want it to run and pass it in here.
  */
-class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: AngularVelocity, private vararg val followers: HaMotor?) : HardwareDevice {
+class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val rpm: AngularVelocity, private vararg val followers: HaMotor?) : HardwareDevice {
 
 	constructor(hardwareMap: HardwareMap, id: String, type: GoBILDA, vararg followers: HaMotor) : this(
 		hardwareMap,
@@ -57,9 +57,10 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 	)
 
 	// --- motor parameters ---
-	private val ticksPerRev: Double = cpr.toDouble()
-
-	var distancePerRevolution = 1.meters
+	/**
+	 * the distance moved for every one rotation of the motor
+	 */
+	var distancePerRevolution: () -> Distance = { 0.meters }
 
 	// --- hardware declaration ---
 	val hub: LynxModule = hardwareMap.get(LynxModule::class.java, "Control Hub")
@@ -81,7 +82,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 	// --- motor configurations ---
 
 	/**
-	sets the behavior of the motor when stop() is called or when you set [percentOutput] to zero
+	sets the behavior of the motor when stop() is called or when you set [percentOutput] or [voltage] to zero
 	 */
 	var zeroPowerBehavior = Data.Motors.ZeroPowerBehavior.Float
 		set(value) {
@@ -113,8 +114,8 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 	/**
 	 * the way the [update] function is used to control the motor.
 	 * @param RunMode.RawPower doesn't do anything
-	 * @param RunMode.PositionControl sends [setPoint] to the pid controller as degrees between [minimumAngle] and [maximumAngle]
-	 * @param RunMode.VelocityControl sends [setPoint] to the pid controller as rpm between -[rpm] and [rpm]
+	 * @param RunMode.PositionControl sends [setPoint] to the pid controller as degrees or meters, depends on [positionMode]
+	 * @param RunMode.VelocityControl sends [setPoint] to the pid controller as rpm
 	 */
 	var runMode: RunMode = RunMode.RawPower
 		set(value) {
@@ -123,34 +124,134 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 		}
 
 	/**
-	 * the way you set how position is
+	 * determines the unit used when sending setpoint, error and position values are sent to the pid controller
 	 */
-	var distanceMode: Data.Motors.DistanceMode = Data.Motors.DistanceMode.Angular
+	var positionMode: Data.Motors.PositionMode = Data.Motors.PositionMode.Angular
+
+	// --- motor limits ---
+
+	/**
+	 * the minimum [percentOutput] you can send to the motor
+	 */
+	var minPercentOutput = (-1).fraction
+		set(percentOutput) {
+			field = percentOutput.coerceIn(minPercentOutput, maxPercentOutput)
+		}
+
+	/**
+	 * the maximum [percentOutput] you can send to the motor
+	 */
+	var maxPercentOutput = 1.fraction
+		set(percentOutput) {
+			field = percentOutput.coerceIn(minPercentOutput, maxPercentOutput)
+		}
+
+	/**
+	 * the minimum [voltage] you can send to the motor
+	 */
+	var minVoltage: Voltage = (-15).volts
+		set(voltage) {
+			field = voltage.coerceIn(minVoltage, maxVoltage)
+		}
+
+	/**
+	 * the maximum [voltage] you can send to the motor
+	 */
+	var maxVoltage: Voltage = 15.volts
+		set(voltage) {
+			field = voltage.coerceIn(minVoltage, maxVoltage)
+		}
+
+	/**
+	 * sets the minimum angular [linearPosition] setpoint you can send to the motor
+	 */
+	var minimumAngle: AngularPositon = (-180).degrees
+		set(value) {
+			field = value.coerceIn(minimumAngle, maximumAngle)
+		}
+
+	/**
+	 * sets the maximum angular [linearPosition] setpoint you can send to the motor
+	 */
+	var maximumAngle: AngularPositon = 360.degrees
+		set(value) {
+			when (value > minimumAngle) {
+				true  -> field = value.coerceIn(minimumAngle, maximumAngle)
+				false -> robotPrintError("maximum angle smaller then minimum angle")
+			}
+		}
+
+	/**
+	 * sets the minimum linear [linearPosition] that you can send to the motor
+	 */
+	var minimumPosition: Distance = 0.meters
+		set(value) {
+			field = value.coerceIn(minimumPosition, maximumPosition)
+		}
+
+	/**
+	 * sets the maximum linear [linearPosition] that you can send to the motor
+	 */
+	var maximumPosition: Distance = (distancePerRevolution().asMeters).meters
+		set(value) {
+			field = value.coerceIn(minimumPosition, maximumPosition)
+		}
+
+	/**
+	 * the minimum [angularVelocity] to be sent to the motor
+	 */
+	var minimumAngularVelocity: AngularVelocity = -rpm
+		set(angularVelocity) {
+			field = angularVelocity.coerceIn(minimumAngularVelocity, maximumAngularVelocity)
+			followers.forEach { it?.minimumAngularVelocity = angularVelocity }
+		}
+
+	/**
+	 * the maximum [angularVelocity] to be sent to the motor
+	 */
+	var maximumAngularVelocity: AngularVelocity = rpm
+		set(angularVelocity) {
+			field = angularVelocity.coerceIn(minimumAngularVelocity, maximumAngularVelocity)
+			followers.forEach { it?.maximumAngularVelocity = angularVelocity }
+		}
+
+	var minimumLinearVelocity: LinearVelocity = 0.metersPerSecond
+		set(linearVelocity) {
+			field = linearVelocity.coerceIn(minimumLinearVelocity, maximumLinearVelocity)
+			followers.forEach { it?.minimumLinearVelocity = linearVelocity }
+		}
+
+	var maximumLinearVelocity: LinearVelocity = (rpm.asRps * distancePerRevolution().asMeters).metersPerSecond
+		set(linearVelocity) {
+			field = linearVelocity.coerceIn(minimumLinearVelocity, maximumLinearVelocity)
+			followers.forEach { it?.maximumLinearVelocity = linearVelocity }
+		}
+
+	/**
+	 * the motors [current] limit
+	 * set to 0.0 amps to disable current limiting entirely.
+	 */
+	var maxCurrent: Current = 0.0.amps
+		set(value) {
+			field = value.coerceIn(0.0.amps, 9.amps)
+			followers.forEach { it?.maxCurrent = value }
+		}
+
+	/**
+	 * Software forward limit
+	 */
+	var forwardLimit: () -> Boolean = { false }
+
+	/**
+	 * Software reverse limit
+	 */
+	var reverseLimit: () -> Boolean = { false }
 
 	// --- state getters and setters ---
 
 	/**
-	 * the smallest number you can send to the motor with the [percentOutput] property
-	 */
-	var minPercentOutput = (-1).fraction
-		set(percentOutput) {
-			field = percentOutput.coerceIn((-1).fraction, maxPercentOutput)
-		}
-
-	/**
-	 * the largest number you can send to the motor with the [percentOutput] property
-	 */
-	var maxPercentOutput = 1.fraction
-		set(percentOutput) {
-			field = percentOutput.coerceIn(minPercentOutput, 1.fraction)
-		}
-
-	/**
-	 * sets the percent output of the motor.
-	 * is clamped between properties [minPercentOutput] and [maxPercentOutput],
-	 * default is -1.0 and 1.0
-	 *
-	 * mirrored to every one of [followers] once applied here.
+	 * sets the [percentOutput] sent to the motor.
+	 * is clamped between [minPercentOutput] and [maxPercentOutput],
 	 */
 	var percentOutput: Percentage = 0.fraction
 		get() = motor.power.fraction
@@ -166,7 +267,8 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 		}
 
 	/**
-	 * the voltage sent to the motor
+	 * sets the [voltage] sent to the motor
+	 * is clamped between [minVoltage] and [maxVoltage]
 	 */
 	var voltage: Voltage = 0.volts
 		get() {
@@ -179,9 +281,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 		}
 
 	/**
-	 * the current level of the motor.
-	 * when called returns the current being drawn by the motor
-	 * when being set sets the [currentLimit] of the motor
+	 * the [current] being drawn by the motor.
 	 */
 	val current: Current
 		get() {
@@ -189,101 +289,36 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 		}
 
 	/**
-	 * the motors current limit
-
-	 * set to 0.0 amps to disable current limiting entirely.
-	 */
-	var currentLimit: Current = 0.0.amps
-		set(value) {
-			field = value
-			followers.forEach { it?.currentLimit = value }
-		}
-
-	/**
-	 * Software forward limit, ONLY for [percentOutput] control.
-	 */
-	var forwardLimit: () -> Boolean = { false }
-
-	/**
-	 * Software reverse limit, ONLY for [percentOutput] control.
-	 */
-	var reverseLimit: () -> Boolean = { false }
-
-	/**
-	 * sets the maximum position setpoint you can set to the motor
-	 */
-	var maximumAngle: Rotation2d = 180.degrees
-		set(value) {
-			when (value > minimumAngle) {
-				true  -> field = value
-				false -> robotPrintError("maximum angle smaller then minimum position")
-			}
-		}
-
-	/**
-	 * sets the minimum position setpoint you can set to the motor
-	 */
-	var minimumAngle: Rotation2d = (-180).degrees
-		set(value) {
-			when (value < maximumAngle) {
-				true  -> field = value
-				false -> robotPrintError("minimum angle bigger then maximum position")
-			}
-		}
-
-	/**
-	 * when called gives the current [angle] from the motor encoder
+	 * when called gives the current [angularPosition] from the motor encoder
 	 *
-	 * when set sets the angle [setPoint] of the motor
+	 * when set sets the [setPoint] of the motor with [degrees]
 	 */
-	var angle: Rotation2d = 0.degrees
-		get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev)).rotations
+	var angularPosition: AngularPositon
+		get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev.toDouble())).rotations
 		set(angle) {
-			field = angle
 			setPoint = angle.degrees.coerceIn(minimumAngle.degrees, maximumAngle.degrees)
-			followers.forEach { it?.angle = angle }
+			followers.forEach { it?.angularPosition = angle }
 		}
 
 	/**
-	 * when called gives the current [position] from the motor encoder
+	 * when called gives the current [linearPosition] from the motor encoder
 	 *
-	 * when set sets the position [setPoint] of the motor
+	 * when set sets the [setPoint] of the motor with [meters]
 	 */
-	var position: Length = 0.meters
-		get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev) * distancePerRevolution.asMeters).meters
+	var linearPosition: Distance
+		get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev.toDouble()) * distancePerRevolution().asMeters).meters
 		set(position) {
-			field = position
 			setPoint = position.asMeters.coerceIn(minimumAngle.degrees, maximumAngle.degrees)
-			followers.forEach { it?.position = position }
+			followers.forEach { it?.linearPosition = position }
 		}
-
-	var minimumPosition: Length = 0.meters
-		set(value) {
-			when (value > maximumPosition) {
-				true  -> field = value
-				false -> robotPrintError("minimum position bigger then maximum position")
-			}
-		}
-
-	var maximumPosition: Length = (distancePerRevolution.asMeters).meters
-		set(value) {
-			when (value < minimumPosition) {
-				true  -> field = value
-				false -> robotPrintError("maximum position smaller then minimum position")
-			}
-		}
-
-	var minimumVelocity: AngularVelocity = -rpm
-
-	var maximumVelocity: AngularVelocity = rpm
 
 	/**
-	 * when called gives the current [velocity] from the motor encoder
+	 * when called gives the current [angularVelocity] from the motor encoder
 	 *
-	 * when set sets the velocity [setPoint] of the motor
+	 * when set sets the [setPoint] of the motor with [rpm]
 	 */
-	var velocity: AngularVelocity = 0.rpm
-		get() = (runningDirection.multiplier * (hub.bulkData.getMotorVelocity(motor.portNumber) / ticksPerRev)).rps
+	var angularVelocity: AngularVelocity
+		get() = (runningDirection.multiplier * (hub.bulkData.getMotorVelocity(motor.portNumber) / ticksPerRev.toDouble())).rps
 		set(velocity) {
 			when (velocity) {
 				0.rpm -> {
@@ -291,11 +326,30 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 				}
 
 				else  -> {
-					field = velocity
-					setPoint = velocity.coerceIn(minimumVelocity, maximumVelocity).asRpm
+					setPoint = velocity.coerceIn(minimumAngularVelocity, maximumAngularVelocity).asRpm
 				}
 			}
-			followers.forEach { it?.velocity = velocity }
+			followers.forEach { it?.angularVelocity = velocity }
+		}
+
+	/**
+	 * when called gives the current [linearVelocity] from the motor encoder
+	 *
+	 * when set sets the [setPoint] of the motor with [metersPerSecond]
+	 */
+	var linearVelocity: LinearVelocity
+		get() = (runningDirection.multiplier * (hub.bulkData.getMotorVelocity(motor.portNumber) / ticksPerRev.toDouble()) * distancePerRevolution().asMeters).metersPerSecond
+		set(velocity) {
+			when (velocity) {
+				0.metersPerSecond -> {
+					motor.power = 0.0
+				}
+
+				else              -> {
+					setPoint = velocity.coerceIn(minimumLinearVelocity, maximumLinearVelocity).asMetersPerSecond
+				}
+			}
+			followers.forEach { it?.linearVelocity = velocity }
 		}
 
 	// --- pid properties ---
@@ -315,10 +369,9 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 	/**
 	the current [setPoint] for the motors pid controller
 
-	if the run mode is [RunMode.PositionControl] the unit is degrees.
-	if the run mode is [RunMode.VelocityControl] the unit is rpm.
-
-	when [distanceMode] is [Data.Motors.DistanceMode.Linear] the unit is meters
+	if the run mode is [RunMode.PositionControl] the unit depends on [Data.Motors.PositionMode],
+	[meters] for linear and [degrees] for angular.
+	if the run mode is [RunMode.VelocityControl] the unit is [rpm].
 	 */
 	var setPoint: Double = 0.0
 		set(setPoint) {
@@ -332,14 +385,14 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 			}
 			when (this.runMode) {
 				RunMode.PositionControl -> {
-					when (distanceMode) {
-						Data.Motors.DistanceMode.Linear  -> {
+					when (positionMode) {
+						Data.Motors.PositionMode.Linear  -> {
 							positionController.setPoint =
 								setPoint.coerceIn(minimumPosition.asMeters, maximumPosition.asMeters)
 							field = setPoint
 						}
 
-						Data.Motors.DistanceMode.Angular -> {
+						Data.Motors.PositionMode.Angular -> {
 							positionController.setPoint =
 								setPoint.coerceIn(minimumAngle.degrees, maximumAngle.degrees)
 							field = setPoint
@@ -383,21 +436,21 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 
 	private val positionPidOutputVoltage: Voltage
 		get() {
-			return when (distanceMode) {
-				Data.Motors.DistanceMode.Angular -> (positionController.calculate(angle.degrees) + feedForwardController.calculate(
-					velocity.asRpm,
+			return when (positionMode) {
+				Data.Motors.PositionMode.Angular -> (positionController.calculate(angularPosition.degrees) + feedForwardController.calculate(
+					angularVelocity.asRpm,
 					acceleration.asRpmPerSecond
 				)).volts
 
-				Data.Motors.DistanceMode.Linear  -> (positionController.calculate(angle.rotations * distancePerRevolution.asMeters) + feedForwardController.calculate(
-					velocity.asRpm, acceleration.asRpmPerSecond
+				Data.Motors.PositionMode.Linear  -> (positionController.calculate(angularPosition.rotations * distancePerRevolution().asMeters) + feedForwardController.calculate(
+					angularVelocity.asRpm, acceleration.asRpmPerSecond
 				)).volts
 			}
 		}
 
 	private val velocityPidOutputVoltage: Voltage
 		get() {
-			return (velocityController.calculate(velocity.asRpm) + feedForwardController.calculate(velocity.asRpm, acceleration.asRpmPerSecond)).volts
+			return (velocityController.calculate(angularVelocity.asRpm) + feedForwardController.calculate(angularVelocity.asRpm, acceleration.asRpmPerSecond)).volts
 		}
 
 	/**
@@ -416,7 +469,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 		}
 
 	/**
-	 * @returns true if the error of the pid controller is within the tolerance
+	 * @returns whether the motor is in the [tolerance] window
 	 */
 	val inTolerance: Boolean
 		get() {
@@ -441,23 +494,23 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val cpr: Number, val rpm: An
 	 * called every loop by [update].
 	 */
 	private fun limitCurrent() {
-		if (currentLimit > 0.0.amps)
-			if (current.asAmps.absoluteValue > currentLimit.asAmps) {
+		if (maxCurrent > 0.0.amps)
+			if (current.asAmps.absoluteValue > maxCurrent.asAmps) {
 				// scale back voltage proportionally to how far over the limit we are
-				val scale: Double = currentLimit.asAmps / current.asAmps.absoluteValue
+				val scale: Double = maxCurrent.asAmps / current.asAmps.absoluteValue
 				voltage *= scale
 			}
 	}
 
 	/**
-	 * rotations/second^2, estimated from consecutive [velocity] reads across [update] calls -- fed
+	 * rotations/second^2, estimated from consecutive [angularVelocity] reads across [update] calls -- fed
 	 * into [feedForwardController]'s acceleration term.
 	 */
 	private val acceleration: AngularAcceleration
 		get() {
-			velocity.asRps
-			val acceleration = if (timeStep > 1.microseconds) ((velocity.asRpm - lastVelocity.asRpm) / timeStep.asSeconds).rpmPerSecond else 0.0.rpmPerSecond
-			lastVelocity = velocity
+			angularVelocity.asRps
+			val acceleration = if (timeStep > 1.microseconds) ((angularVelocity.asRpm - lastVelocity.asRpm) / timeStep.asSeconds).rpmPerSecond else 0.0.rpmPerSecond
+			lastVelocity = angularVelocity
 			lastTimestamp = time
 			return acceleration
 		}
