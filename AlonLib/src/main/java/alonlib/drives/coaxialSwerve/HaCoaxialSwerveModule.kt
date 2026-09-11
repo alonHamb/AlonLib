@@ -78,7 +78,7 @@ class HaCoaxialSwerveModule(
 	}
 
 	fun getPowerTelemetry() =
-		"Motor=${"%.3f".format(motor.percentOutput.asFraction)},Servo=${"%.3f".format(servo.percentOutput.asFraction)},Absolute Encoder=${"%.3f".format(absolutePositionRadians())}"
+		"Motor=${motor.percentOutput.asFraction},Servo=${servo.percentOutput.asFraction},Absolute Encoder=${absolutePositionRadians()}"
 
 	fun setSwervoPidf(pidf: PIDFController) {
 		servoPidf = pidf
