@@ -64,7 +64,7 @@ class HaCoaxialSwerveModule(
 		}
 
 		motor.percentOutput = ((if (wheelFlipped) -1.0 else 1.0) * targetVelocity.magnitude() / maxSpeed * cos(angleError)).fraction
-		servo.percentOutput = servoPidf.calculate(0.0, angleError)
+		servo.percentOutput = servoPidf.calculate(0.0, angleError).fraction
 	}
 
 	fun updateModuleWithVelocity(velocity: Vector2d) {
@@ -78,7 +78,7 @@ class HaCoaxialSwerveModule(
 	}
 
 	fun getPowerTelemetry() =
-		"Motor=${"%.3f".format(motor.percentOutput.asFraction)},Servo=${"%.3f".format(servo.percentOutput)},Absolute Encoder=${"%.3f".format(absolutePositionRadians())}"
+		"Motor=${"%.3f".format(motor.percentOutput.asFraction)},Servo=${"%.3f".format(servo.percentOutput.asFraction)},Absolute Encoder=${"%.3f".format(absolutePositionRadians())}"
 
 	fun setSwervoPidf(pidf: PIDFController) {
 		servoPidf = pidf
