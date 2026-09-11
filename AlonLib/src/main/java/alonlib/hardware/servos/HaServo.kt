@@ -1,19 +1,22 @@
 package alonlib.hardware.servos
 
-import com.qualcomm.robotcore.hardware.HardwareDevice
-import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.PwmControl
-import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.hardware.ServoImplEx
 import alonlib.hardware.Data.Servos.Mode
 import alonlib.hardware.Data.Servos.Type
 import alonlib.math.geometry.AngularPositon
 import alonlib.math.mapRange
 import alonlib.robotPrintError
 import alonlib.units.AngularVelocity
+import alonlib.units.Percentage
 import alonlib.units.degrees
+import alonlib.units.fraction
 import alonlib.units.normalizedDegrees
+import alonlib.units.percent
 import alonlib.units.rpm
+import com.qualcomm.robotcore.hardware.HardwareDevice
+import com.qualcomm.robotcore.hardware.HardwareMap
+import com.qualcomm.robotcore.hardware.PwmControl
+import com.qualcomm.robotcore.hardware.Servo
+import com.qualcomm.robotcore.hardware.ServoImplEx
 
 /**
  * Optional [followers] mirror this servo's raw `[0, 1]` position every time it's written (via
@@ -43,45 +46,45 @@ class HaServo(
 	// --- state getters and setters ---
 
 	/**
-	 * software forward limit only for [percentOutput]
+	 * software forward limit only
 	 */
 	var forwardLimit = { false }
 
 	/**
-	 * software reverse limit only for [percentOutput]
+	 * software reverse limit only
 	 */
 	var reverseLimit = { false }
 
 	/**
-	 * the maximum output to be sent to the servo when set with [percentOutput]
+	 * the maximum [percentOutput] to be sent to the servo when in [Mode.Cr]
 	 */
-	var maxPercentOutput = 1.0
+	var maxPercentOutput = 1.0.fraction
 		set(value) {
-			field = value.coerceIn(0.0..1.0)
+			field = value.coerceIn(minPercentOutput..maxPercentOutput)
 		}
 
 	/**
-	 * the minimum output to be sent to the servo when set with [percentOutput]
+	 * the minimum [percentOutput] to be sent to the servo when in [Mode.Cr]
 	 */
-	var minPercentOutput = 0.0
+	var minPercentOutput = 0.0.fraction
 		set(value) {
-			field = value.coerceIn(0.0..maxPercentOutput)
+			field = value.coerceIn(minPercentOutput..maxPercentOutput)
 
 		}
 
 	/**
-	 * a way to control the output to the servo as a percent
+	 * a way to control the output to the servo as a [Percentage]
 	 */
-	var percentOutput: Double = 0.0
+	var percentOutput: Percentage = 0.0.fraction
 		set(value) {
-			if (!(forwardLimit() && value > 0) && !(reverseLimit() && value < 0)) {
+			if (!(forwardLimit() && value.asFraction > 0) && !(reverseLimit() && value.asFraction < 0)) {
 				field = value
-				value.coerceIn(minPercentOutput..maxPercentOutput)
+				servo.position = value.coerceIn(minPercentOutput..maxPercentOutput).asFraction
 			} else {
 				robotPrintError("limit reached")
 			}
 		}
-		get() = servo.position
+		get() = servo.position.fraction
 
 	/**
 	 * half of [Type.range], in degrees -- the most a [AngularPositon] can represent [position] as an
@@ -98,7 +101,6 @@ class HaServo(
 	var maxPosition: AngularPositon = halfRange
 		set(value) {
 			field = value.degrees.coerceIn(-halfRange.normalizedDegrees..halfRange.normalizedDegrees).degrees
-			followers.forEach { it.maxPosition = field }
 		}
 
 	/**
@@ -107,30 +109,36 @@ class HaServo(
 	var minPosition: AngularPositon = (-halfRange)
 		set(value) {
 			field = value.degrees.coerceIn(-halfRange.normalizedDegrees..maxPosition.normalizedDegrees).degrees
-			followers.forEach { it.minPosition = field }
 		}
 
 	/**
 	 * when called returns the last [position] that have been sent to the servo
 	 *
-	 * when set sets the [position] you want the servo to go to, relative to the center of its
-	 * sweep (0 degrees = centered, not one end of travel -- see [halfRange])
+	 * when set sets the [position] you want the servo to go to
 	 */
 	var position: AngularPositon = 0.0.degrees
+		get() {
+			return mapRange(
+				servo.position,
+				0.0,
+				1.0,
+				0.0,
+				type.range.degrees
+			).degrees
+		}
 		set(position) {
 			when (mode) {
 				Mode.Cr        -> robotPrintError("cannot set position in CR mode")
 				Mode.FullRange -> {
 					field = position
 					servo.position = mapRange(
-						position.normalizedDegrees.coerceIn(minPosition.normalizedDegrees, maxPosition.normalizedDegrees),
+						position.coerceIn(minPosition, maxPosition).degrees,
 						0.0,
-						type.range.normalizedDegrees,
+						type.range.degrees,
 						0.0,
 						1.0
 					)
 					followers.forEach { it.position = position }
-
 				}
 			}
 		}
@@ -162,7 +170,7 @@ class HaServo(
 		set(value) {
 			when (mode) {
 				Mode.Cr        -> {
-					servo.position = mapRange(value.asRpm, minVelocity.asRpm, maxVelocity.asRpm, 0.0, 1.0)
+					servo.position = mapRange(value.coerceIn(minVelocity, maxVelocity).asRpm, 0.0, type.maxSpeed.asRpm, 0.0, 1.0)
 					field = value
 					followers.forEach { it.velocity = value }
 				}
@@ -174,29 +182,31 @@ class HaServo(
 
 	fun stop() {
 		when (mode) {
-			Mode.Cr        -> percentOutput = 0.0
+			Mode.Cr        -> percentOutput = 0.0.percent
 			Mode.FullRange -> {}
 		}
 		followers.forEach { it.stop() }
 	}
 
 	override fun getManufacturer(): HardwareDevice.Manufacturer {
-		return HardwareDevice.Manufacturer.Unknown
+		return servo.manufacturer
 	}
 
 	override fun getDeviceName(): String {
-		return "HaServo"
+		return servo.deviceName
 	}
 
 	override fun getConnectionInfo(): String {
-		return ""
+		return servo.connectionInfo
 	}
 
 	override fun getVersion(): Int {
-		return 1
+		return servo.version
 	}
 
 	override fun resetDeviceConfigurationForOpMode() {
+		servo.resetDeviceConfigurationForOpMode()
+		followers.forEach { it.resetDeviceConfigurationForOpMode() }
 	}
 
 	override fun close() {

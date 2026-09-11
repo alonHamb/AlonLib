@@ -1,7 +1,9 @@
 package alonlib.math.geometry
 
 import alonlib.math.interpolation.Interpolatable
+import alonlib.math.mapRange
 import alonlib.robotPrintError
+import alonlib.units.radians
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -43,6 +45,10 @@ class AngularPositon private constructor(val radians: Double, val cos: Double, v
 			robotPrintError("min must be <= max")
 		}
 		return fromRadians(radians.coerceIn(min.radians, max.radians))
+	}
+
+	fun mapRange(value: AngularPositon, startMin: AngularPositon, startMax: AngularPositon, endMin: AngularPositon, endMax: AngularPositon): AngularPositon {
+		return mapRange(value.radians, startMin.radians, startMax.radians, endMin.radians, endMax.radians).radians
 	}
 
 	/**

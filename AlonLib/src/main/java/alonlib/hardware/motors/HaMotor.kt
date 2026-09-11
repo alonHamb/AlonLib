@@ -85,6 +85,13 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 	sets the behavior of the motor when stop() is called or when you set [percentOutput] or [voltage] to zero
 	 */
 	var zeroPowerBehavior = Data.Motors.ZeroPowerBehavior.Float
+		get() {
+			return when (motor.zeroPowerBehavior) {
+				DcMotor.ZeroPowerBehavior.FLOAT   -> Data.Motors.ZeroPowerBehavior.Float
+				DcMotor.ZeroPowerBehavior.BRAKE   -> Data.Motors.ZeroPowerBehavior.Brake
+				DcMotor.ZeroPowerBehavior.UNKNOWN -> Data.Motors.ZeroPowerBehavior.Unknown
+			}
+		}
 		set(value) {
 			field = value
 			motor.zeroPowerBehavior = value.sdkBehavior
