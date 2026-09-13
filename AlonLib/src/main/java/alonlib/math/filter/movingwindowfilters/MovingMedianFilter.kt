@@ -1,4 +1,4 @@
-package alonlib.math.filters.movingwindowfilters
+package alonlib.math.filter.movingwindowfilters
 
 import alonlib.math.median
 import alonlib.robotPrintError
@@ -17,15 +17,16 @@ import java.util.LinkedList
  *                  and that will also be the approximate phase lag.
  */
 class MovingMedianFilter(window: Int) : MovingWindowFilter() {
-    override var window: Int = window
-        set(value) {
-            field =
-                if (value > 0) value
-                else {
-                    robotPrintError("window must be positive")
-                    0
-                }
-        }
 
-    override val calculation = { values: LinkedList<Double> -> median(values) }
+	override var window: Int = window
+		set(value) {
+			field =
+				if (value > 0) value
+				else {
+					robotPrintError("window must be positive")
+					0
+				}
+		}
+
+	override val calculation = { values: LinkedList<Double> -> median(values) }
 }

@@ -1,8 +1,7 @@
 package alonlib.units
 
-import alonlib.math.geometry.AngularPositon
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import kotlin.math.abs
 import kotlin.math.atan
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -98,27 +97,21 @@ inline val Number.percent get() = Percentage.fromPercent(this)
 inline val Number.permille get() = Percentage.fromPermille(this)
 inline val Number.basisPoints get() = Percentage.fromBasisPoints(this)
 
-// --- Rotation2d ---
+// --- Angle ---
 
-inline val Number.degrees: AngularPositon get() = AngularPositon.fromDegrees(this.toDouble())
-inline val Number.radians: AngularPositon get() = AngularPositon(this.toDouble())
-inline val Number.rotations: AngularPositon get() = AngularPositon.fromDegrees(this.toDouble() * 360.0)
+inline val Number.degrees: Angle get() = Angle.fromDegrees(this.toDouble())
+inline val Number.radians: Angle get() = Angle.fromRadians(this.toDouble())
+inline val Number.rotations: Angle get() = Angle.fromRotations(this.toDouble())
 
-inline val AngularPositon.absoluteValue: AngularPositon get() = AngularPositon.fromDegrees(abs(this.degrees))
+/** [Angle.asDegrees] wrapped into `[0, 360)`. */
+inline val Angle.normalizedDegrees: Double get() = ((this.asDegrees % 360.0) + 360.0) % 360.0
 
-/** [degrees] wrapped into `[0, 360)]`. */
-inline val AngularPositon.normalizedDegrees: Double get() = ((this.degrees % 360.0) + 360.0) % 360.0
+/** [Angle.asRadians] wrapped into `[0, 2*pi)`. */
+inline val Angle.normalizedRadians: Double get() = ((this.asRadians % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
 
-/** [radians] wrapped into `[0, 2*pi)`. */
-inline val AngularPositon.normalizedRadians: Double get() = ((this.radians % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
+/** [Angle.asRotations] wrapped into `[0, 1)`. */
+inline val Angle.normalizedRotations: Double get() = normalizedDegrees / 360.0
 
-/** [rotations] wrapped into `[0, 1)`. */
-inline val AngularPositon.normalizedRotations: Double get() = normalizedDegrees / 360.0
-
-operator fun AngularPositon.times(ratio: Double) = (this.degrees * ratio).degrees
-operator fun AngularPositon.div(ratio: Double) = (this.degrees / ratio).degrees
-operator fun AngularPositon.rangeTo(that: AngularPositon) = (this.degrees.rangeTo(that.degrees))
-operator fun AngularPositon.compareTo(other: AngularPositon) = (this.degrees.compareTo(other.degrees))
 // --- Position ---
 
 fun Pose2d.xDistanceTo(other: Pose2d) = other.x - this.x
@@ -126,7 +119,5 @@ fun Pose2d.yDistanceTO(other: Pose2d) = other.y - this.y
 fun Pose2d.distanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
 fun Pose2d.horizontalDistanceTo(other: Pose2d) = sqrt(this.xDistanceTo(other).pow(2) + this.yDistanceTO(other).pow(2))
 
-// atan() returns radians, so this must go through .radians, not .degrees -- .degrees would treat
-// the raw radian value as if it were already in degrees (e.g. atan(1) == pi/4 becoming "0.785deg"
-// instead of 45deg).
-fun Pose2d.horizontalAngleTo(other: Pose2d): AngularPositon = atan(this.yDistanceTO(other) / this.xDistanceTo(other)).radians
+fun Pose2d.horizontalAngleTo(other: Pose2d): AngularPosition2d =
+	AngularPosition2d.fromRadians(atan(this.yDistanceTO(other) / this.xDistanceTo(other)))

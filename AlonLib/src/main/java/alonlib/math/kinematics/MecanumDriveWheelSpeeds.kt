@@ -29,7 +29,14 @@ class MecanumDriveWheelSpeeds(
 
     operator fun unaryMinus() = MecanumDriveWheelSpeeds(-frontLeft, -frontRight, -rearLeft, -rearRight)
     operator fun times(scalar: Double) = MecanumDriveWheelSpeeds(frontLeft * scalar, frontRight * scalar, rearLeft * scalar, rearRight * scalar)
+
+    operator fun times(other: MecanumDriveWheelSpeeds) =
+        MecanumDriveWheelSpeeds(frontLeft * other.frontLeft, frontRight * other.frontRight, rearLeft * other.rearLeft, rearRight * other.rearRight)
+
     operator fun div(scalar: Double) = MecanumDriveWheelSpeeds(frontLeft / scalar, frontRight / scalar, rearLeft / scalar, rearRight / scalar)
+
+    operator fun div(other: MecanumDriveWheelSpeeds) =
+        MecanumDriveWheelSpeeds(frontLeft / other.frontLeft, frontRight / other.frontRight, rearLeft / other.rearLeft, rearRight / other.rearRight)
 
     override fun equals(other: Any?): Boolean {
         if (other !is MecanumDriveWheelSpeeds) return false

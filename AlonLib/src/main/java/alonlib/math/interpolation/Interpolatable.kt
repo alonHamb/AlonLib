@@ -3,7 +3,7 @@ package alonlib.math.interpolation
 /**
  * A type that knows how to interpolate between two instances of itself.
  *
- * Implemented by [alonlib.math.geometry.AngularPositon] and friends so
+ * Implemented by [alonlib.math.geometry.AngularPosition2d] and friends so
  * they can be dropped straight into an [InterpolatingTreeMap]/trajectory sample without a separate
  * [Interpolator].
  */

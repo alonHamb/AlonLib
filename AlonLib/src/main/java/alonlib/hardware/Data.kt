@@ -1,6 +1,6 @@
 package alonlib.hardware
 
-import alonlib.math.geometry.AngularPositon
+import alonlib.units.Angle
 import alonlib.units.AngularVelocity
 import alonlib.units.Time
 import alonlib.units.degrees
@@ -44,7 +44,7 @@ object Data {
 		/**
 		 *
 		 */
-		enum class Type(val range: AngularPositon, val maxSpeed: AngularVelocity, val fullRangePwmRange: Pair<Time, Time>, val crPwmRange: Pair<Time, Time>) {
+		enum class Type(val range: Angle, val maxSpeed: AngularVelocity, val fullRangePwmRange: Pair<Time, Time>, val crPwmRange: Pair<Time, Time>) {
 
 			Torque(300.degrees, 50.rpm, 500.microseconds to 2500.microseconds, 1000.microseconds to 2000.microseconds),
 			Speed(300.degrees, 111.11.rpm, 500.microseconds to 2500.microseconds, 1000.microseconds to 2000.microseconds),

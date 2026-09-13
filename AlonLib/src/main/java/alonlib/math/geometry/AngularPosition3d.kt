@@ -1,5 +1,6 @@
 package alonlib.math.geometry
 
+import alonlib.math.geometry.AngularPosition3d.Companion.kZero
 import alonlib.math.interpolation.Interpolatable
 import alonlib.robotPrintError
 import kotlin.math.abs
@@ -11,59 +12,59 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
- * A rotation in 3D space, backed by a [Quaternion]. Unlike [AngularPositon], 3D rotations don't
+ * A rotation in 3D space, backed by a [Quaternion]. Unlike [AngularPosition2d], 3D rotations don't
  * commute -- see WPILib's `Rotation3d` class doc for the classic worked example of why order
  * matters.
  *
  * Ported from WPILib's `Rotation3d`. [rotateBy] applies extrinsically (around the global axes);
  * [relativeTo] applies intrinsically (from the other rotation's own perspective).
  */
-class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
+class AngularPosition3d(q: Quaternion) : Interpolatable<AngularPosition3d> {
 
 	val quaternion: Quaternion = q.normalize()
 
 	constructor() : this(Quaternion())
 
 	/**
-	 * Constructs a [Rotation3d] from extrinsic roll/pitch/yaw (in that order, around the fixed
+	 * Constructs a [AngularPosition3d] from extrinsic roll/pitch/yaw (in that order, around the fixed
 	 * global axes -- not the body frame).
 	 */
 	constructor(roll: Double, pitch: Double, yaw: Double) : this(rollPitchYawToQuaternion(roll, pitch, yaw))
 
-	/** Constructs a [Rotation3d] from an axis-angle rotation vector (axis direction times angle in radians). */
-	constructor(rotationVector: Translation3d) : this(rotationVector, rotationVector.norm)
+	/** Constructs a [AngularPosition3d] from an axis-angle rotation vector (axis direction times angle in radians). */
+	constructor(rotationVector: Point3d) : this(rotationVector, rotationVector.norm)
 
-	/** Constructs a [Rotation3d] with the given (not-necessarily-normalized) [axis] and [angleRadians]. */
-	constructor(axis: Translation3d, angleRadians: Double) : this(axisAngleToQuaternion(axis, angleRadians))
+	/** Constructs a [AngularPosition3d] with the given (not-necessarily-normalized) [axis] and [angleRadians]. */
+	constructor(axis: Point3d, angleRadians: Double) : this(axisAngleToQuaternion(axis, angleRadians))
 
 	/** Constructs a 3D rotation from a 2D rotation in the X-Y plane (i.e. pure yaw). */
-	constructor(angularPositon: AngularPositon) : this(0.0, 0.0, angularPositon.radians)
+	constructor(aAngularPosition2D: AngularPosition2d) : this(0.0, 0.0, aAngularPosition2D.radians)
 
 	val x get() = extractRoll(quaternion)
 	val y get() = extractPitch(quaternion)
 	val z get() = extractYaw(quaternion)
 
-	fun inverse() = Rotation3d(quaternion.inverse())
-	fun times(scalar: Double) = kZero.interpolate(this, scalar)
-	fun div(scalar: Double) = times(1.0 / scalar)
+	fun inverse() = AngularPosition3d(quaternion.inverse())
+	operator fun times(scalar: Double) = kZero.interpolate(this, scalar)
+	operator fun div(scalar: Double) = times(1.0 / scalar)
 
 	/** Composes this rotation with [other], applied extrinsically (around the global axes). */
-	fun rotateBy(other: Rotation3d) = Rotation3d(other.quaternion * quaternion)
+	fun rotateBy(other: AngularPosition3d) = AngularPosition3d(other.quaternion * quaternion)
 
 	/** This rotation, re-expressed relative to [other]'s orientation (applied intrinsically). */
-	fun relativeTo(other: Rotation3d) = Rotation3d(other.quaternion.inverse() * quaternion)
+	fun relativeTo(other: AngularPosition3d) = AngularPosition3d(other.quaternion.inverse() * quaternion)
 
 	/** Integrates constant body-frame angular rates over [dtSeconds] to project this rotation forward. */
-	fun integrate(rollRate: Double, pitchRate: Double, yawRate: Double, dtSeconds: Double): Rotation3d {
+	fun integrate(rollRate: Double, pitchRate: Double, yawRate: Double, dtSeconds: Double): AngularPosition3d {
 		val w = Quaternion(0.0, rollRate, pitchRate, yawRate)
-		return Rotation3d(quaternion * (w * (dtSeconds / 2.0)).exp())
+		return AngularPosition3d(quaternion * (w * (dtSeconds / 2.0)).exp())
 	}
 
 	/** The (not necessarily unit-length before normalization) axis of the axis-angle representation. */
-	val axis: Translation3d
+	val axis: Point3d
 		get() {
 			val n = sqrt(quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z)
-			return if (n == 0.0) Translation3d() else Translation3d(quaternion.x / n, quaternion.y / n, quaternion.z / n)
+			return if (n == 0.0) Point3d() else Point3d(quaternion.x / n, quaternion.y / n, quaternion.z / n)
 		}
 
 	/** The angle, in radians, of the axis-angle representation. */
@@ -90,9 +91,9 @@ class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
 	fun toVector() = quaternion.toRotationVector()
 
 	/** This rotation, projected into the X-Y plane (its yaw component). */
-	fun toRotation2d() = AngularPositon(z)
+	fun toRotation2d() = AngularPosition2d(z)
 
-	override fun interpolate(endValue: Rotation3d, t: Double): Rotation3d {
+	override fun interpolate(endValue: AngularPosition3d, t: Double): AngularPosition3d {
 		// slerp(q0, q1, t) = (q1 * q0⁻¹)^t * q0, negating the delta quaternion if needed for the
 		// shortest path.
 		val q0 = quaternion
@@ -101,11 +102,11 @@ class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
 		if (delta.w < 0.0) {
 			delta = Quaternion(-delta.w, -delta.x, -delta.y, -delta.z)
 		}
-		return Rotation3d(delta.pow(t) * q0)
+		return AngularPosition3d(delta.pow(t) * q0)
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if (other !is Rotation3d) return false
+		if (other !is AngularPosition3d) return false
 		return abs(abs(quaternion.dot(other.quaternion)) - quaternion.norm() * other.quaternion.norm()) < 1e-9
 	}
 
@@ -115,18 +116,18 @@ class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
 
 	companion object {
 
-		val kZero = Rotation3d()
+		val kZero = AngularPosition3d()
 
-		fun fromRadians(roll: Double, pitch: Double, yaw: Double) = Rotation3d(roll, pitch, yaw)
+		fun fromRadians(roll: Double, pitch: Double, yaw: Double) = AngularPosition3d(roll, pitch, yaw)
 		fun fromDegrees(roll: Double, pitch: Double, yaw: Double) =
-			Rotation3d(Math.toRadians(roll), Math.toRadians(pitch), Math.toRadians(yaw))
+			AngularPosition3d(Math.toRadians(roll), Math.toRadians(pitch), Math.toRadians(yaw))
 
 		/**
-		 * Constructs a [Rotation3d] from a row-major special-orthogonal 3x3 [rotationMatrix], via
+		 * Constructs a [AngularPosition3d] from a row-major special-orthogonal 3x3 [rotationMatrix], via
 		 * Shepperd's method. Prints an error and returns [kZero] if [rotationMatrix] isn't special
 		 * orthogonal (i.e. isn't a valid rotation matrix), rather than throwing.
 		 */
-		fun fromRotationMatrix(rotationMatrix: Array<DoubleArray>): Rotation3d {
+		fun fromRotationMatrix(rotationMatrix: Array<DoubleArray>): AngularPosition3d {
 			val r = rotationMatrix
 			if (!isSpecialOrthogonal(r)) {
 				robotPrintError("rotation matrix is not special orthogonal")
@@ -165,11 +166,11 @@ class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
 				z = 0.25 * s
 			}
 
-			return Rotation3d(Quaternion(w, x, y, z))
+			return AngularPosition3d(Quaternion(w, x, y, z))
 		}
 
-		/** Constructs the [Rotation3d] that rotates [initial] onto [last] (both arbitrary, non-zero vectors). */
-		fun fromVectorToVector(initial: Translation3d, last: Translation3d): Rotation3d {
+		/** Constructs the [AngularPosition3d] that rotates [initial] onto [last] (both arbitrary, non-zero vectors). */
+		fun fromVectorToVector(initial: Point3d, last: Point3d): AngularPosition3d {
 			val dot = initial.dot(last)
 			val normProduct = initial.norm * last.norm
 			val dotNorm = dot / normProduct
@@ -182,24 +183,24 @@ class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
 					val ay = abs(initial.y)
 					val az = abs(initial.z)
 					val other = if (ax < ay) {
-						if (ax < az) Translation3d(1.0, 0.0, 0.0) else Translation3d(0.0, 0.0, 1.0)
+						if (ax < az) Point3d(1.0, 0.0, 0.0) else Point3d(0.0, 0.0, 1.0)
 					} else {
-						if (ay < az) Translation3d(0.0, 1.0, 0.0) else Translation3d(0.0, 0.0, 1.0)
+						if (ay < az) Point3d(0.0, 1.0, 0.0) else Point3d(0.0, 0.0, 1.0)
 					}
 					val axis = cross(initial, other)
 					val axisNorm = axis.norm
-					Rotation3d(Quaternion(0.0, axis.x / axisNorm, axis.y / axisNorm, axis.z / axisNorm))
+					AngularPosition3d(Quaternion(0.0, axis.x / axisNorm, axis.y / axisNorm, axis.z / axisNorm))
 				}
 
 				else                  -> {
 					val axis = cross(initial, last)
-					Rotation3d(Quaternion(normProduct + dot, axis.x, axis.y, axis.z).normalize())
+					AngularPosition3d(Quaternion(normProduct + dot, axis.x, axis.y, axis.z).normalize())
 				}
 			}
 		}
 
-		private fun cross(a: Translation3d, b: Translation3d) =
-			Translation3d(a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y)
+		private fun cross(a: Point3d, b: Point3d) =
+			Point3d(a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y)
 
 		private fun rollPitchYawToQuaternion(roll: Double, pitch: Double, yaw: Double): Quaternion {
 			val cr = cos(roll * 0.5)
@@ -217,7 +218,7 @@ class Rotation3d(q: Quaternion) : Interpolatable<Rotation3d> {
 			)
 		}
 
-		private fun axisAngleToQuaternion(axis: Translation3d, angleRadians: Double): Quaternion {
+		private fun axisAngleToQuaternion(axis: Point3d, angleRadians: Double): Quaternion {
 			val norm = axis.norm
 			if (norm == 0.0) return Quaternion()
 

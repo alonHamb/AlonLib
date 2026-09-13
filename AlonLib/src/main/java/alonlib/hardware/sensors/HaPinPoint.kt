@@ -1,12 +1,11 @@
 package alonlib.hardware.sensors
 
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
 import alonlib.units.AngularVelocity
 import alonlib.units.Distance
 import alonlib.units.degPs
-import alonlib.units.degrees
 import alonlib.units.millimeters
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver.GoBildaOdometryPods
@@ -16,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 
-class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdometryPods) :
+class HaPinPoint(var hardwareMap: HardwareMap, id: String, pod: GoBildaOdometryPods) :
 	HardwareDevice {
 
 	private var pinPoint: GoBildaPinpointDriver =
@@ -56,8 +55,8 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
 
 	var position: Pose2d
 		get() = Pose2d(
-			Translation2d(pinPoint.position.getX(DistanceUnit.METER), pinPoint.position.getY(DistanceUnit.METER)),
-			pinPoint.position.getHeading(AngleUnit.DEGREES).degrees
+			Point2d(pinPoint.position.getX(DistanceUnit.METER), pinPoint.position.getY(DistanceUnit.METER)),
+			AngularPosition2d.fromDegrees(pinPoint.position.getHeading(AngleUnit.DEGREES))
 		)
 		set(value) {
 			pinPoint.setPosX(value.x, DistanceUnit.METER)
@@ -76,14 +75,14 @@ class HaPinPoint(var hardwareMap: HardwareMap, id: String, var pod: GoBildaOdome
 			pinPoint.setPosY(value.asMillimeters, DistanceUnit.MM)
 		}
 
-	var heading: AngularPositon
-		get() = pinPoint.getHeading(AngleUnit.DEGREES).degrees
+	var heading: AngularPosition2d
+		get() = AngularPosition2d.fromDegrees(pinPoint.getHeading(AngleUnit.DEGREES))
 		set(value) {
 			pinPoint.setHeading(value.degrees, AngleUnit.DEGREES)
 		}
 
-	val countedHeading: AngularPositon
-		get() = pinPoint.getHeading(UnnormalizedAngleUnit.DEGREES).degrees
+	val countedHeading: AngularPosition2d
+		get() = AngularPosition2d.fromDegrees(pinPoint.getHeading(UnnormalizedAngleUnit.DEGREES))
 
 	/**
 	 * the velocity in the x-axis in units per second

@@ -1,7 +1,7 @@
 package alonlib.math.spline
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 import alonlib.math.system.Matrix
 import kotlin.math.hypot
 import kotlin.math.pow
@@ -50,7 +50,7 @@ abstract class Spline(private val degree: Int) {
 
 		val curvature = (dx * ddy - ddx * dy) / ((dx * dx + dy * dy) * hypot(dx, dy))
 
-		return PoseWithCurvature(Pose2d(x, y, AngularPositon(dx, dy)), curvature)
+		return PoseWithCurvature(Pose2d(x, y, AngularPosition2d(dx, dy)), curvature)
 	}
 
 	/**

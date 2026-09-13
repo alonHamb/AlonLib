@@ -1,8 +1,8 @@
 package alonlib.purepursuit
 
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
 import alonlib.purepursuit.actions.TriggeredAction
 import alonlib.purepursuit.types.PathType
 import alonlib.purepursuit.types.WaypointType
@@ -42,7 +42,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 	private var retracing = false
 	private var retraceMovementSpeed = 1.0
 	private var retraceTurnSpeed = 1.0
-	private var lastKnownIntersection: Translation2d? = null
+	private var lastKnownIntersection: Point2d? = null
 
 	private val triggeredActions = mutableListOf<TriggeredAction>()
 	private val interruptActionQueue = ArrayDeque<InterruptWaypoint>()
@@ -105,7 +105,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 			val linePoint1 = this[i - 1].pose.translation
 			val linePoint2 = this[i].pose.translation
 			val radius = this[i].followDistance
-			val robotPosition = Translation2d(vPosition, hPosition)
+			val robotPosition = Point2d(vPosition, hPosition)
 			for (point in PurePursuitUtil.lineCircleIntersection(robotPosition, radius, linePoint1, linePoint2)) {
 				intersections.add(TaggedIntersection(point, this[i], i))
 			}
@@ -130,9 +130,8 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 			retracing = false
 		}
 
-		var bestIntersection = intersections[0]
-		bestIntersection = when (pathType) {
-			PathType.HEADING_CONTROLLED           -> selectHeadingControlledIntersection(intersections, Pose2d(vPosition, hPosition, AngularPositon.fromRadians(rotation)))
+		val bestIntersection = when (pathType) {
+			PathType.HEADING_CONTROLLED           -> selectHeadingControlledIntersection(intersections, Pose2d(vPosition, hPosition, AngularPosition2d.fromRadians(rotation)))
 			PathType.WAYPOINT_ORDERING_CONTROLLED -> selectWaypointOrderingControlledIntersection(intersections)
 		}
 
@@ -149,7 +148,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 			}
 		}
 
-		val robotPos = Pose2d(vPosition, hPosition, AngularPositon.fromRadians(rotation))
+		val robotPos = Pose2d(vPosition, hPosition, AngularPosition2d.fromRadians(rotation))
 		val motorPowers = when (bestIntersection.taggedPoint.type) {
 			WaypointType.GENERAL    -> handleGeneralIntersection(bestIntersection, robotPos)
 			WaypointType.POINT_TURN -> handlePointTurnIntersection(bestIntersection, robotPos)
@@ -221,7 +220,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 						best = intersection
 					} else if (bestTagged.hasTraversed) {
 						best = intersection
-					} else if (best.waypointIndex > intersection.waypointIndex || tagged.hasTraversed) {
+					} else if (best.waypointIndex > intersection.waypointIndex) {
 						best = intersection
 					} else if (best.waypointIndex == intersection.waypointIndex) {
 						if (PurePursuitUtil.isInFront(
@@ -397,8 +396,8 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 		}
 	}
 
-	private fun adjustSpeedsWithProfile(speeds: DoubleArray, intersection: TaggedIntersection, robotPos: Translation2d) {
-		var awayPoint: Translation2d? = null
+	private fun adjustSpeedsWithProfile(speeds: DoubleArray, intersection: TaggedIntersection, robotPos: Point2d) {
+		var awayPoint: Point2d? = null
 		for (i in intersection.waypointIndex - 1 downTo 0) {
 			if (this[i].type == WaypointType.START || this[i] is PointTurnWaypoint) {
 				awayPoint = this[i].pose.translation
@@ -428,7 +427,7 @@ class Path(waypoints: List<Waypoint> = emptyList()) : ArrayList<Waypoint>(waypoi
 		speeds[2] = speeds[2].coerceIn(-1.0, 1.0)
 	}
 
-	private class TaggedIntersection(val intersection: Translation2d, val taggedPoint: Waypoint, val waypointIndex: Int)
+	private class TaggedIntersection(val intersection: Point2d, val taggedPoint: Waypoint, val waypointIndex: Int)
 
 	companion object {
 

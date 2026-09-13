@@ -1,7 +1,7 @@
 package alonlib.math.kinematics
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 import alonlib.math.geometry.Twist2d
 
 /**
@@ -48,7 +48,7 @@ class HolonomicOdometry(
 		val deltaRight = rightEncoderPos - prevRightEncoder
 		val deltaHorizontal = horizontalEncoderPos - prevHorizontalEncoder
 
-		val angle = previousAngle + AngularPositon((deltaLeft - deltaRight) / trackWidth)
+		val angle = previousAngle + AngularPosition2d((deltaLeft - deltaRight) / trackWidth)
 
 		prevLeftEncoder = leftEncoderPos
 		prevRightEncoder = rightEncoderPos

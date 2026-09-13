@@ -1,15 +1,14 @@
 package alonlib.hardware.sensors
 
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
+import alonlib.math.geometry.Pose2d
 import com.qualcomm.hardware.limelightvision.LLResult
 import com.qualcomm.hardware.limelightvision.LLResultTypes
 import com.qualcomm.hardware.limelightvision.LLStatus
 import com.qualcomm.hardware.limelightvision.Limelight3A
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
-import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
-import alonlib.units.degrees
 
 class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
 
@@ -37,8 +36,8 @@ class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
 
 	val latestPose2d: Pose2d
 		get() = Pose2d(
-			Translation2d(latestResult?.botpose_MT2?.position?.x ?: 0.0, latestResult?.botpose_MT2?.position?.y ?: 0.0),
-			latestResult?.botpose_MT2?.orientation?.yaw?.degrees ?: 0.0.degrees
+			Point2d(latestResult?.botpose_MT2?.position?.x ?: 0.0, latestResult?.botpose_MT2?.position?.y ?: 0.0),
+			AngularPosition2d.fromDegrees(latestResult?.botpose_MT2?.orientation?.yaw ?: 0.0)
 		)
 
 	var pipeLine = 1
@@ -81,7 +80,7 @@ class HaLimelight3A(hardwareMap: HardwareMap, id: String) : HardwareDevice {
 		limelight.deleteSnapshot(name)
 	}
 
-	fun UpdateMegaTag2RobotHeading(yaw: AngularPositon) {
+	fun UpdateMegaTag2RobotHeading(yaw: AngularPosition2d) {
 		limelight.updateRobotOrientation(yaw.degrees)
 	}
 

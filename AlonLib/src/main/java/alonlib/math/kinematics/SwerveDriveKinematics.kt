@@ -1,8 +1,9 @@
 package alonlib.math.kinematics
 
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Twist2d
+import alonlib.math.kinematics.SwerveDriveKinematics.Companion.desaturateWheelSpeeds
 import alonlib.math.system.Matrix
 import alonlib.robotPrintError
 import kotlin.math.abs
@@ -18,7 +19,7 @@ import kotlin.math.min
  * Module order is whatever order [moduleTranslations] were passed in -- every array this class
  * takes or returns (module states, positions, headings) must use that same order.
  */
-class SwerveDriveKinematics(vararg val moduleTranslations: Translation2d) :
+class SwerveDriveKinematics(vararg val moduleTranslations: Point2d) :
 	Kinematics<Array<SwerveModuleState>, Array<SwerveModulePosition>> {
 
 	init {
@@ -28,14 +29,14 @@ class SwerveDriveKinematics(vararg val moduleTranslations: Translation2d) :
 	}
 
 	private val numModules = moduleTranslations.size
-	private var moduleHeadings = Array(numModules) { AngularPositon.kZero }
-	private var inverseKinematics = buildInverseKinematics(moduleTranslations, Translation2d.kZero)
+	private var moduleHeadings = Array(numModules) { AngularPosition2d.kZero }
+	private var inverseKinematics = buildInverseKinematics(moduleTranslations, Point2d.kZero)
 	private val forwardKinematics = inverseKinematics.pseudoInverse()
 
-	private var prevCenterOfRotation = Translation2d.kZero
+	private var prevCenterOfRotation = Point2d.kZero
 
 	/** Resets the module headings used when commanding a zero chassis speed (modules hold their last angle). */
-	fun resetHeadings(vararg headings: AngularPositon) {
+	fun resetHeadings(vararg headings: AngularPosition2d) {
 		if (headings.size != numModules) {
 			robotPrintError("resetHeadings got ${headings.size} headings for $numModules modules")
 			return
@@ -47,7 +48,7 @@ class SwerveDriveKinematics(vararg val moduleTranslations: Translation2d) :
 	 * Inverse kinematics with a variable [centerOfRotation]. When [chassisSpeeds] is exactly zero,
 	 * every module keeps its last-commanded heading instead of snapping to zero degrees.
 	 */
-	fun toSwerveModuleStates(chassisSpeeds: ChassisSpeeds, centerOfRotation: Translation2d = Translation2d.kZero): Array<SwerveModuleState> {
+	fun toSwerveModuleStates(chassisSpeeds: ChassisSpeeds, centerOfRotation: Point2d = Point2d.kZero): Array<SwerveModuleState> {
 		if (chassisSpeeds.vx == 0.0 && chassisSpeeds.vy == 0.0 && chassisSpeeds.omega == 0.0) {
 			return Array(numModules) { SwerveModuleState(0.0, moduleHeadings[it]) }
 		}
@@ -65,7 +66,7 @@ class SwerveDriveKinematics(vararg val moduleTranslations: Translation2d) :
 			val y = moduleStatesMatrix[i * 2 + 1, 0]
 
 			val speed = hypot(x, y)
-			val angle = if (speed > 1e-6) AngularPositon(x, y) else moduleHeadings[i]
+			val angle = if (speed > 1e-6) AngularPosition2d(x, y) else moduleHeadings[i]
 
 			moduleHeadings[i] = angle
 			SwerveModuleState(speed, angle)
@@ -164,7 +165,7 @@ class SwerveDriveKinematics(vararg val moduleTranslations: Translation2d) :
 			}
 		}
 
-		private fun buildInverseKinematics(modules: Array<out Translation2d>, centerOfRotation: Translation2d): Matrix {
+		private fun buildInverseKinematics(modules: Array<out Point2d>, centerOfRotation: Point2d): Matrix {
 			val m = Matrix(modules.size * 2, 3)
 			for (i in modules.indices) {
 				val module = modules[i]

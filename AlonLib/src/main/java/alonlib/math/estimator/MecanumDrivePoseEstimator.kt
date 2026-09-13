@@ -1,7 +1,7 @@
 package alonlib.math.estimator
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 import alonlib.math.kinematics.MecanumDriveKinematics
 import alonlib.math.kinematics.MecanumDriveOdometry
 import alonlib.math.kinematics.MecanumDriveWheelPositions
@@ -10,7 +10,7 @@ import alonlib.math.system.Matrix
 /** [PoseEstimator] for a mecanum drivetrain. */
 class MecanumDrivePoseEstimator(
 	kinematics: MecanumDriveKinematics,
-	gyroAngle: AngularPositon,
+	gyroAngle: AngularPosition2d,
 	wheelPositions: MecanumDriveWheelPositions,
 	initialPose: Pose2d,
 	stateStdDevs: Matrix,

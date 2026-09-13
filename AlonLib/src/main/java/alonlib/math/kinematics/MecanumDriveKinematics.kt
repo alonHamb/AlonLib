@@ -1,6 +1,6 @@
 package alonlib.math.kinematics
 
-import alonlib.math.geometry.Translation2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Twist2d
 import alonlib.math.system.Matrix
 
@@ -14,72 +14,73 @@ import alonlib.math.system.Matrix
  * solution.
  */
 class MecanumDriveKinematics(
-    val frontLeftWheel: Translation2d,
-    val frontRightWheel: Translation2d,
-    val rearLeftWheel: Translation2d,
-    val rearRightWheel: Translation2d,
+	val frontLeftWheel: Point2d,
+	val frontRightWheel: Point2d,
+	val rearLeftWheel: Point2d,
+	val rearRightWheel: Point2d,
 ) : Kinematics<MecanumDriveWheelSpeeds, MecanumDriveWheelPositions> {
 
-    private var inverseKinematics = buildInverseKinematics(frontLeftWheel, frontRightWheel, rearLeftWheel, rearRightWheel)
-    private val forwardKinematics = inverseKinematics.pseudoInverse()
+	private var inverseKinematics = buildInverseKinematics(frontLeftWheel, frontRightWheel, rearLeftWheel, rearRightWheel)
+	private val forwardKinematics = inverseKinematics.pseudoInverse()
 
-    private var prevCenterOfRotation = Translation2d.kZero
+	private var prevCenterOfRotation = Point2d.kZero
 
-    /**
-     * Inverse kinematics with a variable [centerOfRotation] -- e.g. set it to a corner of the
-     * robot to pivot around that corner instead of the physical center.
-     */
-    fun toWheelSpeeds(chassisSpeeds: ChassisSpeeds, centerOfRotation: Translation2d): MecanumDriveWheelSpeeds {
-        if (centerOfRotation != prevCenterOfRotation) {
-            inverseKinematics = buildInverseKinematics(
-                frontLeftWheel - centerOfRotation,
-                frontRightWheel - centerOfRotation,
-                rearLeftWheel - centerOfRotation,
-                rearRightWheel - centerOfRotation,
-            )
-            prevCenterOfRotation = centerOfRotation
-        }
+	/**
+	 * Inverse kinematics with a variable [centerOfRotation] -- e.g. set it to a corner of the
+	 * robot to pivot around that corner instead of the physical center.
+	 */
+	fun toWheelSpeeds(chassisSpeeds: ChassisSpeeds, centerOfRotation: Point2d): MecanumDriveWheelSpeeds {
+		if (centerOfRotation != prevCenterOfRotation) {
+			inverseKinematics = buildInverseKinematics(
+				frontLeftWheel - centerOfRotation,
+				frontRightWheel - centerOfRotation,
+				rearLeftWheel - centerOfRotation,
+				rearRightWheel - centerOfRotation,
+			)
+			prevCenterOfRotation = centerOfRotation
+		}
 
-        val chassisSpeedsVector = Matrix.vector(chassisSpeeds.vx, chassisSpeeds.vy, chassisSpeeds.omega)
-        val wheelsVector = inverseKinematics * chassisSpeedsVector
-        return MecanumDriveWheelSpeeds(wheelsVector[0, 0], wheelsVector[1, 0], wheelsVector[2, 0], wheelsVector[3, 0])
-    }
+		val chassisSpeedsVector = Matrix.vector(chassisSpeeds.vx, chassisSpeeds.vy, chassisSpeeds.omega)
+		val wheelsVector = inverseKinematics * chassisSpeedsVector
+		return MecanumDriveWheelSpeeds(wheelsVector[0, 0], wheelsVector[1, 0], wheelsVector[2, 0], wheelsVector[3, 0])
+	}
 
-    override fun toWheelSpeeds(chassisSpeeds: ChassisSpeeds) = toWheelSpeeds(chassisSpeeds, Translation2d.kZero)
+	override fun toWheelSpeeds(chassisSpeeds: ChassisSpeeds) = toWheelSpeeds(chassisSpeeds, Point2d.kZero)
 
-    override fun toChassisSpeeds(wheelSpeeds: MecanumDriveWheelSpeeds): ChassisSpeeds {
-        val wheelSpeedsVector = Matrix.vector(wheelSpeeds.frontLeft, wheelSpeeds.frontRight, wheelSpeeds.rearLeft, wheelSpeeds.rearRight)
-        val chassisSpeedsVector = forwardKinematics * wheelSpeedsVector
-        return ChassisSpeeds(chassisSpeedsVector[0, 0], chassisSpeedsVector[1, 0], chassisSpeedsVector[2, 0])
-    }
+	override fun toChassisSpeeds(wheelSpeeds: MecanumDriveWheelSpeeds): ChassisSpeeds {
+		val wheelSpeedsVector = Matrix.vector(wheelSpeeds.frontLeft, wheelSpeeds.frontRight, wheelSpeeds.rearLeft, wheelSpeeds.rearRight)
+		val chassisSpeedsVector = forwardKinematics * wheelSpeedsVector
+		return ChassisSpeeds(chassisSpeedsVector[0, 0], chassisSpeedsVector[1, 0], chassisSpeedsVector[2, 0])
+	}
 
-    override fun toTwist2d(start: MecanumDriveWheelPositions, end: MecanumDriveWheelPositions) = toTwist2d(
-	    MecanumDriveWheelPositions(
-		    end.frontLeft - start.frontLeft,
-		    end.frontRight - start.frontRight,
-		    end.rearLeft - start.rearLeft,
-		    end.rearRight - start.rearRight,
-	    )
-    )
+	override fun toTwist2d(start: MecanumDriveWheelPositions, end: MecanumDriveWheelPositions) = toTwist2d(
+		MecanumDriveWheelPositions(
+			end.frontLeft - start.frontLeft,
+			end.frontRight - start.frontRight,
+			end.rearLeft - start.rearLeft,
+			end.rearRight - start.rearRight,
+		)
+	)
 
-    /** Forward kinematics from per-wheel distance deltas directly, for odometry. */
-    fun toTwist2d(wheelDeltas: MecanumDriveWheelPositions): Twist2d {
-        val wheelDeltasVector = Matrix.vector(wheelDeltas.frontLeft, wheelDeltas.frontRight, wheelDeltas.rearLeft, wheelDeltas.rearRight)
-        val twist = forwardKinematics * wheelDeltasVector
-        return Twist2d(twist[0, 0], twist[1, 0], twist[2, 0])
-    }
+	/** Forward kinematics from per-wheel distance deltas directly, for odometry. */
+	fun toTwist2d(wheelDeltas: MecanumDriveWheelPositions): Twist2d {
+		val wheelDeltasVector = Matrix.vector(wheelDeltas.frontLeft, wheelDeltas.frontRight, wheelDeltas.rearLeft, wheelDeltas.rearRight)
+		val twist = forwardKinematics * wheelDeltasVector
+		return Twist2d(twist[0, 0], twist[1, 0], twist[2, 0])
+	}
 
-    override fun interpolate(startValue: MecanumDriveWheelPositions, endValue: MecanumDriveWheelPositions, t: Double) =
-        startValue.interpolate(endValue, t)
+	override fun interpolate(startValue: MecanumDriveWheelPositions, endValue: MecanumDriveWheelPositions, t: Double) =
+		startValue.interpolate(endValue, t)
 
-    companion object {
-        private fun buildInverseKinematics(fl: Translation2d, fr: Translation2d, rl: Translation2d, rr: Translation2d): Matrix {
-            val m = Matrix(4, 3)
-            m.setRow(0, 1.0, -1.0, -(fl.x + fl.y))
-            m.setRow(1, 1.0, 1.0, fr.x - fr.y)
-            m.setRow(2, 1.0, 1.0, rl.x - rl.y)
-            m.setRow(3, 1.0, -1.0, -(rr.x + rr.y))
-            return m
-        }
-    }
+	companion object {
+
+		private fun buildInverseKinematics(fl: Point2d, fr: Point2d, rl: Point2d, rr: Point2d): Matrix {
+			val m = Matrix(4, 3)
+			m.setRow(0, 1.0, -1.0, -(fl.x + fl.y))
+			m.setRow(1, 1.0, 1.0, fr.x - fr.y)
+			m.setRow(2, 1.0, 1.0, rl.x - rl.y)
+			m.setRow(3, 1.0, -1.0, -(rr.x + rr.y))
+			return m
+		}
+	}
 }

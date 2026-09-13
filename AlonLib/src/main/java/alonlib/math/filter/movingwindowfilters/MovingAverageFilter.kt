@@ -1,4 +1,4 @@
-package alonlib.math.filters.movingwindowfilters
+package alonlib.math.filter.movingwindowfilters
 
 import alonlib.robotPrintError
 import java.util.LinkedList
@@ -15,14 +15,15 @@ import java.util.LinkedList
  *                 and that will also be the approximate phase lag.
  */
 open class MovingAverageFilter(window: Int) : MovingWindowFilter() {
-    override var window: Int = window
-        set(value) {
-            field =
-                if (value > 0) value
-                else {
-                    robotPrintError("window must be positive")
-                    0
-                }
-        }
-    override val calculation = { values: LinkedList<Double> -> values.average() }
+
+	override var window: Int = window
+		set(value) {
+			field =
+				if (value > 0) value
+				else {
+					robotPrintError("window must be positive")
+					0
+				}
+		}
+	override val calculation = { values: LinkedList<Double> -> values.average() }
 }

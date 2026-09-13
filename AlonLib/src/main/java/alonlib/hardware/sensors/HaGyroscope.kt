@@ -1,5 +1,7 @@
 package alonlib.hardware.sensors
 
+import alonlib.math.geometry.Quaternion
+import alonlib.units.degrees
 import com.qualcomm.robotcore.hardware.GyroSensor
 import com.qualcomm.robotcore.hardware.Gyroscope
 import com.qualcomm.robotcore.hardware.HardwareDevice
@@ -9,20 +11,25 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 /** The legacy [GyroSensor] interface -- superseded by [HaIMU] on modern hubs, but still SDK-supported for older gyro modules. */
 class HaGyroscope(val gyroSensor: GyroSensor) : HardwareDevice by gyroSensor {
 
-    constructor(hardwareMap: HardwareMap, id: String) : this(hardwareMap.get(GyroSensor::class.java, id))
+	constructor(hardwareMap: HardwareMap, id: String) : this(hardwareMap.get(GyroSensor::class.java, id))
 
-    fun calibrate() = gyroSensor.calibrate()
-    val isCalibrating get() = gyroSensor.isCalibrating
+	private val gyroScopeAngularVelocity = (gyroSensor as Gyroscope).getAngularVelocity(AngleUnit.DEGREES)
 
-    val heading get() = gyroSensor.heading
-    val rotationFraction get() = gyroSensor.rotationFraction
+	fun calibrate() = gyroSensor.calibrate()
+	val isCalibrating get() = gyroSensor.isCalibrating
 
-    val rawX get() = gyroSensor.rawX()
-    val rawY get() = gyroSensor.rawY()
-    val rawZ get() = gyroSensor.rawZ()
+	val heading get() = gyroSensor.heading.degrees
+	val rotationFraction get() = gyroSensor.rotationFraction
 
-    fun resetZAxisIntegrator() = gyroSensor.resetZAxisIntegrator()
+	val rawX get() = gyroSensor.rawX()
+	val rawY get() = gyroSensor.rawY()
+	val rawZ get() = gyroSensor.rawZ()
 
-    /** If this device also implements the SDK's [com.qualcomm.robotcore.hardware.Gyroscope] interface, its angular velocity. */
-    fun getAngularVelocity(angleUnit: AngleUnit) = (gyroSensor as Gyroscope).getAngularVelocity(angleUnit)
+	fun resetZAxisIntegrator() = gyroSensor.resetZAxisIntegrator()
+
+	/**
+	 * a [Quaternion] with x y z angular velocities in degrees per second
+	 */
+	val angularVelocity = Quaternion(0.0, gyroScopeAngularVelocity.xRotationRate.toDouble(), gyroScopeAngularVelocity.yRotationRate.toDouble(), gyroScopeAngularVelocity.zRotationRate.toDouble())
+
 }

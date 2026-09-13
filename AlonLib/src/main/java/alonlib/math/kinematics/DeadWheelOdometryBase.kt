@@ -1,7 +1,7 @@
 package alonlib.math.kinematics
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 
 /**
  * Base for dead-wheel-only odometry ([DifferentialOdometry], [HolonomicOdometry]) that computes
@@ -24,6 +24,6 @@ abstract class DeadWheelOdometryBase(initialPose: Pose2d, val trackWidth: Double
 
 	/** Offsets [pose]'s heading by [byRadians] without moving its translation. */
 	fun rotatePose(byRadians: Double) {
-		pose = Pose2d(pose.translation, pose.rotation + AngularPositon(byRadians))
+		pose = Pose2d(pose.translation, pose.rotation + AngularPosition2d(byRadians))
 	}
 }

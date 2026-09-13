@@ -1,9 +1,9 @@
 package alonlib.hardware.sensors
 
+import alonlib.hardware.HardwareDevice
+import alonlib.math.geometry.AngularPosition2d
 import com.qualcomm.hardware.bosch.BNO055IMU
 import com.qualcomm.robotcore.hardware.HardwareMap
-import alonlib.hardware.HardwareDevice
-import alonlib.math.geometry.AngularPositon
 
 /**
  * The REV Expansion/Control Hub's built-in [BNO055IMU]. Prefer [HaIMU] on modern hubs (it wraps the
@@ -45,7 +45,7 @@ open class HaRevIMU(private val revIMU: BNO055IMU) : HardwareDevice {
 		return doubleArrayOf(orientation.firstAngle.toDouble(), orientation.secondAngle.toDouble(), orientation.thirdAngle.toDouble())
 	}
 
-	fun getRotation2d(): AngularPositon = AngularPositon.fromDegrees(getHeading())
+	fun getRotation2d(): AngularPosition2d = AngularPosition2d.fromDegrees(getHeading())
 
 	override fun disable() = revIMU.close()
 

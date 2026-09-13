@@ -1,7 +1,7 @@
 package alonlib.math.kinematics
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 
 /**
  * Tracks a differential drivetrain's field pose from a gyro angle plus left/right encoder
@@ -9,7 +9,7 @@ import alonlib.math.geometry.AngularPositon
  * [resetPosition] call needs them re-zeroed too).
  */
 class DifferentialDriveOdometry(
-	gyroAngle: AngularPositon,
+	gyroAngle: AngularPosition2d,
 	leftDistanceMeters: Double,
 	rightDistanceMeters: Double,
 	initialPose: Pose2d = Pose2d.kZero,
@@ -20,9 +20,9 @@ class DifferentialDriveOdometry(
 	initialPose,
 ) {
 
-	fun resetPosition(gyroAngle: AngularPositon, leftDistanceMeters: Double, rightDistanceMeters: Double, pose: Pose2d) =
+	fun resetPosition(gyroAngle: AngularPosition2d, leftDistanceMeters: Double, rightDistanceMeters: Double, pose: Pose2d) =
 		resetPosition(gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters), pose)
 
-	fun update(gyroAngle: AngularPositon, leftDistanceMeters: Double, rightDistanceMeters: Double) =
+	fun update(gyroAngle: AngularPosition2d, leftDistanceMeters: Double, rightDistanceMeters: Double) =
 		update(gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
 }

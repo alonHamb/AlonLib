@@ -1,5 +1,6 @@
 package alonlib.hardware.sensors
 
+import alonlib.units.volts
 import com.qualcomm.robotcore.hardware.AnalogInput
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
@@ -9,8 +10,8 @@ class HaAnalogInput(val hardwareMap: HardwareMap, id: String) : HardwareDevice {
 
 	val sensor: AnalogInput = hardwareMap.get(AnalogInput::class.java, id)
 
-	val voltage get() = sensor.voltage
-	val maxVoltage get() = sensor.maxVoltage
+	val voltage get() = sensor.voltage.volts
+	val maxVoltage get() = sensor.maxVoltage.volts
 
 	override fun getManufacturer(): HardwareDevice.Manufacturer = sensor.manufacturer
 

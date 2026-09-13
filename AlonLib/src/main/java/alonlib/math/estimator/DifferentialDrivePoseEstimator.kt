@@ -1,7 +1,7 @@
 package alonlib.math.estimator
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 import alonlib.math.kinematics.DifferentialDriveKinematics
 import alonlib.math.kinematics.DifferentialDriveOdometry
 import alonlib.math.kinematics.DifferentialDriveWheelPositions
@@ -15,7 +15,7 @@ import alonlib.math.system.Matrix
  */
 class DifferentialDrivePoseEstimator(
 	kinematics: DifferentialDriveKinematics,
-	gyroAngle: AngularPositon,
+	gyroAngle: AngularPosition2d,
 	leftDistanceMeters: Double,
 	rightDistanceMeters: Double,
 	initialPose: Pose2d,
@@ -27,9 +27,9 @@ class DifferentialDrivePoseEstimator(
 	visionMeasurementStdDevs,
 ) {
 
-	fun update(gyroAngle: AngularPositon, leftDistanceMeters: Double, rightDistanceMeters: Double) =
+	fun update(gyroAngle: AngularPosition2d, leftDistanceMeters: Double, rightDistanceMeters: Double) =
 		update(gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
 
-	fun updateWithTime(currentTimeSeconds: Double, gyroAngle: AngularPositon, leftDistanceMeters: Double, rightDistanceMeters: Double) =
+	fun updateWithTime(currentTimeSeconds: Double, gyroAngle: AngularPosition2d, leftDistanceMeters: Double, rightDistanceMeters: Double) =
 		updateWithTime(currentTimeSeconds, gyroAngle, DifferentialDriveWheelPositions(leftDistanceMeters, rightDistanceMeters))
 }

@@ -1,8 +1,8 @@
 package alonlib.math.kinematics
 
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
 import alonlib.math.geometry.Twist2d
 
 /**
@@ -15,7 +15,7 @@ import alonlib.math.geometry.Twist2d
  */
 open class Odometry<WheelPositions>(
 	private val kinematics: Kinematics<*, WheelPositions>,
-	gyroAngle: AngularPositon,
+	gyroAngle: AngularPosition2d,
 	wheelPositions: WheelPositions,
 	initialPose: Pose2d = Pose2d.kZero,
 ) {
@@ -28,7 +28,7 @@ open class Odometry<WheelPositions>(
 	private var previousWheelPositions = wheelPositions
 
 	/** Resets the tracked pose and the encoder/gyro baselines it's measured from. */
-	fun resetPosition(gyroAngle: AngularPositon, wheelPositions: WheelPositions, pose: Pose2d) {
+	fun resetPosition(gyroAngle: AngularPosition2d, wheelPositions: WheelPositions, pose: Pose2d) {
 		this.pose = pose
 		previousAngle = pose.rotation
 		gyroOffset = pose.rotation - gyroAngle
@@ -41,18 +41,18 @@ open class Odometry<WheelPositions>(
 		previousAngle = pose.rotation
 	}
 
-	fun resetTranslation(translation: Translation2d) {
+	fun resetTranslation(translation: Point2d) {
 		pose = Pose2d(translation, pose.rotation)
 	}
 
-	fun resetRotation(rotation: AngularPositon) {
+	fun resetRotation(rotation: AngularPosition2d) {
 		gyroOffset += rotation - pose.rotation
 		pose = Pose2d(pose.translation, rotation)
 		previousAngle = pose.rotation
 	}
 
 	/** Integrates the latest [gyroAngle]/[wheelPositions] reading into [pose] and returns it. */
-	fun update(gyroAngle: AngularPositon, wheelPositions: WheelPositions): Pose2d {
+	fun update(gyroAngle: AngularPosition2d, wheelPositions: WheelPositions): Pose2d {
 		val angle = gyroAngle + gyroOffset
 
 		val twist = kinematics.toTwist2d(previousWheelPositions, wheelPositions)

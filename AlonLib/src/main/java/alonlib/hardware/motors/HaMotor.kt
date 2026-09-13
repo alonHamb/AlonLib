@@ -2,13 +2,15 @@ package alonlib.hardware.motors
 
 import alonlib.hardware.Data
 import alonlib.hardware.Data.Motors.Direction
+import alonlib.hardware.Data.Motors.Direction.Forward
+import alonlib.hardware.Data.Motors.Direction.Reverse
 import alonlib.hardware.Data.Motors.GoBILDA
 import alonlib.hardware.Data.Motors.RunMode
 import alonlib.math.PIDFGains
 import alonlib.math.control.PIDFController
 import alonlib.math.control.SimpleMotorFeedforward
-import alonlib.math.geometry.AngularPositon
 import alonlib.robotPrintError
+import alonlib.units.Angle
 import alonlib.units.AngularAcceleration
 import alonlib.units.AngularVelocity
 import alonlib.units.Current
@@ -17,7 +19,6 @@ import alonlib.units.LinearVelocity
 import alonlib.units.Percentage
 import alonlib.units.Voltage
 import alonlib.units.amps
-import alonlib.units.compareTo
 import alonlib.units.degrees
 import alonlib.units.fraction
 import alonlib.units.meters
@@ -100,20 +101,20 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 
 	/**
 	 * the direction the motor to rotates
-	 * @param Direction.Forward clockwise
-	 * @param Direction.Reverse counterclockwise
+	 * @param Forward clockwise
+	 * @param Reverse counterclockwise
 	 */
 	var runningDirection: Direction
 		get() {
 			return when (motor.direction) {
-				DcMotorSimple.Direction.REVERSE -> Direction.Reverse
-				DcMotorSimple.Direction.FORWARD -> Direction.Forward
+				DcMotorSimple.Direction.REVERSE -> Reverse
+				DcMotorSimple.Direction.FORWARD -> Forward
 			}
 		}
 		set(value) {
 			motor.direction = when (value) {
-				Direction.Forward -> DcMotorSimple.Direction.FORWARD
-				Direction.Reverse -> DcMotorSimple.Direction.REVERSE
+				Forward -> DcMotorSimple.Direction.FORWARD
+				Reverse -> DcMotorSimple.Direction.REVERSE
 			}
 			followers.forEach { it?.runningDirection = value }
 		}
@@ -170,17 +171,17 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 		}
 
 	/**
-	 * sets the minimum angular [linearPosition] setpoint you can send to the motor
+	 * sets the minimum [angularPosition] setpoint you can send to the motor
 	 */
-	var minimumAngle: AngularPositon = (-180).degrees
+	var minimumAngle: Angle = (-180).degrees
 		set(value) {
 			field = value.coerceIn(minimumAngle, maximumAngle)
 		}
 
 	/**
-	 * sets the maximum angular [linearPosition] setpoint you can send to the motor
+	 * sets the maximum [angularPosition] setpoint you can send to the motor
 	 */
-	var maximumAngle: AngularPositon = 360.degrees
+	var maximumAngle: Angle = 360.degrees
 		set(value) {
 			when (value > minimumAngle) {
 				true  -> field = value.coerceIn(minimumAngle, maximumAngle)
@@ -189,7 +190,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 		}
 
 	/**
-	 * sets the minimum linear [linearPosition] that you can send to the motor
+	 * sets the minimum [linearPosition] that you can send to the motor
 	 */
 	var minimumPosition: Distance = 0.meters
 		set(value) {
@@ -197,7 +198,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 		}
 
 	/**
-	 * sets the maximum linear [linearPosition] that you can send to the motor
+	 * sets the maximum [linearPosition] that you can send to the motor
 	 */
 	var maximumPosition: Distance = (distancePerRevolution().asMeters).meters
 		set(value) {
@@ -300,10 +301,10 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 	 *
 	 * when set sets the [setPoint] of the motor with [degrees]
 	 */
-	var angularPosition: AngularPositon
+	var angularPosition: Angle
 		get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev.toDouble())).rotations
 		set(angle) {
-			setPoint = angle.degrees.coerceIn(minimumAngle.degrees, maximumAngle.degrees)
+			setPoint = angle.asDegrees.coerceIn(minimumAngle.asDegrees, maximumAngle.asDegrees)
 			followers.forEach { it?.angularPosition = angle }
 		}
 
@@ -315,7 +316,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 	var linearPosition: Distance
 		get() = (runningDirection.multiplier * (hub.bulkData.getMotorCurrentPosition(motor.portNumber) / ticksPerRev.toDouble()) * distancePerRevolution().asMeters).meters
 		set(position) {
-			setPoint = position.asMeters.coerceIn(minimumAngle.degrees, maximumAngle.degrees)
+			setPoint = position.asMeters.coerceIn(minimumPosition.asMeters, maximumPosition.asMeters)
 			followers.forEach { it?.linearPosition = position }
 		}
 
@@ -401,7 +402,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 
 						Data.Motors.PositionMode.Angular -> {
 							positionController.setPoint =
-								setPoint.coerceIn(minimumAngle.degrees, maximumAngle.degrees)
+								setPoint.coerceIn(minimumAngle.asDegrees, maximumAngle.asDegrees)
 							field = setPoint
 						}
 					}
@@ -444,12 +445,12 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 	private val positionPidOutputVoltage: Voltage
 		get() {
 			return when (positionMode) {
-				Data.Motors.PositionMode.Angular -> (positionController.calculate(angularPosition.degrees) + feedForwardController.calculate(
+				Data.Motors.PositionMode.Angular -> (positionController.calculate(angularPosition.asDegrees) + feedForwardController.calculate(
 					angularVelocity.asRpm,
 					acceleration.asRpmPerSecond
 				)).volts
 
-				Data.Motors.PositionMode.Linear  -> (positionController.calculate(angularPosition.rotations * distancePerRevolution().asMeters) + feedForwardController.calculate(
+				Data.Motors.PositionMode.Linear  -> (positionController.calculate(angularPosition.asRotations * distancePerRevolution().asMeters) + feedForwardController.calculate(
 					angularVelocity.asRpm, acceleration.asRpmPerSecond
 				)).volts
 			}

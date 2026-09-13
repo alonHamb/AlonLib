@@ -22,7 +22,9 @@ class DifferentialDriveWheelSpeeds(var left: Double = 0.0, var right: Double = 0
     operator fun minus(other: DifferentialDriveWheelSpeeds) = DifferentialDriveWheelSpeeds(left - other.left, right - other.right)
     operator fun unaryMinus() = DifferentialDriveWheelSpeeds(-left, -right)
     operator fun times(scalar: Double) = DifferentialDriveWheelSpeeds(left * scalar, right * scalar)
+    operator fun times(other: DifferentialDriveWheelSpeeds) = DifferentialDriveWheelSpeeds(left * other.left, right * other.right)
     operator fun div(scalar: Double) = DifferentialDriveWheelSpeeds(left / scalar, right / scalar)
+    operator fun div(other: DifferentialDriveWheelSpeeds) = DifferentialDriveWheelSpeeds(left / other.left, right / other.right)
 
     override fun equals(other: Any?): Boolean {
         if (other !is DifferentialDriveWheelSpeeds) return false

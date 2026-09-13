@@ -1,7 +1,7 @@
 package alonlib.math.kinematics
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
 import alonlib.math.geometry.Twist2d
 
 /**
@@ -45,7 +45,7 @@ class DifferentialOdometry(
 
 		val dx = (deltaLeft + deltaRight) / 2.0
 
-		val angle = previousAngle + AngularPositon((deltaLeft - deltaRight) / trackWidth)
+		val angle = previousAngle + AngularPosition2d((deltaLeft - deltaRight) / trackWidth)
 
 		val newPose = pose.exp(Twist2d(dx, 0.0, (angle - previousAngle).radians))
 

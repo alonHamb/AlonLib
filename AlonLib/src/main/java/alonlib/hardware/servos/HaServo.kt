@@ -2,9 +2,9 @@ package alonlib.hardware.servos
 
 import alonlib.hardware.Data.Servos.Mode
 import alonlib.hardware.Data.Servos.Type
-import alonlib.math.geometry.AngularPositon
 import alonlib.math.mapRange
 import alonlib.robotPrintError
+import alonlib.units.Angle
 import alonlib.units.AngularVelocity
 import alonlib.units.Percentage
 import alonlib.units.degrees
@@ -87,7 +87,7 @@ class HaServo(
 		get() = servo.position.fraction
 
 	/**
-	 * half of [Type.range], in degrees -- the most a [AngularPositon] can represent [position] as an
+	 * half of [Type.range], in degrees -- the most a [Angle] can represent [position] as an
 	 * offset from the center of the servo's sweep without exceeding the (-180, 180] domain that
 	 * Rotation2d normalizes into (350deg/2 = 175deg, the widest built-in [Type]). [position],
 	 * [minPosition], and [maxPosition] are all relative to this center, i.e. 0 degrees is the
@@ -98,17 +98,17 @@ class HaServo(
 	/**
 	 * the maximum [position] to be sent to the servo
 	 */
-	var maxPosition: AngularPositon = halfRange
+	var maxPosition: Angle = halfRange
 		set(value) {
-			field = value.degrees.coerceIn(-halfRange.normalizedDegrees..halfRange.normalizedDegrees).degrees
+			field = value.asDegrees.coerceIn(-halfRange.normalizedDegrees..halfRange.normalizedDegrees).degrees
 		}
 
 	/**
 	 * the minimum [position] to be sent to the servo
 	 */
-	var minPosition: AngularPositon = (-halfRange)
+	var minPosition: Angle = (-halfRange)
 		set(value) {
-			field = value.degrees.coerceIn(-halfRange.normalizedDegrees..maxPosition.normalizedDegrees).degrees
+			field = value.asDegrees.coerceIn(-halfRange.normalizedDegrees..maxPosition.normalizedDegrees).degrees
 		}
 
 	/**
@@ -116,14 +116,14 @@ class HaServo(
 	 *
 	 * when set sets the [position] you want the servo to go to
 	 */
-	var position: AngularPositon = 0.0.degrees
+	var position: Angle = 0.0.degrees
 		get() {
 			return mapRange(
 				servo.position,
 				0.0,
 				1.0,
 				0.0,
-				type.range.degrees
+				type.range.asDegrees
 			).degrees
 		}
 		set(position) {
@@ -132,9 +132,9 @@ class HaServo(
 				Mode.FullRange -> {
 					field = position
 					servo.position = mapRange(
-						position.coerceIn(minPosition, maxPosition).degrees,
+						position.coerceIn(minPosition, maxPosition).asDegrees,
 						0.0,
-						type.range.degrees,
+						type.range.asDegrees,
 						0.0,
 						1.0
 					)

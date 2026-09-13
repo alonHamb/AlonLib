@@ -1,5 +1,6 @@
 package alonlib.units
 
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.geometry.Pose2d
 import alonlib.robotPrintError
 import kotlin.math.PI
@@ -138,13 +139,6 @@ fun feetToMeters(feet: Number) = inchesToMeters(feetToInches(feet))
 
 /** Feet to inches.  */
 fun feetToInches(feet: Number) = feet.toDouble() * 12.0
-
-/**
- * @param position - MUST be blue alliance.
- * @param alliance - The current alliance.
- * @return New position relative to robot's alliance.
- */
-
 fun mpsToMMps(mps: Number) = mps.toDouble() * 1000.0
 fun mpsToCMps(mps: Number) = mps.toDouble() * 100.0
 fun mpsToKph(mps: Number) = mps.toDouble() * 3.6
@@ -159,7 +153,7 @@ fun matchPoseToAlliance(position: Pose2d, alliance: Alliance): Pose2d {
 			Pose2d(
 				FIELD_LENGTH.asMeters - position.x,
 				position.y,
-				position.rotation + 180.degrees
+				position.rotation + AngularPosition2d.fromDegrees(180.0)
 			)
 	}
 }

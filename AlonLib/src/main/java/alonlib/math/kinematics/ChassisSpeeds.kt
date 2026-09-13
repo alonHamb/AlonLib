@@ -1,8 +1,8 @@
 package alonlib.math.kinematics
 
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
 import alonlib.math.geometry.Twist2d
 
 /**
@@ -20,7 +20,9 @@ class ChassisSpeeds(var vx: Double = 0.0, var vy: Double = 0.0, var omega: Doubl
 	operator fun minus(other: ChassisSpeeds) = ChassisSpeeds(vx - other.vx, vy - other.vy, omega - other.omega)
 	operator fun unaryMinus() = ChassisSpeeds(-vx, -vy, -omega)
 	operator fun times(scalar: Double) = ChassisSpeeds(vx * scalar, vy * scalar, omega * scalar)
+	operator fun times(other: ChassisSpeeds) = ChassisSpeeds(vx * other.vx, vy * other.vy, omega * other.omega)
 	operator fun div(scalar: Double) = ChassisSpeeds(vx / scalar, vy / scalar, omega / scalar)
+	operator fun div(other: ChassisSpeeds) = ChassisSpeeds(vx / other.vx, vy / other.vy, omega / other.omega)
 
 	override fun equals(other: Any?): Boolean {
 		if (other !is ChassisSpeeds) return false
@@ -41,7 +43,7 @@ class ChassisSpeeds(var vx: Double = 0.0, var vy: Double = 0.0, var omega: Doubl
 		 * speeds) reintroduces a skew this doesn't account for.
 		 */
 		fun discretize(vx: Double, vy: Double, omega: Double, dtSeconds: Double): ChassisSpeeds {
-			val desiredDeltaPose = Pose2d(vx * dtSeconds, vy * dtSeconds, AngularPositon(omega * dtSeconds))
+			val desiredDeltaPose = Pose2d(vx * dtSeconds, vy * dtSeconds, AngularPosition2d(omega * dtSeconds))
 			val twist = Pose2d.kZero.log(desiredDeltaPose)
 			return ChassisSpeeds(twist.dx / dtSeconds, twist.dy / dtSeconds, twist.dtheta / dtSeconds)
 		}
@@ -50,21 +52,21 @@ class ChassisSpeeds(var vx: Double = 0.0, var vy: Double = 0.0, var omega: Doubl
 			discretize(continuousSpeeds.vx, continuousSpeeds.vy, continuousSpeeds.omega, dtSeconds)
 
 		/** Converts field-relative speeds (facing [robotAngle]) into robot-relative speeds. */
-		fun fromFieldRelativeSpeeds(vx: Double, vy: Double, omega: Double, robotAngle: AngularPositon): ChassisSpeeds {
-			val rotated = Translation2d(vx, vy).rotateBy(-robotAngle)
+		fun fromFieldRelativeSpeeds(vx: Double, vy: Double, omega: Double, robotAngle: AngularPosition2d): ChassisSpeeds {
+			val rotated = Point2d(vx, vy).rotateBy(-robotAngle)
 			return ChassisSpeeds(rotated.x, rotated.y, omega)
 		}
 
-		fun fromFieldRelativeSpeeds(fieldRelativeSpeeds: ChassisSpeeds, robotAngle: AngularPositon) =
+		fun fromFieldRelativeSpeeds(fieldRelativeSpeeds: ChassisSpeeds, robotAngle: AngularPosition2d) =
 			fromFieldRelativeSpeeds(fieldRelativeSpeeds.vx, fieldRelativeSpeeds.vy, fieldRelativeSpeeds.omega, robotAngle)
 
 		/** Converts robot-relative speeds (facing [robotAngle]) into field-relative speeds. */
-		fun fromRobotRelativeSpeeds(vx: Double, vy: Double, omega: Double, robotAngle: AngularPositon): ChassisSpeeds {
-			val rotated = Translation2d(vx, vy).rotateBy(robotAngle)
+		fun fromRobotRelativeSpeeds(vx: Double, vy: Double, omega: Double, robotAngle: AngularPosition2d): ChassisSpeeds {
+			val rotated = Point2d(vx, vy).rotateBy(robotAngle)
 			return ChassisSpeeds(rotated.x, rotated.y, omega)
 		}
 
-		fun fromRobotRelativeSpeeds(robotRelativeSpeeds: ChassisSpeeds, robotAngle: AngularPositon) =
+		fun fromRobotRelativeSpeeds(robotRelativeSpeeds: ChassisSpeeds, robotAngle: AngularPosition2d) =
 			fromRobotRelativeSpeeds(robotRelativeSpeeds.vx, robotRelativeSpeeds.vy, robotRelativeSpeeds.omega, robotAngle)
 	}
 }

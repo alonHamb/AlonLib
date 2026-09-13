@@ -1,10 +1,11 @@
 package alonlib.hardware.sensors
 
+import alonlib.math.geometry.Quaternion
+import alonlib.units.LinearAcceleration
+import alonlib.units.gs
 import com.qualcomm.robotcore.hardware.AccelerationSensor
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
-import alonlib.units.LinearAcceleration
-import alonlib.units.gs
 
 class HaAccelerationSensor(val sensor: AccelerationSensor) : HardwareDevice by sensor {
 
@@ -18,4 +19,8 @@ class HaAccelerationSensor(val sensor: AccelerationSensor) : HardwareDevice by s
 
 	var zAcceleration: LinearAcceleration = sensor.acceleration.zAccel.gs
 
+	/**
+	 * a [Quaternion] with accelerations in meters per second squared
+	 */
+	val acceleration: Quaternion = Quaternion(0.0, xAcceleration.asMetersPerSecondSquared, yAcceleration.asMetersPerSecondSquared, zAcceleration.asMetersPerSecondSquared)
 }

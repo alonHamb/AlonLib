@@ -1,8 +1,8 @@
 package alonlib.math.estimator
 
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
 import alonlib.math.geometry.Twist2d
 import alonlib.math.interpolation.TimeInterpolatableBuffer
 import alonlib.math.kinematics.Odometry
@@ -50,7 +50,7 @@ open class PoseEstimator<WheelPositions>(
 		}
 	}
 
-	fun resetPosition(gyroAngle: AngularPositon, wheelPositions: WheelPositions, pose: Pose2d) {
+	fun resetPosition(gyroAngle: AngularPosition2d, wheelPositions: WheelPositions, pose: Pose2d) {
 		odometry.resetPosition(gyroAngle, wheelPositions, pose)
 		odometryPoseBuffer.clear()
 		visionUpdates.clear()
@@ -64,14 +64,14 @@ open class PoseEstimator<WheelPositions>(
 		estimatedPosition = odometry.pose
 	}
 
-	fun resetTranslation(translation: Translation2d) {
+	fun resetTranslation(translation: Point2d) {
 		odometry.resetTranslation(translation)
 		odometryPoseBuffer.clear()
 		visionUpdates.clear()
 		estimatedPosition = odometry.pose
 	}
 
-	fun resetRotation(rotation: AngularPositon) {
+	fun resetRotation(rotation: AngularPosition2d) {
 		odometry.resetRotation(rotation)
 		odometryPoseBuffer.clear()
 		visionUpdates.clear()
@@ -142,11 +142,11 @@ open class PoseEstimator<WheelPositions>(
 	}
 
 	/** Integrates the latest [gyroAngle]/[wheelPositions] odometry reading, timestamped with the current wall-clock time. */
-	fun update(gyroAngle: AngularPositon, wheelPositions: WheelPositions) =
+	fun update(gyroAngle: AngularPosition2d, wheelPositions: WheelPositions) =
 		updateWithTime(System.nanoTime() / 1e9, gyroAngle, wheelPositions)
 
 	/** As [update], but with an explicit [currentTimeSeconds] (e.g. matching your vision measurements' clock). */
-	fun updateWithTime(currentTimeSeconds: Double, gyroAngle: AngularPositon, wheelPositions: WheelPositions): Pose2d {
+	fun updateWithTime(currentTimeSeconds: Double, gyroAngle: AngularPosition2d, wheelPositions: WheelPositions): Pose2d {
 		val odometryEstimate = odometry.update(gyroAngle, wheelPositions)
 		odometryPoseBuffer.addSample(currentTimeSeconds, odometryEstimate)
 

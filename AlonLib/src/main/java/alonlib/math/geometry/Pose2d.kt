@@ -7,16 +7,16 @@ import kotlin.math.hypot
 import kotlin.math.sin
 
 /** A robot pose (position + heading) in a 2D coordinate frame, in meters/radians. */
-class Pose2d(val translation: Translation2d = Translation2d.kZero, val rotation: AngularPositon = AngularPositon.kZero) :
+class Pose2d(val translation: Point2d = Point2d.kZero, val rotation: AngularPosition2d = AngularPosition2d.kZero) :
 	Interpolatable<Pose2d> {
 
-	constructor(x: Double, y: Double, rotation: AngularPositon) : this(Translation2d(x, y), rotation)
+	constructor(x: Double, y: Double, rotation: AngularPosition2d) : this(Point2d(x, y), rotation)
 
 	val x get() = translation.x
 	val y get() = translation.y
 
 	/** Rotates this pose's translation and rotation both around the origin by [other]. */
-	fun rotateBy(other: AngularPositon) = Pose2d(translation.rotateBy(other), rotation.rotateBy(other))
+	fun rotateBy(other: AngularPosition2d) = Pose2d(translation.rotateBy(other), rotation.rotateBy(other))
 
 	/** Applies [other] (a relative transform, expressed in this pose's rotated frame) to this pose. */
 	fun transformBy(other: Transform2d) =
@@ -25,7 +25,9 @@ class Pose2d(val translation: Translation2d = Translation2d.kZero, val rotation:
 	operator fun plus(other: Transform2d) = transformBy(other)
 	operator fun minus(other: Pose2d) = Transform2d(other, this)
 	operator fun times(scalar: Double) = Pose2d(translation * scalar, rotation * scalar)
+	operator fun times(other: Pose2d) = Pose2d(translation * other.translation, rotation * other.rotation)
 	operator fun div(scalar: Double) = times(1.0 / scalar)
+	operator fun div(other: Pose2d) = Pose2d(translation / other.translation, rotation / other.rotation)
 
 	/** @returns this pose expressed relative to [other] instead of the field/origin frame. */
 	fun relativeTo(other: Pose2d): Pose2d {
@@ -55,7 +57,7 @@ class Pose2d(val translation: Translation2d = Translation2d.kZero, val rotation:
 			c = (1 - cosTheta) / dtheta
 		}
 
-		val transform = Transform2d(Translation2d(dx * s - dy * c, dx * c + dy * s), AngularPositon(cosTheta, sinTheta))
+		val transform = Transform2d(Point2d(dx * s - dy * c, dx * c + dy * s), AngularPosition2d(cosTheta, sinTheta))
 		return this + transform
 	}
 
@@ -74,7 +76,7 @@ class Pose2d(val translation: Translation2d = Translation2d.kZero, val rotation:
 		}
 
 		val translationPart = transform.translation
-			.rotateBy(AngularPositon(halfThetaByTanOfHalfDtheta, -halfDtheta))
+			.rotateBy(AngularPosition2d(halfThetaByTanOfHalfDtheta, -halfDtheta))
 			.times(hypot(halfThetaByTanOfHalfDtheta, halfDtheta))
 
 		return Twist2d(translationPart.x, translationPart.y, dtheta)

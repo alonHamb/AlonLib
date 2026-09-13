@@ -1,12 +1,12 @@
 package alonlib.math.kinematics
 
-import alonlib.math.geometry.AngularPositon
+import alonlib.math.geometry.AngularPosition2d
 import alonlib.math.interpolate
 import alonlib.math.interpolation.Interpolatable
 import kotlin.math.abs
 
 /** Cumulative encoder distance + steering angle for one swerve module. */
-class SwerveModulePosition(var distanceMeters: Double = 0.0, var angle: AngularPositon = AngularPositon.kZero) :
+class SwerveModulePosition(var distanceMeters: Double = 0.0, var angle: AngularPosition2d = AngularPosition2d.kZero) :
 	Comparable<SwerveModulePosition>, Interpolatable<SwerveModulePosition> {
 
 	fun copy() = SwerveModulePosition(distanceMeters, angle)

@@ -1,25 +1,25 @@
 package alonlib.math.trajectory
 
-import alonlib.robotPrintError
+import alonlib.math.geometry.AngularPosition2d
+import alonlib.math.geometry.Point2d
 import alonlib.math.geometry.Pose2d
-import alonlib.math.geometry.AngularPositon
-import alonlib.math.geometry.Translation2d
 import alonlib.math.geometry.Transform2d
 import alonlib.math.spline.PoseWithCurvature
 import alonlib.math.spline.Spline
 import alonlib.math.spline.SplineHelper
 import alonlib.math.spline.SplineParameterizer
+import alonlib.robotPrintError
 
 /** Builds [Trajectory]s from waypoints/control vectors via clamped-cubic or quintic-hermite splines. */
 object TrajectoryGenerator {
 
-	private val kFlip = Transform2d(Translation2d.kZero, AngularPositon.kPi)
+	private val kFlip = Transform2d(Point2d.kZero, AngularPosition2d.kPi)
 	private val kDoNothingTrajectory = Trajectory(listOf(Trajectory.State()))
 
 	/** Clamped cubic splines through [initial]/[interiorWaypoints]/[end]'s exterior control vectors. */
 	fun generateTrajectory(
 		initial: Spline.ControlVector,
-		interiorWaypoints: List<Translation2d>,
+		interiorWaypoints: List<Point2d>,
 		end: Spline.ControlVector,
 		config: TrajectoryConfig,
 	): Trajectory {
@@ -46,7 +46,7 @@ object TrajectoryGenerator {
 	}
 
 	/** Clamped cubic splines through [start]/[interiorWaypoints]/[end], choosing interior headings for continuous curvature. */
-	fun generateTrajectory(start: Pose2d, interiorWaypoints: List<Translation2d>, end: Pose2d, config: TrajectoryConfig): Trajectory {
+	fun generateTrajectory(start: Pose2d, interiorWaypoints: List<Point2d>, end: Pose2d, config: TrajectoryConfig): Trajectory {
 		val controlVectors = SplineHelper.getCubicControlVectorsFromWaypoints(start, interiorWaypoints.toTypedArray(), end)
 		return generateTrajectory(controlVectors[0], interiorWaypoints, controlVectors[1], config)
 	}

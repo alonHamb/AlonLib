@@ -88,6 +88,9 @@ class Matrix private constructor(internal val storage: SimpleMatrix) {
     operator fun times(scalar: Double) = Matrix(storage.scale(scalar))
     operator fun div(scalar: Double) = Matrix(storage.divide(scalar))
 
+    /** Right-division by [other]: `this * other.inverse()`. */
+    operator fun div(other: Matrix) = this * other.inverse()
+
     fun elementTimes(other: Matrix) = Matrix(storage.elementMult(other.storage))
     fun elementDiv(other: Matrix) = Matrix(storage.elementDiv(other.storage))
 

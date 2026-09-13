@@ -5,9 +5,9 @@ package alonlib.math.geometry
  * [Pose2d.transformBy]/`+`. Unlike [Pose2d], a [Transform2d] is relative rather than absolute --
  * its translation is expressed in the *starting* pose's rotated frame, not the field frame.
  */
-class Transform2d(val translation: Translation2d = Translation2d.kZero, val rotation: AngularPositon = AngularPositon.kZero) {
+class Transform2d(val translation: Point2d = Point2d.kZero, val rotation: AngularPosition2d = AngularPosition2d.kZero) {
 
-	constructor(x: Double, y: Double, rotation: AngularPositon) : this(Translation2d(x, y), rotation)
+	constructor(x: Double, y: Double, rotation: AngularPosition2d) : this(Point2d(x, y), rotation)
 
 	/** The relative transform that carries [initial] to [last]. */
 	constructor(initial: Pose2d, last: Pose2d) : this(
@@ -22,7 +22,9 @@ class Transform2d(val translation: Translation2d = Translation2d.kZero, val rota
 
 	operator fun plus(other: Transform2d) = Transform2d(Pose2d.kZero, Pose2d.kZero.transformBy(this).transformBy(other))
 	operator fun times(scalar: Double) = Transform2d(translation * scalar, rotation * scalar)
+	operator fun times(other: Transform2d) = Transform2d(translation * other.translation, rotation * other.rotation)
 	operator fun div(scalar: Double) = times(1.0 / scalar)
+	operator fun div(other: Transform2d) = Transform2d(translation / other.translation, rotation / other.rotation)
 
 	override fun equals(other: Any?): Boolean {
 		if (other !is Transform2d) return false
