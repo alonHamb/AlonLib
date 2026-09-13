@@ -1,6 +1,5 @@
 package alonlib.units
 
-import alonlib.robotPrintError
 import kotlin.math.absoluteValue
 
 /** Represents a planar angle.
@@ -16,10 +15,8 @@ class Angle(angle: Number, angleUnit: Unit) : Comparable<Angle> {
 	private var radians = 0.0
 		set(value) {
 			field = if (value.isNaN()) {
-				robotPrintError("Angle is NaN.")
 				0.0
 			} else if (value.isInfinite()) {
-				robotPrintError("Angle is infinite.")
 				0.0
 			} else value
 		}
