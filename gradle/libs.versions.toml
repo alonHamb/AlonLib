@@ -1,14 +1,15 @@
 [versions]
-agp = "9.1.1"
-kotlin = "2.4.10"
-ftc-sdk = "11.2.1"
+agp = "9.4.1"
+kotlin = "2.4.20"
+ftc-sdk = "12.0.0"
 ejml = "0.46.1"
 junit = "4.13.2"
+kotlinReflect = "2.4.10"
 kotlinxCoroutinesTest = "1.11.0"
-mockitoCore = "5.23.0"
+mockitoCore = "5.24.0"
 
 # SDK Versions
-compileSdk = "36"
+compileSdk = "37"
 minSdk = "24"
 #noinspection OldTargetApi
 targetSdk = "36"
@@ -29,6 +30,7 @@ ejml-simple = { group = "org.ejml", name = "ejml-simple", version.ref = "ejml" }
 
 # Test
 junit = { module = "junit:junit", version.ref = "junit" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinReflect" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 
