@@ -64,7 +64,7 @@ class HaMotor(hardwareMap: HardwareMap, id: String, val ticksPerRev: Number, val
 	var distancePerRevolution: () -> Distance = { 0.meters }
 
 	// --- hardware declaration ---
-	val hub: LynxModule = hardwareMap.get(LynxModule::class.java, "Control Hub")
+	private val hub: LynxModule = hardwareMap.get(LynxModule::class.java, "Control Hub")
 	val motor: DcMotorEx = hardwareMap.get(DcMotorEx::class.java, id).apply {
 		mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 	}
